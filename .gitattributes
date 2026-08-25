@@ -1,0 +1,4 @@
+# normalização de line-endings (LF em tudo que é texto)
+* text=auto eol=lf
+*.png binary
+*.ico binary

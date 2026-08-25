@@ -1,0 +1,13 @@
+# dependências / build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# ambientes e lixo de SO/editor
+.env
+.env.*
+*.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

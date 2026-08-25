@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "Capital Blocks — A Anatomia do Capitalismo Global",
+  "short_name": "Capital Blocks",
+  "description": "Visualizador didático do capitalismo global: fluxos, exploração, concentração e alternativas.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0D1117",
+  "theme_color": "#0D1117",
+  "lang": "pt-BR",
+  "categories": ["education", "news"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

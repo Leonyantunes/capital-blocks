@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* ── DESIGN SYSTEM FASE 2 ───────────────────────────── */
+  /* Superfícies obsidian */
+  --color-zinc-950: #0D1117;
+  --color-zinc-900: #161B22;
+  --color-zinc-800: #30363D;
+
+  /* Cores conceituais */
+  --color-money: #ffc107;     /* Capital-dinheiro M, fluxos financeiros */
+  --color-machine: #2196f3;   /* Capital constante c, máquinas */
+  --color-labor: #f44336;     /* Capital variável v, trabalho vivo */
+  --color-surplus: #4caf50;   /* Mais-valia m, lucro */
+  --color-fict: #9c27b0;      /* Capital fictício, dívida pública */
+
+  /* Remapeamento das escalas usadas pelos componentes p/ paleta oficial */
+  --color-amber-200: #ffe082;
+  --color-amber-300: #ffd54f;
+  --color-amber-400: #ffc107;
+  --color-sky-200: #90caf9;
+  --color-sky-300: #42a5f5;
+  --color-sky-400: #2196f3;
+  --color-red-200: #ef9a9a;
+  --color-red-300: #ef5350;
+  --color-red-400: #f44336;
+  --color-emerald-200: #a5d6a7;
+  --color-emerald-300: #66bb6a;
+  --color-emerald-400: #4caf50;
+  --color-fuchsia-300: #ce93d8;
+  --color-fuchsia-400: #ba68c8;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-200 antialiased font-sans;
+}
+
+/* ---- fluxo animado das setas do circuito M-C-P-C'-M' ---- */
+@keyframes flowdash {
+  to { stroke-dashoffset: -28; }
+}
+.flow-line {
+  stroke-dasharray: 7 7;
+  animation: flowdash 0.9s linear infinite;
+}
+.flow-line--slow { animation-duration: 1.8s; }
+
+/* ---- engrenagem P girando lentamente (produção) ---- */
+@keyframes spinslow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  transform-origin: center;
+  animation: spinslow 14s linear infinite;
+}
+
+/* ---- pulso do nó M' (valor expandido) ---- */
+@keyframes glowpulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255,193,7,.55)); }
+  50%      { filter: drop-shadow(0 0 16px rgba(255,193,7,.95)); }
+}
+.glow-mprime { animation: glowpulse 2s ease-in-out infinite; }
+
+/* ---- pulso vermelho na extração de mais-valia ---- */
+@keyframes redpulse {
+  0%, 100% { opacity:.55 } 50% { opacity:1 }
+}
+.red-pulse { animation: redpulse 1.6s ease-in-out infinite; }
+
+/* ---- trilha animada dos conectores do Módulo 05 ---- */
+@keyframes trailmove {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+.trail-dot {
+  animation: trailmove 1.8s linear infinite;
+}
+
+/* ---- pulso dos marcadores do mapa ---- */
+@keyframes markerring {
+  0%   { transform: scale(.85); opacity:.9 }
+  70%  { transform: scale(1.6); opacity:0 }
+  100% { transform: scale(1.6); opacity:0 }
+}
+.marker-ring { animation: markerring 2.4s ease-out infinite; }
+
+input[type='range'] {
+  @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-800 accent-amber-400;
+}
+input[type='range']::-webkit-slider-thumb {
+  @apply h-4 w-4 appearance-none rounded-full border border-zinc-900 bg-amber-400 shadow;
+}
+input[type='range'].range-machine::-webkit-slider-thumb { @apply bg-sky-400; }
+input[type='range'].range-labor::-webkit-slider-thumb { @apply bg-red-400; }
+
+.thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+/* ---- acessibilidade: foco visível consistente ---- */
+:focus-visible {
+  outline: 2px solid #ffc107;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- tela inteira nativa do mapa (independente de estado React) ---- */
+.map-root:fullscreen {
+  border-radius: 0;
+  border: none;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-root:fullscreen svg.map-svg {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ------------------ MOBILE / TOUCH ------------------ */
+
+/* sem flash azul de toque; sem pull-to-refresh acidental dentro do app */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* o mapa trata pan/pinch via Pointer Events � o browser n�o pode roubar o gesto */
+.map-svg {
+  touch-action: none;
+}
+/* overlays do mapa seguem as bordas da tela com notch */
+.map-root {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+/* fullscreen ocupa a tela DIN�MICA real (barra de URL do celular some/entra) */
+@supports (height: 100dvh) {
+  .map-root:fullscreen svg.map-svg {
+    height: 100dvh;
+    width: 100vw;
+  }
+}
+
+/* respeito � prefer�ncia de movimento reduzido (acessibilidade + bateria) */
+@media (prefers-reduced-motion: reduce) {
+  .marker-ring,
+  .flow-line,
+  .spin-slow,
+  .glow-mprime,
+  .red-pulse,
+  .trail-dot {
+    animation: none !important;
+  }
+  .country-path {
+    transition: none !important;
+  }
+}
+
+/* alvos de toque maiores em telas pequenas (m�n. recomendado ~44px) */
+@media (pointer: coarse) and (max-width: 767px) {
+  .map-root button {
+    min-height: 36px;
+  }
+}
