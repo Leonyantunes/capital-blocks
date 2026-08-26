@@ -172,3 +172,8 @@ body {
     min-height: 36px;
   }
 }
+
+/* trava de segurança: nada pode gerar rolagem horizontal no app */
+body {
+  overflow-x: clip;
+}

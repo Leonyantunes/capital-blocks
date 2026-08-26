@@ -16,13 +16,59 @@ const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'div
   { id: 'alternatives', num: '09', key: 'alternativas', title: 'Módulo 09 — E Para Onde Podemos Ir? Sistemas que já funcionam' },
 ]
 
-function ModeToggle() {
+function Logo() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+      <rect x="1" y="1" width="11" height="11" rx="2" fill="#ffc107" />
+      <rect x="14" y="1" width="11" height="11" rx="2" fill="#4caf50" opacity=".85" />
+      <rect x="1" y="14" width="11" height="11" rx="2" fill="#2196f3" opacity=".85" />
+      <rect x="14" y="14" width="11" height="11" rx="2" fill="#f44336" opacity=".85" />
+    </svg>
+  )
+}
+
+/** Controles de modo/idioma — reutilizados na barra (desktop) e na gaveta (mobile). */
+function ModeControls({ stacked = false }: { stacked?: boolean }) {
   const mode = useApp((s) => s.mode)
   const setMode = useApp((s) => s.setMode)
   const presentation = useApp((s) => s.presentation)
   const setPresentation = useApp((s) => s.setPresentation)
   const lang = useApp((s) => s.lang)
   const setLang = useApp((s) => s.setLang)
+
+  if (stacked) {
+    return (
+      <div className="space-y-2.5">
+        <div className="inline-flex w-full items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
+          {(['didatico', 'avancado'] as const).map((m) => (
+            <button key={m} onClick={() => setMode(m)}
+              className={`flex-1 rounded-md px-2.5 py-2 text-xs font-semibold transition-colors ${
+                mode === m ? 'bg-money text-zinc-950' : 'text-zinc-400'
+              }`}>
+              {m === 'didatico' ? t(lang, 'didatico') : t(lang, 'avancado')}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPresentation(!presentation)}
+            title={t(lang, 'apresentacao')}
+            className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${
+              presentation ? 'border-sky-400/70 bg-sky-400/15 text-sky-300' : 'border-zinc-800 text-zinc-400'
+            }`}>
+            Aa
+          </button>
+          <select value={lang} onChange={(e) => setLang(e.target.value as 'pt' | 'en' | 'es')} aria-label="Idioma da interface"
+            className="h-[38px] flex-1 cursor-pointer rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs font-bold text-zinc-400">
+            <option value="pt">Português</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex shrink-0 items-center gap-1.5">
       <button
@@ -58,12 +104,26 @@ export default function Navbar() {
   const setTab = useApp((s) => s.setTab)
   const lang = useApp((s) => s.lang)
   const glossaryOpen = useApp((s) => s.glossaryOpen)
-  /* chunk do glossário só entra quando ele é aberto pela primeira vez */
+  const setGlossaryOpen = useApp((s) => s.setGlossaryOpen)
   const [glossaryLoaded, setGlossaryLoaded] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [showName, setShowName] = useState(true)
+
   useEffect(() => {
     if (glossaryOpen) setGlossaryLoaded(true)
   }, [glossaryOpen])
-  const [showName, setShowName] = useState(true)
+
+  /* gaveta mobile: trava o scroll da página e fecha com Esc */
+  useEffect(() => {
+    if (!menuOpen) return
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
 
   /* o nome aparece na entrada, recolhe em animação e volta no hover do logo */
   useEffect(() => {
@@ -71,55 +131,115 @@ export default function Navbar() {
     return () => clearTimeout(t)
   }, [])
 
+  const go = (id: TabId) => { setTab(id); setMenuOpen(false) }
+
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/85 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 px-4">
-        <button
-          onClick={() => setTab('home')}
-          onMouseEnter={() => setShowName(true)}
-          onMouseLeave={() => setShowName(false)}
-          className="group flex shrink-0 items-center gap-2.5"
-          aria-label="Capital Blocks — Início">
-          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-            <rect x="1" y="1" width="11" height="11" rx="2" fill="#ffc107" />
-            <rect x="14" y="1" width="11" height="11" rx="2" fill="#4caf50" opacity=".85" />
-            <rect x="1" y="14" width="11" height="11" rx="2" fill="#2196f3" opacity=".85" />
-            <rect x="14" y="14" width="11" height="11" rx="2" fill="#f44336" opacity=".85" />
-          </svg>
-          <span
-            className={`hidden overflow-hidden leading-tight transition-all duration-700 ease-out sm:block ${
-              showName ? 'max-w-[240px] opacity-100' : 'max-w-0 opacity-0'
-            } group-hover:max-w-[240px] group-hover:opacity-100`}>
-            <span className="block whitespace-nowrap text-sm font-extrabold tracking-wide text-zinc-100">CAPITAL BLOCKS</span>
-            <span className="block whitespace-nowrap text-[10px] tracking-wider text-zinc-500">A ANATOMIA DO CAPITALISMO GLOBAL</span>
-          </span>
-        </button>
-
-        <nav className="thin-scroll flex flex-1 items-center gap-1 overflow-x-auto">
-          {TABS.map((tb) => (
-            <button key={tb.id} onClick={() => setTab(tb.id)} title={tb.title}
-              className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                tab === tb.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
-              }`}>
-              <span className="mr-1 font-mono text-[10px] opacity-70">{tb.num}</span>
-              {t(lang, tb.key)}
-            </button>
-          ))}
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-1.5">
+      <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/85 backdrop-blur"
+        style={{ paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}>
+        <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-2 px-3 md:px-4">
           <button
-            onClick={() => useApp.getState().setGlossaryOpen(true)}
-            title="Glossário: os conceitos do site explicados nos dois níveis"
-            className="rounded-lg border border-zinc-800 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition-colors hover:border-money/60 hover:text-money"
-          >
-            {t(lang, 'glossario')}
+            onClick={() => setTab('home')}
+            onMouseEnter={() => setShowName(true)}
+            onMouseLeave={() => setShowName(false)}
+            className="group flex shrink-0 items-center gap-2.5"
+            aria-label="Capital Blocks — Início">
+            <Logo />
+            <span
+              className={`hidden overflow-hidden leading-tight transition-all duration-700 ease-out sm:block ${
+                showName ? 'max-w-[240px] opacity-100' : 'max-w-0 opacity-0'
+              } group-hover:max-w-[240px] group-hover:opacity-100`}>
+              <span className="block whitespace-nowrap text-sm font-extrabold tracking-wide text-zinc-100">CAPITAL BLOCKS</span>
+              <span className="block whitespace-nowrap text-[10px] tracking-wider text-zinc-500">A ANATOMIA DO CAPITALISMO GLOBAL</span>
+            </span>
           </button>
-          <ModeToggle />
+
+          {/* ── navegação horizontal (desktop) ── */}
+          <nav className="thin-scroll hidden flex-1 items-center gap-1 overflow-x-auto md:flex">
+            {TABS.map((tb) => (
+              <button key={tb.id} onClick={() => setTab(tb.id)} title={tb.title}
+                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  tab === tb.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
+                }`}>
+                <span className="mr-1 font-mono text-[10px] opacity-70">{tb.num}</span>
+                {t(lang, tb.key)}
+              </button>
+            ))}
+          </nav>
+
+          <div className="hidden shrink-0 items-center gap-1.5 md:flex">
+            <button
+              onClick={() => setGlossaryOpen(true)}
+              title="Glossário: os conceitos do site explicados nos dois níveis"
+              className="rounded-lg border border-zinc-800 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition-colors hover:border-money/60 hover:text-money"
+            >
+              {t(lang, 'glossario')}
+            </button>
+            <ModeControls />
+          </div>
+
+          {/* ── mobile: glossário compacto + hambúrguer da gaveta lateral ── */}
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
+            <button
+              onClick={() => setGlossaryOpen(true)}
+              aria-label="Abrir glossário"
+              className="rounded-lg border border-zinc-800 px-2.5 py-2 text-[11px] font-bold text-zinc-400"
+            >
+              A-Z
+            </button>
+            <button
+              onClick={() => setMenuOpen(true)}
+              aria-label="Abrir menu de módulos"
+              aria-expanded={menuOpen}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-money/50 bg-money/10 text-lg text-money"
+            >
+              ☰
+            </button>
+          </div>
         </div>
-      </div>
       </header>
+
+      {/* ── gaveta lateral de módulos (mobile) ── */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true" aria-label="Menu de módulos">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMenuOpen(false)} />
+          <aside className="thin-scroll absolute inset-y-0 left-0 flex w-[300px] max-w-[85vw] flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-950 shadow-2xl"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+              <span className="flex items-center gap-2">
+                <Logo />
+                <span className="text-sm font-extrabold tracking-wide text-zinc-100">CAPITAL BLOCKS</span>
+              </span>
+              <button onClick={() => setMenuOpen(false)} aria-label="Fechar menu"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400">✕</button>
+            </div>
+
+            <nav className="flex-1 space-y-0.5 p-2">
+              {TABS.map((tb) => (
+                <button key={tb.id} onClick={() => go(tb.id)}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                    tab === tb.id ? 'bg-money/15 text-money' : 'text-zinc-300 active:bg-zinc-900'
+                  }`}>
+                  <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                    tab === tb.id ? 'bg-money text-zinc-950' : 'bg-zinc-800 text-zinc-400'
+                  }`}>{tb.num}</span>
+                  <span className="text-[13px] font-medium leading-tight">{t(lang, tb.key)}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className="space-y-3 border-t border-zinc-800 p-3">
+              <ModeControls stacked />
+              <button
+                onClick={() => { setGlossaryOpen(true); setMenuOpen(false) }}
+                className="w-full rounded-lg border border-zinc-800 px-3 py-2.5 text-left text-xs font-semibold text-zinc-300">
+                📖 {t(lang, 'glossario')}
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {glossaryLoaded && (
         <Suspense fallback={null}>
           <GlossaryDrawer />

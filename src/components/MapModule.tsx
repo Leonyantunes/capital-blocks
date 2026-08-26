@@ -57,10 +57,10 @@ export default function MapModule() {
           <span className="text-zinc-500 transition-transform group-open:rotate-180">▾</span>
         </summary>
         <ul className="mt-2.5 list-disc space-y-1.5 pl-5 text-xs leading-relaxed text-zinc-400">
-          <li><strong className="text-zinc-200">Clique em qualquer país</strong> — os coloridos abrem o painel completo; os cinzas mostram o código ISO para conectar dados depois.</li>
+          <li><strong className="text-zinc-200">Clique/toque em qualquer país</strong> — os coloridos abrem o painel completo; os cinzas mostram o código ISO para conectar dados depois.</li>
           <li><strong className="text-zinc-200">As partículas mostram a direção do dinheiro</strong>: commodities subindo do Sul, lucros vazando para o Norte, dólares impondo hegemonia — e a roxa tracejada tentando furar o cerco (BRICS Pay).</li>
-          <li><strong className="text-zinc-200">Scroll dá zoom, arrastar move</strong>; os contornos verde-água marcam os membros do BRICS+.</li>
-          <li><strong className="text-zinc-200">Os botões “Guerras de blocos”</strong> acendem as rotas de cada conflito — cada partícula vermelha é arma, dinheiro ou energia em movimento.</li>
+          <li><strong className="text-zinc-200">No computador</strong>: scroll dá zoom, arrastar move. <strong className="text-zinc-200">No celular</strong>: pinch com 2 dedos dá zoom, 1 dedo move — e a barra inferior tem camadas, legenda e o tour.</li>
+          <li><strong className="text-zinc-200">Os botões "Guerras de blocos"</strong> acendem as rotas de cada conflito — cada partícula vermelha é arma, dinheiro ou energia em movimento.</li>
         </ul>
       </details>
 

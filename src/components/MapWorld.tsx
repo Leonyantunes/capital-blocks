@@ -85,7 +85,7 @@ function ZoomButtons({ onZoom, onReset, onBrazil, onFullscreen, isFs }: {
   isFs: boolean
 }) {
   return (
-    <div className="absolute right-2.5 top-2.5 z-20 flex flex-col gap-1">
+    <div className="absolute right-2.5 top-2.5 z-20 hidden flex-col gap-1 md:flex">
       <button aria-label="Aproximar" onClick={() => onZoom(1.5)}
         className="h-7 w-7 rounded-md border border-zinc-700 bg-zinc-900/90 font-mono text-sm text-zinc-300 hover:border-money hover:text-money max-md:h-9 max-md:w-9">+</button>
       <button aria-label="Afastar" onClick={() => onZoom(1 / 1.5)}
@@ -147,6 +147,8 @@ export default function MapWorld() {
   const movedRef = useRef(false)
   const [showFlowList, setShowFlowList] = useState(false)
   const [showInternal, setShowInternal] = useState(false)
+  /** bottom sheet de camadas (apenas mobile) */
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   /* restaura conflito/país da URL (uma vez) */
   useEffect(() => {
@@ -384,6 +386,9 @@ export default function MapWorld() {
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     (e.target as Element).setPointerCapture?.(e.pointerId)
     stopFlight()
+    setSheetOpen(false) // toque no mapa fecha o sheet (comportamento de apps de mapa)
+    setHoverFlow(null)
+    setFlowTip(null)
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointersRef.current.size === 1) {
       dragRef.current = { sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y }
@@ -816,6 +821,89 @@ export default function MapWorld() {
         </g>
       </svg>
 
+      {/* ── MOBILE: barra de controle inferior (estilo app de mapas) ── */}
+      <div className="absolute inset-x-2.5 bottom-2.5 z-20 flex items-stretch gap-1 rounded-xl border border-zinc-800 bg-zinc-900/90 p-1 backdrop-blur md:hidden"
+        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+        <button onClick={() => setSheetOpen((s) => !s)} aria-expanded={sheetOpen}
+          className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold ${
+            sheetOpen ? 'bg-money/15 text-money' : 'text-zinc-300'
+          }`}>
+          <span className="text-base leading-none">☰</span>Camadas
+        </button>
+        <button onClick={() => zoomAroundCenter(1.5)} aria-label="Aproximar"
+          className="flex flex-1 items-center justify-center rounded-lg text-lg text-zinc-300">＋</button>
+        <button onClick={() => zoomAroundCenter(1 / 1.5)} aria-label="Afastar"
+          className="flex flex-1 items-center justify-center rounded-lg text-lg text-zinc-300">－</button>
+        <button onClick={() => setView({ k: 1, x: 0, y: 0 })} aria-label="Resetar zoom"
+          className="flex flex-1 items-center justify-center rounded-lg text-base text-zinc-300">⟲</button>
+        <button onClick={goBrazil} aria-label="Zoom no Brasil"
+          className="flex flex-1 items-center justify-center rounded-lg font-mono text-[11px] font-bold text-emerald-300">BR</button>
+        <button onClick={() => { setSheetOpen(false); setShowWages(false); setShowDeaths(false); setTourStep(0) }}
+          aria-label="Iniciar tour guiado"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold text-emerald-300">
+          <span className="text-base leading-none">▶</span>Tour
+        </button>
+        <button onClick={toggleFullscreen} aria-label={isFs ? 'Sair da tela inteira' : 'Tela inteira'}
+          className="flex flex-1 items-center justify-center rounded-lg text-base text-zinc-300">⛶</button>
+      </div>
+
+      {/* ── MOBILE: bottom sheet de camadas, legenda e ferramentas ── */}
+      {sheetOpen && (
+        <div className="thin-scroll absolute inset-x-2.5 bottom-[4.25rem] z-30 max-h-[62%] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-2 shadow-2xl backdrop-blur md:hidden"
+          style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="flex items-center justify-between px-1 pb-1.5">
+            <span className="text-[9.5px] uppercase tracking-widest text-zinc-500">camadas · legenda · ferramentas</span>
+            <button onClick={() => setSheetOpen(false)} aria-label="Fechar painel de camadas"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400">✕</button>
+          </div>
+
+          {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
+            <button key={t} onClick={() => toggleLayer(t)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs transition-colors active:bg-zinc-800/80">
+              <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
+              <span className={`flex-1 ${visibleLayers[t] ? 'text-zinc-200' : 'text-zinc-500 line-through'}`}>{TYPE_STYLE[t].label}</span>
+              <span className={`font-mono text-[10px] ${visibleLayers[t] ? 'text-emerald-300' : 'text-zinc-600'}`}>
+                {visibleLayers[t] ? 'ON' : 'off'}
+              </span>
+            </button>
+          ))}
+
+          <div className="my-1 h-px bg-zinc-800" />
+
+          <button onClick={() => { setShowWages((s) => !s); if (!showWages) setShowDeaths(false) }}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs active:bg-zinc-800/80">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm bg-gradient-to-r from-red-400 via-amber-400 to-teal-400" />
+            <span className={`flex-1 ${showWages ? 'text-zinc-200' : 'text-zinc-500'}`}>🌡 {t(lang, 'salario')}</span>
+            <span className={`font-mono text-[10px] ${showWages ? 'text-emerald-300' : 'text-zinc-600'}`}>{showWages ? 'ON' : 'off'}</span>
+          </button>
+          <button onClick={() => { setShowDeaths((s) => !s); if (!showDeaths) setShowWages(false) }}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs active:bg-zinc-800/80">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />
+            <span className={`flex-1 ${showDeaths ? 'text-zinc-200' : 'text-zinc-500'}`}>{t(lang, 'mortes')}</span>
+            <span className={`font-mono text-[10px] ${showDeaths ? 'text-emerald-300' : 'text-zinc-600'}`}>{showDeaths ? 'ON' : 'off'}</span>
+          </button>
+          <button onClick={() => { setShowFlowList((s) => !s); setSheetOpen(false) }}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs active:bg-zinc-800/80">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border border-zinc-500" />
+            <span className="flex-1 text-zinc-200">☰ {t(lang, 'fluxos')} ({FLOWS.length})</span>
+          </button>
+          <button onClick={() => { navigator.clipboard?.writeText(window.location.href).catch(() => {}) }}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs active:bg-zinc-800/80">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border border-zinc-500" />
+            <span className="flex-1 text-zinc-200">🔗 {t(lang, 'copiar')}</span>
+          </button>
+
+          <div className="my-1 h-px bg-zinc-800" />
+          <div className="px-2 pb-1 pt-0.5 text-[9px] uppercase tracking-widest text-zinc-600">legenda</div>
+          {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
+            <div key={t} className="flex items-center gap-2.5 px-2 py-1 text-[10.5px] text-zinc-400">
+              <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
+              {TYPE_STYLE[t].label}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* rótulo flutuante do país sob o cursor (suprimido durante hover de fluxo ou tour) */}
       {hover && !hoverFlow && tourStep === null && (
         <div
@@ -867,8 +955,8 @@ export default function MapWorld() {
           )
         })()}
 
-      {/* camadas + lista de fluxos */}
-      <div className="absolute left-2.5 top-2.5 z-20 flex flex-col gap-1 rounded-lg border border-zinc-800 bg-zinc-900/85 p-1.5 backdrop-blur">
+      {/* camadas + ferramentas (PAINEL DE DESKTOP) */}
+      <div className="absolute left-2.5 top-2.5 z-20 hidden flex-col gap-1 rounded-lg border border-zinc-800 bg-zinc-900/85 p-1.5 backdrop-blur md:flex">
         {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
           <button key={t} onClick={() => toggleLayer(t)}
             className={`flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[10px] transition-opacity ${
@@ -910,9 +998,9 @@ export default function MapWorld() {
         </button>
       </div>
 
-      {/* lista de fluxos (roteiro de análise) */}
+      {/* lista de fluxos (roteiro de análise) — desktop: canto sup. direito · mobile: sheet sobre a barra */}
       {showFlowList && (
-        <div className="thin-scroll absolute right-12 top-2.5 z-20 max-h-[78%] w-72 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-2 shadow-2xl backdrop-blur max-sm:right-2.5 max-sm:w-[calc(100vw-1.25rem)]">
+        <div className="thin-scroll absolute right-12 top-2.5 z-30 max-h-[78%] w-72 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-2 shadow-2xl backdrop-blur max-md:inset-x-2.5 max-md:bottom-[4.25rem] max-md:left-2.5 max-md:top-auto max-md:w-auto max-md:max-h-[58%]">
           <div className="px-1 pb-1.5 text-[9.5px] uppercase tracking-widest text-zinc-500">
             roteiro de análise · clique voa até a rota
           </div>
@@ -955,7 +1043,7 @@ export default function MapWorld() {
 
       {/* aviso do modo detalhado */}
       {view.k >= 2 && (
-        <div className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded-full border border-sky-400/40 bg-zinc-900/90 px-3 py-1 text-[10px] font-semibold text-sky-300 backdrop-blur">
+        <div className="pointer-events-none absolute left-1/2 top-2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-sky-400/40 bg-zinc-900/90 px-3 py-1 text-[10px] font-semibold text-sky-300 backdrop-blur max-md:px-2 max-md:py-0.5 max-md:text-[9px]">
           modo detalhado: +{FLOWS.filter((f) => f.tier === 'detail').length} rotas regionais visíveis
         </div>
       )}
@@ -964,7 +1052,7 @@ export default function MapWorld() {
 
       {/* card "país sem dados" */}
       {selectedInfo && !hover && (
-        <div className="absolute bottom-12 left-2.5 z-20 max-w-[240px] rounded-lg border border-dashed border-zinc-600 bg-zinc-900/95 p-3">
+        <div className="absolute bottom-12 left-2.5 z-20 max-w-[240px] rounded-lg border border-dashed border-zinc-600 bg-zinc-900/95 p-3 max-md:bottom-[4.5rem]">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-bold text-zinc-100">{selectedInfo.name}</span>
             <button className="text-[10px] text-zinc-500 hover:text-zinc-200" onClick={() => setSelectedInfo(null)}>✕</button>
@@ -980,7 +1068,7 @@ export default function MapWorld() {
 
       {/* legenda salarial (heatmap ativo) */}
       {showWages && (
-        <div className="absolute bottom-2.5 right-2.5 z-20 rounded-lg border border-zinc-800 bg-zinc-900/90 p-2 backdrop-blur">
+        <div className="absolute bottom-2.5 right-2.5 z-20 rounded-lg border border-zinc-800 bg-zinc-900/90 p-2 backdrop-blur max-md:bottom-[4.5rem]">
           <div className="mb-1 text-[9px] uppercase tracking-widest text-zinc-500">salário médio mensal (USD, aprox.)</div>
           <div className="h-3 w-48 rounded-full"
             style={{ background: 'linear-gradient(to right, #f44336, #ff8a65, #ffc107, #42a5f5, #26a69a)' }} />
@@ -995,7 +1083,7 @@ export default function MapWorld() {
         const d = DISASTERS.find((x) => x.id === selDisaster)!
         const didatico = useApp.getState().mode === 'didatico'
         return (
-          <div className="absolute bottom-12 left-2.5 z-20 max-w-[300px] rounded-xl border border-red-500/60 bg-zinc-900/95 p-3.5 shadow-2xl">
+          <div className="absolute bottom-12 left-2.5 z-20 max-w-[300px] rounded-xl border border-red-500/60 bg-zinc-900/95 p-3.5 shadow-2xl max-md:bottom-[4.5rem]">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="font-mono text-[9.5px] uppercase tracking-widest text-red-400">{d.ano} · {d.local}</div>
@@ -1016,7 +1104,7 @@ export default function MapWorld() {
         const s = TOUR_STOPS[tourStep]
         const didatico = useApp.getState().mode === 'didatico'
         return (
-          <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,600px)] -translate-x-1/2 rounded-xl border border-emerald-400/50 bg-zinc-900/95 p-4 shadow-2xl backdrop-blur">
+          <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,600px)] -translate-x-1/2 rounded-xl border border-emerald-400/50 bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="font-mono text-[9.5px] uppercase tracking-widest text-emerald-300">
@@ -1026,11 +1114,11 @@ export default function MapWorld() {
               </div>
               <div className="flex gap-1">
                 <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200">←</button>
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
                 <button onClick={() => setTourStep(tourStep < TOUR_STOPS.length - 1 ? tourStep + 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200">→</button>
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">→</button>
                 <button onClick={() => setTourStep(null)} aria-label="Encerrar tour"
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200">✕</button>
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">✕</button>
               </div>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-zinc-300">{didatico ? s.did : s.adv}</p>
@@ -1038,14 +1126,14 @@ export default function MapWorld() {
               <div className="flex items-center gap-1">
                 {TOUR_STOPS.map((_, i) => (
                   <button key={i} onClick={() => setTourStep(i)} aria-label={`Ir ao passo ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${i === tourStep ? 'w-5 bg-emerald-300' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'}`} />
+                    className={`h-1.5 rounded-full transition-all ${i === tourStep ? 'w-5 bg-emerald-300' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'} max-md:h-2.5 max-md:w-3`} />
                 ))}
               </div>
               <div className="flex gap-1">
                 <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200">←</button>
+                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
                 <button onClick={() => setTourStep(tourStep < TOUR_STOPS.length - 1 ? tourStep + 1 : null)}
-                  className="rounded border border-emerald-400/60 px-2 py-0.5 text-[10px] font-bold text-emerald-300 hover:bg-emerald-400/10">
+                  className="rounded border border-emerald-400/60 px-2 py-0.5 text-[10px] font-bold text-emerald-300 hover:bg-emerald-400/10 max-md:px-4 max-md:py-2 max-md:text-xs">
                   {tourStep < TOUR_STOPS.length - 1 ? 'próximo →' : 'finalizar ✓'}
                 </button>
               </div>
@@ -1060,8 +1148,8 @@ export default function MapWorld() {
         )
       })()}
 
-      {/* legenda + conflitos rápidos */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 px-4 py-2.5">
+      {/* legenda + conflitos rápidos (desktop; no mobile a legenda vive no sheet) */}
+      <div className="hidden flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 px-4 py-2.5 md:flex">
         {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
           <span key={t} className={`inline-flex items-center gap-1.5 text-[10.5px] ${visibleLayers[t] ? 'text-zinc-400' : 'text-zinc-600 line-through'}`}>
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
@@ -1077,7 +1165,7 @@ export default function MapWorld() {
       {statesOn && (
         <button
           onClick={() => setShowInternal((s) => !s)}
-          className={`absolute bottom-2.5 left-2.5 z-20 rounded-lg border px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-colors ${
+          className={`absolute bottom-2.5 left-2.5 z-20 rounded-lg border px-3 py-1.5 text-[11px] font-semibold backdrop-blur transition-colors max-md:bottom-[4.5rem] ${
             showInternal
               ? 'border-sky-400/70 bg-sky-400/15 text-sky-300'
               : 'border-zinc-700 bg-zinc-900/90 text-zinc-300 hover:border-sky-400/60 hover:text-sky-300'
