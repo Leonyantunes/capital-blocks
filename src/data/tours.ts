@@ -239,7 +239,7 @@ export const TOURES: TourDef[] = [
         did: 'Em 1984, gás venenoso vazou sobre uma cidade dormindo na Índia — porque a matriz tinha cortado custos de segurança. Mais de meio milhão de intoxicados. O acordo pagou cerca de US$ 500 por vítima, e a contaminação atravessa gerações. A mensagem para investidores foi clara: vida indiana sai barato.',
         didStats: [
           { v: '570 mil', k: 'intoxicados' },
-          { v: '~US$ 500', k: 'por vítima no acordo' },
+          { v: 'US$ 470 mi', k: 'o acordo com a Union Carbide' },
         ],
         adv: 'Union Carbide/Dow: duplo padrão de segurança + acordo de US$465 mi + slow violence do MIC no solo e na água — impunidade como subsídio à acumulação.',
       },

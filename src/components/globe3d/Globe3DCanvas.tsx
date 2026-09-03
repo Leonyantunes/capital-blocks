@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { FLOWS, TYPE_STYLE, type FlowType } from '../../data/flows'
-import { BLOCS, ISO_TO_BLOC, flowIsos } from '../../lib/world'
+import { BLOCS, ISO_TO_BLOC } from '../../lib/world'
 import { buildLandMatrixAsync, findCountry, getBorderPositions, latLngToVec3, type LandMatrix } from './landPoints'
 
 export interface GlobeVisualOpts {
@@ -51,6 +51,8 @@ interface Props {
   visibleLayers: Record<FlowType, boolean>
   selectedFlowId: string | null
   highlightFlowIds: string[]
+  /** países em destaque (tour ou seleção) + cor que faz sentido */
+  spot: { isos: string[]; color: string } | null
   onSelectFlow: (id: string | null) => void
   onSelectBloc: (blocId: string) => void
   onStats: (s: { fps: number; lat: number; lng: number; alt: number }) => void
@@ -269,7 +271,6 @@ export default function Globe3DCanvas(props: Props) {
 
     /* ── estado mutável ───────────────────────────────────── */
     let dotPoints: THREE.Points | null = null
-    let dotBaseColors: Float32Array | null = null
     let dotIsos: string[] = []
     const arcGroup = new THREE.Group()
     globe.add(arcGroup)
@@ -298,7 +299,7 @@ export default function Globe3DCanvas(props: Props) {
     }
     let arcs: ArcRec[] = []
 
-    interface Mover { arc: number; t: number; off: number }
+    interface Mover { arc: number; t: number }
     let movers: Mover[] = []
     let moverPoints: THREE.Points | null = null
     let moverColors: Float32Array | null = null
@@ -307,7 +308,6 @@ export default function Globe3DCanvas(props: Props) {
     const markerMeshes: THREE.Mesh[] = []
     const markerGroup = new THREE.Group()
     globe.add(markerGroup)
-    const markerAnchor: { id: string; vec: THREE.Vector3 }[] = []
 
     /* fronteiras dos países (uma geometria, um draw call) */
     let borderLines: THREE.LineSegments | null = null
@@ -358,7 +358,6 @@ export default function Globe3DCanvas(props: Props) {
         cols[i * 3 + 1] = c.g
         cols[i * 3 + 2] = c.b
       }
-      dotBaseColors = cols.slice()
       dg.setAttribute('color', new THREE.BufferAttribute(cols, 3))
       const dm = new THREE.PointsMaterial({
         size: live.current.opts.dotSize,
@@ -440,7 +439,7 @@ export default function Globe3DCanvas(props: Props) {
         arcs.forEach((a, i) => {
           const f = FLOWS.find((x) => x.id === a.id)!
           const k = f.peso >= 2.5 ? 4 : f.peso >= 1.5 ? 3 : 2
-          for (let j = 0; j < k; j++) tmp.push({ arc: i, t: j / k, off: j / k })
+          for (let j = 0; j < k; j++) tmp.push({ arc: i, t: j / k })
         })
         movers = tmp
         const pos = new Float32Array(movers.length * 3)
@@ -479,7 +478,6 @@ export default function Globe3DCanvas(props: Props) {
         markerGroup.add(mesh)
         markerGroup.add(ring)
         markerMeshes.push(mesh)
-        markerAnchor.push({ id: b.id, vec: mesh.position.clone() })
       }
 
       applyVisual()
@@ -500,18 +498,18 @@ export default function Globe3DCanvas(props: Props) {
 
     /* ── aplicação de estado visual (sem rebuild) ─────────── */
     const hlSet = () => new Set(live.current.opts.highlightIsos)
-    /** Recolore os pontos: tema + destaque regional + fluxo/país em destaque + hover. */
+    /** Recolore os pontos: tema + destaque regional + spot (tour/seleção) + hover. */
     function recolorDots() {
-      if (!dotPoints || !dotBaseColors) return
+      if (!dotPoints) return
       const o = live.current.opts
       const dot = new THREE.Color(o.themeDot)
       const fill = new THREE.Color(o.highlightFill)
       const hs = hlSet()
       const useHl = hs.size > 0
-      /* países da rota selecionada (tour ou clique): cor do fluxo */
-      const selFlow = FLOWS.find((x) => x.id === live.current.selectedFlowId)
-      const selIsos = new Set(flowIsos(selFlow))
-      const selCol = selFlow ? new THREE.Color(TYPE_STYLE[selFlow.type].color) : null
+      /* países da rota/parada em destaque: cor que faz sentido (fluxo ou acento do tour) */
+      const spot = live.current.spot
+      const spotSet = spot ? new Set(spot.isos) : null
+      const spotCol = spot ? new THREE.Color(spot.color) : null
       const attr = dotPoints.geometry.getAttribute('color') as THREE.BufferAttribute
       const arr = attr.array as Float32Array
       for (let i = 0; i < dotIsos.length; i++) {
@@ -519,11 +517,10 @@ export default function Globe3DCanvas(props: Props) {
           arr[i * 3] = fill.r
           arr[i * 3 + 1] = fill.g
           arr[i * 3 + 2] = fill.b
-        } else if (selCol && selIsos.has(dotIsos[i])) {
-          /* país da rota em destaque: cor do fluxo, iluminada */
-          arr[i * 3] = Math.min(1, selCol.r * 1.15 + 0.12)
-          arr[i * 3 + 1] = Math.min(1, selCol.g * 1.15 + 0.12)
-          arr[i * 3 + 2] = Math.min(1, selCol.b * 1.15 + 0.12)
+        } else if (spotSet && spotCol && spotSet.has(dotIsos[i])) {
+          arr[i * 3] = Math.min(1, spotCol.r * 1.15 + 0.12)
+          arr[i * 3 + 1] = Math.min(1, spotCol.g * 1.15 + 0.12)
+          arr[i * 3 + 2] = Math.min(1, spotCol.b * 1.15 + 0.12)
         } else if (hoverIso !== null && dotIsos[i] === hoverIso) {
           /* país sob o cursor: clareia ~60% rumo ao branco */
           arr[i * 3] = dot.r + (1 - dot.r) * 0.6
@@ -540,7 +537,7 @@ export default function Globe3DCanvas(props: Props) {
     function applyVisual() {
       const o = live.current.opts
       const glow = new THREE.Color(o.glowColor || o.themeGlow)
-      if (dotPoints && dotBaseColors) {
+      if (dotPoints) {
         recolorDots()
         ;(dotPoints.material as THREE.PointsMaterial).size = o.dotSize
         ;(dotPoints.material as THREE.PointsMaterial).opacity = o.bloom ? Math.min(1, 0.9 + o.bloomIntensity * 0.06) : 0.92
@@ -909,9 +906,10 @@ export default function Globe3DCanvas(props: Props) {
 
       /* satélites removidos por decisão de produto (ruído visual) */
 
-      /* reavalia seleção quando muda (inclui modo detalhado por zoom) */
+      /* reavalia seleção quando muda (inclui modo detalhado por zoom + spot do tour) */
       const camDist = camera.position.length()
-      const key = `${live.current.selectedFlowId}|${live.current.highlightFlowIds.join(',')}|${JSON.stringify(live.current.visibleLayers)}|${camDist.toFixed(2)}|${o.showArcs}`
+      const spotSig = live.current.spot ? `${live.current.spot.color}|${live.current.spot.isos.join(',')}` : ''
+      const key = `${live.current.selectedFlowId}|${live.current.highlightFlowIds.join(',')}|${JSON.stringify(live.current.visibleLayers)}|${camDist.toFixed(2)}|${o.showArcs}|${spotSig}`
       if (key !== selCache) {
         selCache = key
         applySelection()

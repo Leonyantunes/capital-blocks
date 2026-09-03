@@ -253,11 +253,11 @@ export const TOUR_STOPS: TourStop[] = [
     chapter: 'Cap. 5 · O dinheiro invisível',
     titulo: 'O lucro que muda de endereço',
     lng: -25, lat: 48, k: 2.6, flowId: 'fant-usa-irl',
-    did: 'E há o dinheiro que ninguém vê: todo ano, cerca de US$ 1 trilhão em lucros "muda de endereço" para paraísos fiscais — no papel, sem sair do lugar. Um ano, a Irlanda "cresceu" 26% só com essa contabilidade. São escolas e hospitais do mundo inteiro que deixam de receber.',
+    did: 'E há o dinheiro que ninguém vê: todo ano, centenas de bilhões em lucros "mudam de endereço" para paraísos fiscais — no papel, sem sair do lugar. Um ano, a Irlanda "cresceu" 26% só com essa contabilidade. São US$ 480 bilhões em impostos que escolas e hospitais do mundo inteiro deixam de receber.',
     didStats: [
-      { v: 'US$ 1 tri', k: 'muda de endereço por ano' },
       { v: '+26%', k: 'o "crescimento" da Irlanda em 2015' },
       { v: 'US$ 480 bi', k: 'perdidos em impostos/ano' },
+      { v: 'US$ 140 bi', k: 'deslocados p/ Irlanda/ano' },
     ],
     adv: 'Missing Profits (Zucman): 36–40% dos lucros multinacionais deslocados; TJN: US$480 bi/ano de arrecadação perdida; offshore: US$10–12 tri — o fictício administrativo.',
   },

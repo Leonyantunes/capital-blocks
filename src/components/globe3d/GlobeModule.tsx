@@ -8,8 +8,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Globe3DCanvas, { type GlobeFocus } from './Globe3DCanvas'
 import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
-import { TOURES, getTour } from '../../data/tours'
-import { BLOCS } from '../../lib/world'
+import { TOURES, getTour, stopColor, stopIsos } from '../../data/tours'
+import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
 
 /** Chips de conflito locais (mesmos do mapa 2D, sem puxar o chunk do MapWorld). */
@@ -232,6 +232,21 @@ export default function GlobeModule() {
 
   const selFlowObj = useMemo(() => FLOWS.find((f) => f.id === selFlow) ?? null, [selFlow])
 
+  /* países em destaque no globo: parada do tour (fluxo ou ISOs manuais) ou seleção manual */
+  const spot = useMemo(() => {
+    if (tourStep !== null) {
+      const s = STOPS[tourStep]
+      if (!s) return null
+      const isos = stopIsos(s)
+      if (!isos.length) return null
+      return { isos, color: stopColor(s) ?? TOUR_ACCENT }
+    }
+    if (selFlowObj) {
+      return { isos: flowIsos(selFlowObj), color: TYPE_STYLE[selFlowObj.type].color }
+    }
+    return null
+  }, [tourStep, selFlowObj, activeTourId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const opts = useMemo(
     () => ({
       themeDot,
@@ -415,6 +430,7 @@ export default function GlobeModule() {
             visibleLayers={visibleLayers}
             selectedFlowId={selFlow}
             highlightFlowIds={highlightFlowIds}
+            spot={spot}
             onSelectFlow={handleFlow}
             onSelectBloc={handleBloc}
             onStats={onStats}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   MAP_W, MAP_H, COUNTRY_FEATURES, GRATICULE_D, SPHERE_D,
-  ISO_TO_BLOC, BRICS_ISO, BLOCS, BLOC_MEMBERS, arcPath, quadPoint, project, projection,
+  ISO_TO_BLOC, BRICS_ISO, BLOCS, BLOC_MEMBERS, arcPath, quadPoint, project, projection, flowIsos,
 } from '../lib/world'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../data/tours'
@@ -209,7 +209,6 @@ export default function MapWorld() {
   }
 
   /** voa em 3 fases (sobe → cruza → desce), como as linhas de fluxo — rAF suave */
-  const flyTimer = useRef<number | null>(null)
   const rafRef = useRef<number | null>(null)
   const stopFlight = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
@@ -492,15 +491,24 @@ export default function MapWorld() {
     setHover({ name, iso, x: e.clientX - rect.left, y: e.clientY - rect.top, wageUsd })
   }
 
-  /* países da rota em destaque (tour ou seleção): ganham contorno na cor do fluxo */
+  /* países da rota em destaque (tour ou clique manual): contorno na cor do fluxo */
   const tourHi = useMemo(() => {
-    if (tourStep === null) return null
-    const s = STOPS[tourStep]
-    if (!s) return null
-    const isos = new Set(stopIsos(s))
-    if (!isos.size) return null
-    return { isos, color: stopColor(s) ?? '#f472b6' }
-  }, [tourStep, activeTourId]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (tourStep !== null) {
+      const s = STOPS[tourStep]
+      if (s) {
+        const isos = new Set(stopIsos(s))
+        if (isos.size) return { isos, color: stopColor(s) ?? TOUR_ACCENT }
+      }
+    }
+    if (selFlow) {
+      const f = FLOWS.find((x) => x.id === selFlow)
+      if (f) {
+        const isos = new Set(flowIsos(f))
+        if (isos.size) return { isos, color: TYPE_STYLE[f.type].color }
+      }
+    }
+    return null
+  }, [tourStep, activeTourId, selFlow]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* camada de países é ESTÁTICA — memoizada p/ não reconciliar ~177 paths
      a cada interação do mouse (tooltip atualiza isoladamente).
