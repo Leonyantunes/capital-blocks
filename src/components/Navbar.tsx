@@ -5,7 +5,7 @@ import { t } from '../i18n'
 const GlossaryDrawer = lazy(() => import('./GlossaryDrawer'))
 
 const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'divida' | 'raio' | 'plataformas' | 'riqueza' | 'consequencias' | 'alternativas'; title: string }[] = [
-  { id: 'home', num: '01', key: 'mapa', title: 'Módulo 01 — Mapa Geopolítico Interativo (Home)' },
+  { id: 'home', num: '01', key: 'mapa', title: 'Mapa 2D ⇄ Mapa 3D — clique para alternar entre as duas versões' },
   { id: 'circuit', num: '02', key: 'circuito', title: 'Módulo 02 — O Circuito do Capital' },
   { id: 'war', num: '03', key: 'guerra', title: 'Módulo 03 — Guerra de Capitais & Conflitos Imperialistas (War Room)' },
   { id: 'debt', num: '04', key: 'divida', title: 'Módulo 04 — Morte e Ressurreição do Capital (MMT × Ortodoxia)' },
@@ -131,7 +131,17 @@ export default function Navbar() {
     return () => clearTimeout(t)
   }, [])
 
-  const go = (id: TabId) => { setTab(id); setMenuOpen(false) }
+  const go = (id: TabId) => { pressTab(id); setMenuOpen(false) }
+
+  /** "01 Mapa" é um toggle 2D ⇄ 3D: no 2D vai ao 3D, no 3D volta ao 2D. */
+  const pressTab = (id: TabId) => {
+    if (id === 'home') {
+      setTab(tab === 'globe3d' ? 'home' : tab === 'home' ? 'globe3d' : 'home')
+      return
+    }
+    setTab(id)
+  }
+  const is3D = tab === 'globe3d'
 
   return (
     <>
@@ -156,15 +166,27 @@ export default function Navbar() {
 
           {/* ── navegação horizontal (desktop) ── */}
           <nav className="thin-scroll hidden flex-1 items-center gap-1 overflow-x-auto md:flex">
-            {TABS.map((tb) => (
-              <button key={tb.id} onClick={() => setTab(tb.id)} title={tb.title}
-                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  tab === tb.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
-                }`}>
-                <span className="mr-1 font-mono text-[10px] opacity-70">{tb.num}</span>
-                {t(lang, tb.key)}
-              </button>
-            ))}
+            {TABS.map((tb) => {
+              const isMap = tb.id === 'home'
+              const active = isMap ? tab === 'home' || is3D : tab === tb.id
+              const show3D = isMap && is3D
+              return (
+                <button key={tb.id} onClick={() => pressTab(tb.id)} title={tb.title}
+                  aria-pressed={isMap ? is3D : undefined}
+                  className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    active
+                      ? show3D
+                        ? 'bg-sky-400 text-zinc-950'
+                        : 'bg-money text-zinc-950'
+                      : show3D
+                        ? 'border border-sky-400/50 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20'
+                        : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
+                  }`}>
+                  <span className="mr-1 font-mono text-[10px] opacity-70">{show3D ? '3D' : tb.num}</span>
+                  {show3D ? `🌍 ${t(lang, tb.key)}` : t(lang, tb.key)}
+                </button>
+              )
+            })}
           </nav>
 
           <div className="hidden shrink-0 items-center gap-1.5 md:flex">
@@ -215,17 +237,28 @@ export default function Navbar() {
             </div>
 
             <nav className="flex-1 space-y-0.5 p-2">
-              {TABS.map((tb) => (
-                <button key={tb.id} onClick={() => go(tb.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                    tab === tb.id ? 'bg-money/15 text-money' : 'text-zinc-300 active:bg-zinc-900'
-                  }`}>
-                  <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
-                    tab === tb.id ? 'bg-money text-zinc-950' : 'bg-zinc-800 text-zinc-400'
-                  }`}>{tb.num}</span>
-                  <span className="text-[13px] font-medium leading-tight">{t(lang, tb.key)}</span>
-                </button>
-              ))}
+              {TABS.map((tb) => {
+                const isMap = tb.id === 'home'
+                const active = isMap ? tab === 'home' || is3D : tab === tb.id
+                const show3D = isMap && is3D
+                return (
+                  <button key={tb.id} onClick={() => go(tb.id)} title={tb.title}
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                      active
+                        ? show3D
+                          ? 'bg-sky-400/15 text-sky-300'
+                          : 'bg-money/15 text-money'
+                        : 'text-zinc-300 active:bg-zinc-900'
+                    }`}>
+                    <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                      active ? (show3D ? 'bg-sky-400 text-zinc-950' : 'bg-money text-zinc-950') : 'bg-zinc-800 text-zinc-400'
+                    }`}>{show3D ? '3D' : tb.num}</span>
+                    <span className="text-[13px] font-medium leading-tight">
+                      {show3D ? `🌍 ${t(lang, tb.key)} · toque p/ 2D` : t(lang, tb.key)}
+                    </span>
+                  </button>
+                )
+              })}
             </nav>
 
             <div className="space-y-3 border-t border-zinc-800 p-3">

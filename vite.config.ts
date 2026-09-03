@@ -16,6 +16,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-motion': ['framer-motion'],
           'vendor-geo': ['d3-geo', 'topojson-client', 'world-atlas/countries-110m.json'],
+          'vendor-three': ['three'],
         },
       },
     },

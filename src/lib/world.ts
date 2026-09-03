@@ -82,6 +82,24 @@ export const ISO_TO_BLOC: Record<string, string> = Object.entries(BLOC_MEMBERS).
 /** Membros plenos do BRICS+ (2025): BRA RUS IND CHN ZAF EGY ETH IRN ARE IDN */
 export const BRICS_ISO = new Set(['076', '643', '356', '156', '710', '818', '231', '364', '784', '360'])
 
+type FlowLike = {
+  from: string | [number, number]
+  to: string | [number, number]
+  iso?: string
+} | null | undefined
+
+/** ISOs dos países de ponta a ponta de um fluxo (p/ destacar países no tour). */
+export function flowIsos(f: FlowLike): string[] {
+  if (!f) return []
+  const s = new Set<string>()
+  if (f.iso) s.add(f.iso)
+  for (const side of ['from', 'to'] as const) {
+    const v = f[side]
+    if (typeof v === 'string') BLOC_MEMBERS[v]?.forEach((iso) => s.add(iso))
+  }
+  return [...s]
+}
+
 export interface BlocVisual {
   id: string
   code: string

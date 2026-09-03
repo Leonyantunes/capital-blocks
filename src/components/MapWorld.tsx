@@ -4,8 +4,9 @@ import {
   ISO_TO_BLOC, BRICS_ISO, BLOCS, BLOC_MEMBERS, arcPath, quadPoint, project, projection,
 } from '../lib/world'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../data/flows'
+import { TOURES, getTour, stopColor, stopIsos } from '../data/tours'
 import { t } from '../i18n'
-import FlowDetailPanel from './FlowDetailPanel'
+import FlowCard from './FlowCard'
 import { BR_STATES, BR_STATE_FLOWS, INTERNAL_FLOWS, STATE_CAT_META, BRAZIL_VIEW } from '../data/brazil'
 import { WAGES, wageColor, wageBucketLabel, WAGE_BUCKETS } from '../data/wages'
 import { DISASTERS } from '../data/disasters'
@@ -176,6 +177,36 @@ export default function MapWorld() {
   const [showDeaths, setShowDeaths] = useState(false)
   const [selDisaster, setSelDisaster] = useState<string | null>(null)
   const [tourStep, setTourStep] = useState<number | null>(null)
+  /** tour temático ativo (base comum ao 2D e ao 3D) */
+  const [activeTourId, setActiveTourId] = useState('principal')
+  const STOPS = getTour(activeTourId).stops
+  const TOUR_ACCENT = getTour(activeTourId).accent
+
+  /** inicia o tour em tela cheia (com fallback silencioso) */
+  const startTour = () => {
+    try {
+      const p = containerRef.current?.requestFullscreen?.() as Promise<void> | undefined
+      p?.catch(() => {})
+    } catch {
+      /* sem fullscreen: o tour segue normal */
+    }
+    setSheetOpen(false)
+    setShowWages(false)
+    setShowDeaths(false)
+    setTourStep(0)
+  }
+  /** encerra o tour e sai da tela cheia */
+  const endTour = () => {
+    setTourStep(null)
+    try {
+      if (document.fullscreenElement) {
+        const p = document.exitFullscreen() as Promise<void> | undefined
+        p?.catch(() => {})
+      }
+    } catch {
+      /* nada */
+    }
+  }
 
   /** voa em 3 fases (sobe → cruza → desce), como as linhas de fluxo — rAF suave */
   const flyTimer = useRef<number | null>(null)
@@ -184,7 +215,7 @@ export default function MapWorld() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
   }
-  const flyTo = (mx: number, my: number, k2 = 2.6) => {
+  const flyTo = (mx: number, my: number, k2 = 2.6, fy = 0.5) => {
     stopFlight()
     const k1 = view.k
     const c1x = (MAP_W / 2 - view.x) / k1
@@ -193,23 +224,24 @@ export default function MapWorld() {
     const t0 = performance.now()
     const D1 = 520, D2 = 780, D3 = 560
     const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+    const CY = MAP_H * fy // altura focal: 0.5 = centro; tour usa ~0.36 p/ não tapar o país com o card
     const frame = (now: number) => {
       const e = now - t0
       if (e <= D1) {
         const t = ease(e / D1)
         const k = k1 + (kMid - k1) * t
-        setView({ k, x: MAP_W / 2 - c1x * k, y: MAP_H / 2 - c1y * k })
+        setView({ k, x: MAP_W / 2 - c1x * k, y: CY - c1y * k })
       } else if (e <= D1 + D2) {
         const t = ease((e - D1) / D2)
         const cx = c1x + (mx - c1x) * t
         const cy = c1y + (my - c1y) * t
-        setView({ k: kMid, x: MAP_W / 2 - cx * kMid, y: MAP_H / 2 - cy * kMid })
+        setView({ k: kMid, x: MAP_W / 2 - cx * kMid, y: CY - cy * kMid })
       } else if (e <= D1 + D2 + D3) {
         const t = ease((e - D1 - D2) / D3)
         const k = kMid + (k2 - kMid) * t
-        setView({ k, x: MAP_W / 2 - mx * k, y: MAP_H / 2 - my * k })
+        setView({ k, x: MAP_W / 2 - mx * k, y: CY - my * k })
       } else {
-        setView({ k: k2, x: MAP_W / 2 - mx * k2, y: MAP_H / 2 - my * k2 })
+        setView({ k: k2, x: MAP_W / 2 - mx * k2, y: CY - my * k2 })
         rafRef.current = null
         return
       }
@@ -219,9 +251,9 @@ export default function MapWorld() {
   }
 
   /** variante geográfica: aceita lng/lat e projeta antes de voar */
-  const flyToLL = (lng: number, lat: number, k = 2.6) => {
+  const flyToLL = (lng: number, lat: number, k = 2.6, fy = 0.5) => {
     const [px, py] = project([lng, lat])
-    flyTo(px, py, k)
+    flyTo(px, py, k, fy)
   }
 
   /** tela inteira do mapa (o tour e os overlays acompanham) */
@@ -244,7 +276,7 @@ export default function MapWorld() {
         useApp.getState().setGlossaryOpen(false)
       }
       if (tourStep !== null && e.key === 'ArrowRight')
-        setTourStep((s) => (s === null ? 0 : Math.min(s + 1, TOUR_STOPS.length - 1)))
+        setTourStep((s) => (s === null ? 0 : Math.min(s + 1, STOPS.length - 1)))
       if (tourStep !== null && e.key === 'ArrowLeft')
         setTourStep((s) => (s === null ? 0 : Math.max(s - 1, 0)))
     }
@@ -252,11 +284,12 @@ export default function MapWorld() {
     return () => window.removeEventListener('keydown', onKey)
   }, [tourStep])
 
-  /* tour guiado: voa até cada parada, acende o fluxo/conflito e ativa a camada da parada */
+  /* tour guiado: voa até cada parada (ponto acima do card), acende fluxo/conflito/camada */
   useEffect(() => {
     if (tourStep === null) return
-    const s = TOUR_STOPS[tourStep]
-    flyToLL(s.lng, s.lat, s.k)
+    const s = STOPS[tourStep]
+    if (!s) return
+    flyToLL(s.lng, s.lat, s.k, 0.36)
     if (s.flowId) setSelFlow(s.flowId)
     else setSelFlow(null)
     if (s.conflict) setConflict(s.conflict)
@@ -264,7 +297,7 @@ export default function MapWorld() {
     setShowDeaths(s.layer === 'deaths')
     setShowWages(s.layer === 'wages')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tourStep])
+  }, [tourStep, activeTourId])
 
   /* ── MODO BRASIL: detecta centro do viewport dentro do território + zoom alto ── */
   const viewCenter = useMemo(() => {
@@ -459,9 +492,19 @@ export default function MapWorld() {
     setHover({ name, iso, x: e.clientX - rect.left, y: e.clientY - rect.top, wageUsd })
   }
 
+  /* países da rota em destaque (tour ou seleção): ganham contorno na cor do fluxo */
+  const tourHi = useMemo(() => {
+    if (tourStep === null) return null
+    const s = STOPS[tourStep]
+    if (!s) return null
+    const isos = new Set(stopIsos(s))
+    if (!isos.size) return null
+    return { isos, color: stopColor(s) ?? '#f472b6' }
+  }, [tourStep, activeTourId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   /* camada de países é ESTÁTICA — memoizada p/ não reconciliar ~177 paths
      a cada interação do mouse (tooltip atualiza isoladamente).
-     Modos: bloco (padrão) · heatmap salarial · glow de rotas regionais no zoom. */
+     Modos: bloco (padrão) · heatmap salarial · glow de rotas regionais no zoom · destaque do tour. */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const countriesLayer = useMemo(
     () => (
@@ -474,14 +517,18 @@ export default function MapWorld() {
           const glow = detailOn && detailIsoSet.has(f.id)
           const wage = WAGES[f.id]
           const wageOn = showWages && wage !== undefined
-          const fill = wageOn
-            ? wageColor(wage)
-            : glow
-              ? '#2a3547'
-              : blocColor
-                ? `${blocColor}26`
-                : '#151b23'
-          const stroke = glow ? '#8ab4f8' : wageOn ? '#0d1117' : bricsOn ? '#26c6da' : '#262f3b'
+          const thi = tourHi !== null && tourHi.isos.has(f.id)
+          const tcol = tourHi?.color ?? '#f472b6'
+          const fill = thi
+            ? `${tcol}3d`
+            : wageOn
+              ? wageColor(wage)
+              : glow
+                ? '#2a3547'
+                : blocColor
+                  ? `${blocColor}26`
+                  : '#151b23'
+          const stroke = thi ? tcol : glow ? '#8ab4f8' : wageOn ? '#0d1117' : bricsOn ? '#26c6da' : '#262f3b'
           return (
             <path
               key={f.id}
@@ -490,20 +537,21 @@ export default function MapWorld() {
               style={{
                 fill,
                 stroke,
-                strokeWidth: glow ? 1.1 : bricsOn ? 0.9 : wageOn ? 0.4 : 0.5,
+                strokeWidth: thi ? 1.4 : glow ? 1.1 : bricsOn ? 0.9 : wageOn ? 0.4 : 0.5,
+                ...(thi ? { filter: `drop-shadow(0 0 5px ${tcol})` } : {}),
               }}
               onPointerEnter={(e) =>
                 showHoverLabel(e, f.id, f.name, wageOn && wage !== undefined ? wage : undefined)
               }
               onClick={() => handleCountryClick(f.id, f.name)}
             >
-              <title>{`${f.name}${wageOn && wage !== undefined ? ` · salário médio ≈ US$ ${wage}/mês (${wageBucketLabel(wage)})` : ''}${glow ? ' · rota regional ativa' : bloc ? ' · clique para anatomia do bloco' : ''}`}</title>
+              <title>{`${f.name}${wageOn && wage !== undefined ? ` · salário médio ≈ US$ ${wage}/mês (${wageBucketLabel(wage)})` : ''}${thi ? ' · no caminho da rota' : glow ? ' · rota regional ativa' : bloc ? ' · clique para anatomia do bloco' : ''}`}</title>
             </path>
           )
         })}
       </g>
     ),
-    [visibleLayers.brics, detailOn, showWages],
+    [visibleLayers.brics, detailOn, showWages, tourHi],
   )
 
   /* ── fluxos: memoizados por [camadas, seleção, hover, conflito, kq] ── */
@@ -530,19 +578,24 @@ export default function MapWorld() {
           return (
             <g key={fl.id} style={{ transition: 'opacity .35s' }} opacity={opacity}>
               {isSel && (
-                <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 3.4}
-                  opacity="0.18" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                <>
+                  <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 4.5}
+                    opacity="0.3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                  <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 0.9}
+                    opacity="0.5" strokeLinecap="round" vectorEffect="non-scaling-stroke"
+                    style={{ pointerEvents: 'none' }} />
+                </>
               )}
               <path d={d} fill="none" stroke={st.color}
-                strokeWidth={emphasized ? baseW * 1.9 : baseW}
+                strokeWidth={isSel ? baseW * 3.2 : emphasized ? baseW * 1.9 : baseW}
                 strokeDasharray={st.dash || undefined}
                 opacity={emphasized ? 1 : 0.62}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
-                style={{ pointerEvents: 'none' }} />
+                style={isSel ? { pointerEvents: 'none', filter: `drop-shadow(0 0 7px ${st.color})` } : { pointerEvents: 'none' }} />
               {(fl.peso >= 2.5 ? [0, 1, 2] : [0, 1]).map((i) => (
-                <circle key={i} r={(emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
-                  <animateMotion dur={`${fl.dur / (isSel ? 1.6 : 1)}s`} repeatCount="indefinite"
+                <circle key={i} r={(isSel ? 4 : emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
+                  <animateMotion dur={`${fl.dur / (isSel ? 2.6 : 1)}s`} repeatCount="indefinite"
                     begin={`-${(fl.dur * i) / 3}s`} path={d} />
                 </circle>
               ))}
@@ -838,7 +891,7 @@ export default function MapWorld() {
           className="flex flex-1 items-center justify-center rounded-lg text-base text-zinc-300">⟲</button>
         <button onClick={goBrazil} aria-label="Zoom no Brasil"
           className="flex flex-1 items-center justify-center rounded-lg font-mono text-[11px] font-bold text-emerald-300">BR</button>
-        <button onClick={() => { setSheetOpen(false); setShowWages(false); setShowDeaths(false); setTourStep(0) }}
+        <button onClick={startTour}
           aria-label="Iniciar tour guiado"
           className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold text-emerald-300">
           <span className="text-base leading-none">▶</span>Tour
@@ -981,7 +1034,7 @@ export default function MapWorld() {
           <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
           <span className="hidden text-zinc-300 sm:inline">{t(lang, 'mortes')}</span>
         </button>
-        <button onClick={() => { setShowWages(false); setShowDeaths(false); setTourStep(0) }}
+        <button onClick={startTour}
           className="mt-0.5 rounded-md border border-emerald-500/50 px-1.5 py-1 text-left text-[10px] font-semibold text-emerald-300 hover:bg-emerald-500/10">
           ▶ {t(lang, 'tour')}
         </button>
@@ -1099,49 +1152,89 @@ export default function MapWorld() {
         )
       })()}
 
-      {/* tour guiado */}
+      {/* tour guiado — MESMAS paradas do 3D; apresentação segue o modo (simples/completa) */}
       {tourStep !== null && (() => {
-        const s = TOUR_STOPS[tourStep]
-        const didatico = useApp.getState().mode === 'didatico'
+        const tour = getTour(activeTourId)
+        const s = STOPS[tourStep]
+        if (!s) return null
+        const setMode = useApp.getState().setMode
+        const A = tour.accent
         return (
-          <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,600px)] -translate-x-1/2 rounded-xl border border-emerald-400/50 bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3">
+          <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,620px)] -translate-x-1/2 rounded-xl border bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3"
+            style={{ borderColor: `${A}88`, boxShadow: `0 0 28px ${A}22, 0 18px 50px rgba(0,0,0,.55)` }}>
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="font-mono text-[9.5px] uppercase tracking-widest text-emerald-300">
-                  tour do capitalismo · passo {tourStep + 1}/{TOUR_STOPS.length}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
+                  <span>{s.chapter} · passo {tourStep + 1}/{STOPS.length}</span>
+                  <span className="inline-flex overflow-hidden rounded border border-zinc-700">
+                    {(['didatico', 'avancado'] as const).map((m) => (
+                      <button key={m} onClick={() => setMode(m)} title={m === 'didatico' ? 'Versão simples e narrativa' : 'Versão completa, com todos os dados'}
+                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === m ? 'text-zinc-950' : 'text-zinc-500 hover:text-zinc-200'}`}
+                        style={mode === m ? { background: A } : undefined}>
+                        {m === 'didatico' ? 'simples' : 'completa'}
+                      </button>
+                    ))}
+                  </span>
                 </div>
                 <div className="mt-0.5 text-sm font-bold text-zinc-100">{s.titulo}</div>
+                <select value={activeTourId} onChange={(e) => { setActiveTourId(e.target.value); setTourStep(0) }}
+                  title="Escolher tour temático" aria-label="Escolher tour temático"
+                  className="mt-1.5 max-w-full cursor-pointer truncate rounded-md border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[10.5px] font-semibold text-zinc-200 outline-none hover:border-zinc-500">
+                  {TOURES.map((td) => (
+                    <option key={td.id} value={td.id}>{td.titulo}</option>
+                  ))}
+                </select>
               </div>
-              <div className="flex gap-1">
+              <div className="flex shrink-0 gap-1">
                 <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
-                <button onClick={() => setTourStep(tourStep < TOUR_STOPS.length - 1 ? tourStep + 1 : null)}
+                <button onClick={() => setTourStep(tourStep < STOPS.length - 1 ? tourStep + 1 : null)}
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">→</button>
-                <button onClick={() => setTourStep(null)} aria-label="Encerrar tour"
+                <button onClick={endTour} aria-label="Encerrar tour"
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">✕</button>
               </div>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-300">{didatico ? s.did : s.adv}</p>
+            {mode === 'didatico' ? (
+              <>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-200">{s.did}</p>
+                <div className="mt-2.5 grid grid-cols-3 gap-1.5 max-md:grid-cols-3">
+                  {s.didStats.map((d) => (
+                    <div key={d.k} className="rounded-lg border px-2 py-1.5 text-center" style={{ borderColor: `${A}44`, background: `${A}0d` }}>
+                      <div className="font-mono text-sm font-extrabold leading-tight" style={{ color: A }}>{d.v}</div>
+                      <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{d.k}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="mt-2 text-xs leading-relaxed text-zinc-300">{s.adv}</p>
+            )}
+            {s.dica && (
+              <p className="mt-2 font-mono text-[10px] leading-snug text-zinc-500">💡 {s.dica}</p>
+            )}
             <div className="mt-2.5 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
-                {TOUR_STOPS.map((_, i) => (
-                  <button key={i} onClick={() => setTourStep(i)} aria-label={`Ir ao passo ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${i === tourStep ? 'w-5 bg-emerald-300' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'} max-md:h-2.5 max-md:w-3`} />
+              <div className="flex max-w-[60%] flex-wrap items-center gap-1 overflow-hidden">
+                {STOPS.map((st, i) => (
+                  <button key={st.id} onClick={() => setTourStep(i)} title={st.titulo} aria-label={`Ir ao passo ${i + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${i === tourStep ? 'w-5' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'} max-md:h-2.5 max-md:w-3`}
+                    style={i === tourStep ? { background: A } : undefined} />
                 ))}
               </div>
               <div className="flex gap-1">
                 <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
-                <button onClick={() => setTourStep(tourStep < TOUR_STOPS.length - 1 ? tourStep + 1 : null)}
-                  className="rounded border border-emerald-400/60 px-2 py-0.5 text-[10px] font-bold text-emerald-300 hover:bg-emerald-400/10 max-md:px-4 max-md:py-2 max-md:text-xs">
-                  {tourStep < TOUR_STOPS.length - 1 ? 'próximo →' : 'finalizar ✓'}
+                <button onClick={() => (tourStep < STOPS.length - 1 ? setTourStep(tourStep + 1) : endTour())}
+                  className="rounded border px-2 py-0.5 text-[10px] font-bold hover:bg-white/5 max-md:px-4 max-md:py-2 max-md:text-xs"
+                  style={{ borderColor: `${A}99`, color: A }}>
+                  {tourStep < STOPS.length - 1 ? 'próximo →' : 'finalizar ✓'}
                 </button>
               </div>
             </div>
-            {tourStep === TOUR_STOPS.length - 1 && (
-              <button onClick={() => { setTourStep(null); useApp.getState().setTab('alternatives') }}
-                className="mt-2 w-full rounded-lg bg-emerald-400 px-3 py-1.5 text-[11px] font-bold text-zinc-950 hover:bg-emerald-300">
-                ir ao Módulo 09 · E para onde podemos ir? →
+            {tourStep === STOPS.length - 1 && (
+              <button onClick={() => { endTour(); useApp.getState().setTab(tour.finalTab) }}
+                className="mt-2 w-full rounded-lg px-3 py-1.5 text-[11px] font-bold text-zinc-950 hover:brightness-110"
+                style={{ background: A }}>
+                {tour.finalLabel}
               </button>
             )}
           </div>
@@ -1175,77 +1268,15 @@ export default function MapWorld() {
         </button>
       )}
 
-      {/* painel de detalhes do fluxo selecionado (sem escurecer o mapa durante o tour) */}
-      <FlowDetailPanel flow={selFlowObj} dim={tourStep === null} onClose={() => setSelFlow(null)} />
+      {/* card do fluxo selecionado (como no 3D; no tour, o card do tour já basta) */}
+      {tourStep === null && (
+        <FlowCard flow={selFlowObj} onClose={() => setSelFlow(null)} />
+      )}
     </div>
   )
 }
 
-/** Paradas do tour guiado — narrativa completa com camadas ativadas por parada. */
-const TOUR_STOPS: {
-  titulo: string; lng: number; lat: number; k: number
-  flowId?: string; conflict?: ConflictId; layer?: 'deaths' | 'wages'
-  dica?: string
-  did: string; adv: string
-}[] = [
-  {
-    titulo: 'O tabuleiro', lng: -15, lat: 15, k: 1.3,
-    did: 'Este é o tabuleiro do capitalismo global. Cada linha é riqueza em movimento: azul desce matéria-prima do Sul, rosa sobe lucro para o Norte, amarelo espalha o poder do dólar, rosa-claro tracejado tenta furar o cerco. Nos próximos 9 passos, vamos seguir esse dinheiro pelo mundo — e ver quem paga a conta.',
-    adv: 'Sistema-mundo (Wallerstein): as rotas desenham a divisão internacional do trabalho — primário periférico, manufatura asiática, rentismo do centro. Cada camada do mapa é um canal da acumulação (Pilares 1 e 4).',
-    dica: 'use os botões de camada à esquerda para ligar/desligar cada tipo de fluxo',
-  },
-  {
-    titulo: 'Commodities: o Sul alimenta o Norte', lng: -35, lat: -12, k: 2.3, flowId: 'com-bra-chn',
-    did: 'Tudo começa aqui. A linha azul leva soja, minério e petróleo do Brasil para a China: US$ 95 bilhões por ano, 70 milhões de toneladas de soja, 230 milhões de toneladas de minério. A Austrália faz o mesmo na outra ponta da Ásia. Matéria-prima barata saindo, valor agregado ficando fora. Clique na linha azul e veja a lista completa.',
-    adv: 'Primarização (TMD): o Sul exporta trabalho incorporado e natureza a preços declinantes (Prebisch–Singer); o processamento e a marca ficam no centro. A China hoje é o centro fabril — a periferia trocou de cliente, não de função.',
-    dica: 'clique na linha azul para abrir os itens e valores',
-  },
-  {
-    titulo: 'A fábrica do Leste', lng: 150, lat: 40, k: 1.9, flowId: 'man-chn-usa',
-    did: 'A linha rosa atravessa o Pacífico com US$ 440 bilhões em produtos prontos: iPhone, notebook, TV. A China monta; a marca americana fica com ~60% do valor de cada iPhone. E quando a guerra comercial aperta, as fábricas pulam para o Vietnã e o México — mesmo trabalho, endereço novo.',
-    adv: 'GVC (cadeias globais de valor): captura de margem pelo detentor da marca/IP; China+1 realoca a montagem sem redistribuir o excedente — o déficit bilateral estrutura a guerra tecnológica.',
-    dica: 'veja o Módulo 05 para o Raio-X das empresas da rota',
-  },
-  {
-    titulo: 'A vaza de mais-valia', lng: -45, lat: 3, k: 2.4, flowId: 'drn-bra-usa',
-    did: 'Esta é a linha mais invisível do mapa. Todo ano, lucros, dividendos, royalties e juros sobem do Brasil para os EUA: US$ 40 a 55 bilhões — o McDonald\u2019s, a Netflix, a Microsoft, as taxas dos cartões. A Índia paga uma conta parecida. É a riqueza que o Sul gera e nunca vê.',
-    adv: 'Canal 3 da TMD: remessa de rendas de propriedade (ILAESE: R$195–294 bi/ano só do Brasil). Somem-se juros da dívida e royalties — o excedente periférico capitaliza matrizes imperialistas (dos Santos: dependência como reprodução do subdesenvolvimento).',
-    dica: 'o painel lateral lista empresa por empresa',
-  },
-  {
-    titulo: 'O dólar comanda', lng: -40, lat: 30, k: 2.2, flowId: 'fin-usa-eu',
-    did: 'A linha amarela não leva produtos: leva PODER. A Europa guarda US$ 1,6 trilhão em títulos americanos; o Brasil, US$ 240 bilhões. E como soja, petróleo e minério são cotados em dólar, quando o Fed sobe juros, o preço do feijão sobe em Brasília. A moeda é o comando do tabuleiro.',
-    adv: 'Hierarquia monetária (Pilar 3): demanda estrutural por USD via petrodólar/Treasuries; a política do Fed transmite-se ao custo de vida periférico sem passar por nenhuma urna (THEORY.md).',
-  },
-  {
-    titulo: 'Lucro fantasma', lng: -25, lat: 47, k: 2.6, flowId: 'fant-usa-irl',
-    did: 'E o dinheiro que NINGUÉM vê: US$ 1 trilhão por ano de lucro "muda de endereço" para paraísos fiscais — Irlanda, Luxemburgo, Cayman. A Irlanda inflou o PIB em 26% num ano só com papel contábil. São US$ 480 bilhões que escolas e hospitais do mundo deixam de receber.',
-    adv: 'Missing Profits (Zucman): 36–40% dos lucros multinacionais deslocados; TJN: US$480 bi/ano de arrecadação perdida. Offshore: US$10–12 tri. O fictício administrativo — o capital que não precisa nem fingir que produz.',
-  },
-  {
-    titulo: 'Guerras de blocos', lng: 65, lat: 33, k: 2, conflict: 'semis',
-    did: 'Quando dois blocos disputam o controle da produção — hoje, os CHIPS que Taiwan fabrica — a rivalidade vira bloqueio, sanção e ameaça de guerra. As linhas vermelhas são os pontos quentes: semicondutores, energia, o petróleo que desafia o dólar.',
-    adv: 'Conflito inter-imperialista (Lenin): contenção tecnológica como disputa pela composição orgânica futura do rival; chokepoints (Estreito de Taiwan, Ormuz, Suez) como alavancas do sistema (Módulo 03 detalha cada frente).',
-  },
-  {
-    titulo: 'O custo humano', lng: 78, lat: 20, k: 1.6, layer: 'deaths',
-    did: 'Acenda a camada vermelha: Bhopal (570 mil intoxicados), Mariana e Brumadinho (Vale), Rana Plaza (1.134 costureiras), os opioides da Purdue (500 mil mortos). Somados aos 2,9 milhões que morrem POR ANO de causas ligadas ao trabalho: este é o preço que o mapa não mostra em dólares.',
-    adv: 'Violência corporativa como externalização estrutural: Bhopal (duplo padrão de segurança), Rana Plaza (compressão salarial global), Mariana/Brumadinho (barragens a custo mínimo) — o custo humano é variável de ajuste (Nixon: slow violence; ILO: 2,93 mi mortes/ano).',
-    dica: 'clique em cada marcador vermelho para a história completa',
-  },
-  {
-    titulo: 'A geografia do salário', lng: 20, lat: 8, k: 1.3, layer: 'wages',
-    did: 'Acenda o termômetro salarial: o vermelho profundo (menos de US$ 300/mês) cobre quase todo o Sul — é daqui que sai a matéria-prima e a montagem barata. O verde do Norte compra barato, processa caro e revende. Essa diferença de cor É o sistema funcionando.',
-    adv: 'Mapa salarial = mapa da hierarquia do valor: salários baixos não são "vantagem comparativa" — são superexploração (Marini) institucionalizada pela divisão internacional do trabalho (Pilar 4 em uma imagem).',
-    dica: 'passe o mouse nos países para ver os valores',
-  },
-  {
-    titulo: 'E agora?', lng: -53, lat: -10, k: 2.8,
-    did: 'O diagnóstico está completo: o sistema explora o trabalho, drena o Sul, concentra a riqueza, financia-se com dívida e cobra sua crises em vidas. Mas o Módulo 09 mostra que alternativas REAIS já funcionam — cooperativas com 70 mil pessoas, cidades com orçamento democrático, um Nobel provando que os comuns funcionam. O tabuleiro pode ser reorganizado.',
-    adv: 'Do diagnóstico à transição: pluralismo institucional (cooperativas, commons, democracia fiscal — Ostrom, Albert) + soberania monetária funcional (P3) + fim da superexploração (P4). O mapa deixa de ser destino e vira campo de disputa.',
-    dica: 'finalize o tour para ir ao Módulo 09',
-  },
-]
+
 
 /** Seletor de guerras de blocos (atalhos do Módulo 03 dentro do mapa). */
 export function ConflictSelector() {

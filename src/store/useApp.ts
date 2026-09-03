@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { FractionKey } from '../data/countries'
 
-export type TabId = 'home' | 'circuit' | 'war' | 'debt' | 'companies' | 'platform' | 'wealth' | 'consequences' | 'alternatives'
+export type TabId = 'home' | 'globe3d' | 'circuit' | 'war' | 'debt' | 'companies' | 'platform' | 'wealth' | 'consequences' | 'alternatives'
 export type PriceBasis = 'nominal' | 'ppp'
 export type UIMode = 'didatico' | 'avancado'
 export type ConflictId = 'semis' | 'energia' | 'reprimaria' | null

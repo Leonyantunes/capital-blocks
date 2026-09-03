@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary'
  * Drawers (país/glossário) só carregam quando abertos pela 1ª vez.
  */
 const MapModule = lazy(() => import('./components/MapModule'))
+const GlobeModule = lazy(() => import('./components/globe3d/GlobeModule'))
 const CircuitModule = lazy(() => import('./components/CircuitModule'))
 const WarModule = lazy(() => import('./components/war/WarModule'))
 const DebtModule = lazy(() => import('./components/DebtModule'))
@@ -62,6 +63,7 @@ export default function App() {
             <Suspense fallback={<ModuleFallback />}>
               <ErrorBoundary>
                 {tab === 'home' && <MapModule />}
+                {tab === 'globe3d' && <GlobeModule />}
                 {tab === 'circuit' && <CircuitModule />}
                 {tab === 'war' && <WarModule />}
                 {tab === 'debt' && <DebtModule />}
