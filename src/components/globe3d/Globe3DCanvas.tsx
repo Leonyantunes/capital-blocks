@@ -10,7 +10,9 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { FLOWS, TYPE_STYLE, type FlowType } from '../../data/flows'
-import { BLOCS, ISO_TO_BLOC } from '../../lib/world'
+import { BLOCS, ISO_TO_BLOC, routeMidpoint } from '../../lib/world'
+import { WAGES, wageColor } from '../../data/wages'
+import { DISASTERS } from '../../data/disasters'
 import { buildLandMatrixAsync, findCountry, getBorderPositions, latLngToVec3, type LandMatrix } from './landPoints'
 
 export interface GlobeVisualOpts {
@@ -34,16 +36,22 @@ export interface GlobeVisualOpts {
   showStars: boolean
   highlightIsos: string[]
   highlightFill: string
+  /** camada temática sobre os pontos: nenhuma · salários · mortes */
+  layer: 'none' | 'wages' | 'deaths'
+  /** ponta com seta de direção em cada arco de fluxo */
+  showArrows: boolean
 }
 
 export interface GlobeFocus {
   lng: number
   lat: number
   nonce: number
-  /** distância-alvo da câmera (zoom do voo); omitido = mantém */
+  /** distância-alvo da câmera (zoom do voo); omitido = calculado do span */
   dist?: number
   /** eleva o ponto focal acima do centro (0..1; card não tapa o país) */
   lift?: number
+  /** rota a enquadrar de ponta a ponta (tem prioridade sobre lng/lat) */
+  flowId?: string
 }
 
 interface Props {
@@ -95,6 +103,10 @@ function uprightQuat(pLocal: THREE.Vector3, target: THREE.Vector3, fallback: THR
     .setFromRotationMatrix(mW)
     .multiply(new THREE.Quaternion().setFromRotationMatrix(mL).invert())
 }
+
+const flowById: Record<string, (typeof FLOWS)[number]> = Object.fromEntries(
+  FLOWS.map((f) => [f.id, f]),
+)
 
 export default function Globe3DCanvas(props: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -281,8 +293,8 @@ export default function Globe3DCanvas(props: Props) {
     })
     const selGlowA = new THREE.Sprite(selGlowMat)
     const selGlowB = new THREE.Sprite(selGlowMat.clone())
-    selGlowA.scale.setScalar(0.14)
-    selGlowB.scale.setScalar(0.14)
+    selGlowA.scale.setScalar(0.18)
+    selGlowB.scale.setScalar(0.18)
     selGlowA.visible = false
     selGlowB.visible = false
     globe.add(selGlowA)
@@ -295,9 +307,16 @@ export default function Globe3DCanvas(props: Props) {
       curve: THREE.QuadraticBezierCurve3
       line: THREE.Line
       core: THREE.Line
+      /** seta de direção na ponta de chegada */
+      arrow: THREE.Mesh
       len: number
+      from: [number, number]
+      to: [number, number]
+      bend: number
     }
     let arcs: ArcRec[] = []
+    /* índice id→arco: evita FLOWS.find() O(n) dentro dos loops por frame */
+    let arcById: Record<string, ArcRec> = {}
 
     interface Mover { arc: number; t: number }
     let movers: Mover[] = []
@@ -308,6 +327,28 @@ export default function Globe3DCanvas(props: Props) {
     const markerMeshes: THREE.Mesh[] = []
     const markerGroup = new THREE.Group()
     globe.add(markerGroup)
+
+    /* marcadores de mortes corporativas (camada "deaths", paridade com o 2D) */
+    const disasterGroup = new THREE.Group()
+    disasterGroup.visible = false
+    globe.add(disasterGroup)
+    for (const d of DISASTERS) {
+      const p = latLngToVec3(d.lngLat[0], d.lngLat[1], 1.014)
+      const r = 0.008 + Math.sqrt(d.mortosNum / 500000) * 0.012
+      const mark = new THREE.Mesh(
+        new THREE.SphereGeometry(r, 12, 12),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336') }),
+      )
+      mark.position.set(p[0], p[1], p[2])
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(r * 1.4, r * 1.9, 24),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336'), transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false }),
+      )
+      ring.position.copy(mark.position)
+      ring.lookAt(0, 0, 0)
+      disasterGroup.add(mark)
+      disasterGroup.add(ring)
+    }
 
     /* fronteiras dos países (uma geometria, um draw call) */
     let borderLines: THREE.LineSegments | null = null
@@ -376,6 +417,17 @@ export default function Globe3DCanvas(props: Props) {
       loadingEl.remove()
     }
 
+    /* posiciona a seta na ponta de chegada, orientada pela tangente do arco */
+    const placeArrow = (rec: ArcRec) => {
+      const pTip = rec.curve.getPoint(0.965, _v1)
+      const pBack = rec.curve.getPoint(1, _v2)
+      rec.arrow.position.copy(pBack)
+      const dir = _v3.copy(pBack).sub(pTip)
+      if (dir.lengthSq() > 1e-9) {
+        rec.arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize())
+      }
+    }
+
     const build = () => {
       if (disposed) return
       /* fronteiras: países delimitados mesmo sem zoom */
@@ -395,7 +447,8 @@ export default function Globe3DCanvas(props: Props) {
       } catch {
         /* globo segue funcional sem fronteiras */
       }
-      /* arcos */
+      /* arcos — `bend` do dado (mesmo do 2D) desloca o ápice perpendicularmente,
+         mantendo a leitura de curvatura idêntica nos dois mapas */
       for (const f of FLOWS) {
         const a = resolveAnchor(f.from)
         const b = resolveAnchor(f.to)
@@ -409,7 +462,12 @@ export default function Globe3DCanvas(props: Props) {
           .add(end)
           .multiplyScalar(0.5)
           .normalize()
-          .multiplyScalar(1 + dist * 0.3 + f.peso * 0.012)
+        /* elevação pela distância + peso, e deslocamento lateral pelo bend */
+        const radial = 1 + dist * 0.3 + f.peso * 0.012
+        const perp = new THREE.Vector3().crossVectors(mid, new THREE.Vector3(0, 1, 0))
+        if (perp.lengthSq() < 1e-6) perp.set(1, 0, 0)
+        perp.normalize()
+        mid.multiplyScalar(radial).addScaledVector(perp, f.bend * dist * 0.12)
         const curve = new THREE.QuadraticBezierCurve3(start, mid, end)
         const st = TYPE_STYLE[f.type]
         const dashed = st.dash !== ''
@@ -428,17 +486,28 @@ export default function Globe3DCanvas(props: Props) {
         )
         core.renderOrder = 4
         core.raycast = () => {}
+        /* seta de direção na chegada (aponta o sentido do fluxo) */
+        const arrow = new THREE.Mesh(
+          new THREE.ConeGeometry(0.011, 0.03, 10),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(st.color), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }),
+        )
+        arrow.renderOrder = 5
+        arrow.raycast = () => {}
+        const rec: ArcRec = { id: f.id, type: f.type, detail: f.tier === 'detail', curve, line, core, arrow, len: curve.getLength(), from: a, to: b, bend: f.bend }
+        placeArrow(rec)
         arcGroup.add(line)
         arcGroup.add(core)
-        arcs.push({ id: f.id, type: f.type, detail: f.tier === 'detail', curve, line, core, len: curve.getLength() })
+        arcGroup.add(arrow)
+        arcs.push(rec)
+        arcById[f.id] = rec
       }
 
       /* partículas (movers) */
       {
         const tmp: Mover[] = []
         arcs.forEach((a, i) => {
-          const f = FLOWS.find((x) => x.id === a.id)!
-          const k = f.peso >= 2.5 ? 4 : f.peso >= 1.5 ? 3 : 2
+          const f = flowById[a.id]
+          const k = f && f.peso >= 2.5 ? 4 : f && f.peso >= 1.5 ? 3 : 2
           for (let j = 0; j < k; j++) tmp.push({ arc: i, t: j / k })
         })
         movers = tmp
@@ -510,18 +579,38 @@ export default function Globe3DCanvas(props: Props) {
       const spot = live.current.spot
       const spotSet = spot ? new Set(spot.isos) : null
       const spotCol = spot ? new THREE.Color(spot.color) : null
+      /* heatmap salarial: só vale no 2D e no 3D quando a camada está ativa */
+      const layer = o.layer
+      const wageMode = layer === 'wages'
+      const wageCache = new Map<string, THREE.Color>()
+      const wageColOf = (iso: string): THREE.Color | null => {
+        if (!wageMode) return null
+        const cached = wageCache.get(iso)
+        if (cached) return cached
+        const usd = WAGES[iso]
+        if (usd === undefined) return null
+        const c = new THREE.Color(wageColor(usd))
+        wageCache.set(iso, c)
+        return c
+      }
       const attr = dotPoints.geometry.getAttribute('color') as THREE.BufferAttribute
       const arr = attr.array as Float32Array
       for (let i = 0; i < dotIsos.length; i++) {
-        if (useHl && hs.has(dotIsos[i])) {
-          arr[i * 3] = fill.r
-          arr[i * 3 + 1] = fill.g
-          arr[i * 3 + 2] = fill.b
-        } else if (spotSet && spotCol && spotSet.has(dotIsos[i])) {
+        const iso = dotIsos[i]
+        const wc = wageColOf(iso)
+        if (spotSet && spotCol && spotSet.has(iso)) {
           arr[i * 3] = Math.min(1, spotCol.r * 1.15 + 0.12)
           arr[i * 3 + 1] = Math.min(1, spotCol.g * 1.15 + 0.12)
           arr[i * 3 + 2] = Math.min(1, spotCol.b * 1.15 + 0.12)
-        } else if (hoverIso !== null && dotIsos[i] === hoverIso) {
+        } else if (wc) {
+          arr[i * 3] = wc.r
+          arr[i * 3 + 1] = wc.g
+          arr[i * 3 + 2] = wc.b
+        } else if (useHl && hs.has(iso)) {
+          arr[i * 3] = fill.r
+          arr[i * 3 + 1] = fill.g
+          arr[i * 3 + 2] = fill.b
+        } else if (hoverIso !== null && iso === hoverIso) {
           /* país sob o cursor: clareia ~60% rumo ao branco */
           arr[i * 3] = dot.r + (1 - dot.r) * 0.6
           arr[i * 3 + 1] = dot.g + (1 - dot.g) * 0.6
@@ -562,6 +651,8 @@ export default function Globe3DCanvas(props: Props) {
       markerGroup.visible = o.showMarkers
       labelsBox.style.display = o.showLabels ? 'block' : 'none'
       arcGroup.visible = o.showArcs
+      /* camada temática: mortes usam marcadores próprios */
+      disasterGroup.visible = o.layer === 'deaths'
     }
 
     function applySelection() {
@@ -584,7 +675,9 @@ export default function Globe3DCanvas(props: Props) {
         /* núcleo acompanha: forte no selecionado, sutil no normal */
         a.core.visible = a.line.visible
         ;(a.core.material as THREE.LineBasicMaterial).opacity =
-          !a.line.visible ? 0 : selectedFlowId === a.id ? 0.85 : anySel || anyHl ? 0 : 0.16
+          !a.line.visible ? 0 : selectedFlowId === a.id ? 0.95 : anySel || anyHl ? 0 : 0.16
+        a.arrow.visible = a.line.visible && live.current.opts.showArrows
+        ;(a.arrow.material as THREE.MeshBasicMaterial).opacity = Math.min(1, op)
       }
       /* brilho pulsante nas pontas do fluxo selecionado */
       const sel = arcs.find((a) => a.id === selectedFlowId && a.line.visible)
@@ -617,14 +710,16 @@ export default function Globe3DCanvas(props: Props) {
       }
     }
 
-    /* ── voo de câmera (tour / clique com zoom) ───────────── */
+    /* ── voo de câmera (tour / clique com zoom) ─────────────
+       Viagem em 3 fases: SOBE (afasta a câmera) → CRUZA (gira no alto) → DESCE. */
     let flight: {
       t: number
       dur: number
       from: THREE.Quaternion
       to: THREE.Quaternion
-      camFrom: THREE.Vector3 | null
-      camTo: THREE.Vector3 | null
+      camFrom: THREE.Vector3
+      camPeak: THREE.Vector3
+      camTo: THREE.Vector3
     } | null = null
     let lastFocusNonce = -1
     const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
@@ -808,6 +903,11 @@ export default function Globe3DCanvas(props: Props) {
     document.addEventListener('visibilitychange', onVis)
 
     const camDir = new THREE.Vector3()
+    const WORLD_UP = new THREE.Vector3(0, 1, 0)
+    const _qSpin = new THREE.Quaternion()
+    const layerSignature = (vl: Record<FlowType, boolean>) =>
+      (vl.commodities ? 1 : 0) | (vl.manufatura ? 2 : 0) | (vl.drain ? 4 : 0) |
+      (vl.dollar ? 8 : 0) | (vl.brics ? 16 : 0) | (vl.fantasma ? 32 : 0)
     const animate = () => {
       raf = requestAnimationFrame(animate)
       if (!running || !visible) return
@@ -844,12 +944,42 @@ export default function Globe3DCanvas(props: Props) {
       const f = live.current.focus
       if (f && f.nonce !== lastFocusNonce) {
         lastFocusNonce = f.nonce
-        const p = latLngToVec3(f.lng, f.lat, 1)
-        _v1.set(p[0], p[1], p[2]).applyQuaternion(globe.quaternion).normalize()
+
+        /* ── alvo do foco ─────────────────────────────────────
+           rota (flowId): enquadra as DUAS pontas dentro do FOV e aponta o
+           ápice ao centro. ponto único: usa lng/lat e distância pedida. */
+        let focusLng = f.lng
+        let focusLat = f.lat
+        let autoDist: number | null = null
+        const rec = f.flowId ? arcById[f.flowId] : undefined
+        if (rec) {
+          const a = latLngToVec3(rec.from[0], rec.from[1], 1)
+          const b = latLngToVec3(rec.to[0], rec.to[1], 1)
+          const va = _v3.set(a[0], a[1], a[2]).normalize()
+          const vb = _v4.set(b[0], b[1], b[2]).normalize()
+          /* ponto médio 3D compartilhado (testado em scripts/framing-test.mjs) */
+          const mid = routeMidpoint(rec.from, rec.to)
+          focusLng = mid[0]
+          focusLat = mid[1]
+          /* distância p/ caber o span angular (com folga p/ a curvatura) */
+          const span = Math.acos(THREE.MathUtils.clamp(va.dot(vb), -1, 1)) // rad
+          const halfV = (camera.fov * Math.PI) / 360
+          const halfH = Math.atan(Math.tan(halfV) * Math.max(1, camera.aspect))
+          const half = Math.min(halfV, halfH)
+          const fit = span / 2 / Math.max(0.08, half)
+          autoDist = THREE.MathUtils.clamp(1.42 / Math.cos(Math.min(1.35, fit)), 1.6, 5)
+        }
+        const p = latLngToVec3(focusLng, focusLat, 1)
+        /* LOCAL (sem o quaternion atual): uprightQuat mapeia local→alvo;
+           aplicar a rotação atual aqui misturava referenciais e errava o alvo */
+        _v1.set(p[0], p[1], p[2])
         _v2.copy(camera.position).normalize()
-        /* lift: inclina o alvo p/ cima p/ o país aparecer acima do card */
-        const lift = THREE.MathUtils.clamp(f.lift ?? 0, 0, 1)
+        /* lift: país aparece acima do card; cresce em telas baixas/landscape */
+        let lift = THREE.MathUtils.clamp(f.lift ?? 0, 0, 1)
         if (lift > 0) {
+          const h = container.clientHeight || 1
+          const ratio = Math.min(1.4, Math.max(0.7, 620 / h))
+          lift = THREE.MathUtils.clamp(lift * ratio, 0, 0.92)
           const up = _v4.set(0, 1, 0)
           const perp = up.addScaledVector(_v2, -up.dot(_v2))
           if (perp.lengthSq() > 1e-6) {
@@ -860,28 +990,62 @@ export default function Globe3DCanvas(props: Props) {
         }
         /* voo VERTICALIZADO: norte sempre em cima (sem roll de ponta-cabeça) */
         const to = uprightQuat(_v1, _v2, globe.quaternion)
-        const camTo = f.dist ? camera.position.clone().setLength(f.dist) : null
+        const camFrom = camera.position.clone()
+        const targetDist = f.dist ?? autoDist
+        const camTo = targetDist ? camera.position.clone().setLength(targetDist) : camFrom.clone()
+        /* pico da viagem: sobe acima da origem E do destino p/ cruzar no alto */
+        const peakR = reducedMotion
+          ? Math.max(camFrom.length(), camTo.length())
+          : Math.max(camFrom.length(), camTo.length(), 3.4)
+        const midDir = camFrom.clone().normalize().lerp(camTo.clone().normalize(), 0.5)
+        if (midDir.lengthSq() < 1e-4) {
+          /* direções opostas: escolhe um eixo perpendicular qualquer */
+          midDir.crossVectors(camFrom.clone().normalize(), new THREE.Vector3(0, 1, 0))
+          if (midDir.lengthSq() < 1e-4) midDir.set(1, 0, 0)
+        }
+        const camPeak = midDir.normalize().multiplyScalar(peakR)
         flight = {
           t: 0,
-          dur: f.dist ? 1.4 : 1.5,
+          dur: reducedMotion ? 1.0 : 1.9,
           from: globe.quaternion.clone(),
           to,
-          camFrom: camTo ? camera.position.clone() : null,
+          camFrom,
+          camPeak,
           camTo,
         }
         controls.enabled = false
       }
       if (flight) {
         flight.t += dt
-        const t = easeInOut(Math.min(1, flight.t / flight.dur))
-        globe.quaternion.slerpQuaternions(flight.from, flight.to, t)
-        if (flight.camFrom && flight.camTo) camera.position.lerpVectors(flight.camFrom, flight.camTo, t)
+        const t = Math.min(1, flight.t / flight.dur)
+        /* fase A (sobe): 0→0.3 · fase B (cruza): 0.3→0.7 · fase C (desce): 0.7→1 */
+        let g: number
+        if (t < 0.3) {
+          const u = easeInOut(t / 0.3)
+          g = 0.15 * u
+          camera.position.lerpVectors(flight.camFrom, flight.camPeak, u)
+        } else if (t < 0.7) {
+          const u = easeInOut((t - 0.3) / 0.4)
+          g = 0.15 + 0.65 * u
+          camera.position.copy(flight.camPeak)
+        } else {
+          const u = easeInOut((t - 0.7) / 0.3)
+          g = 0.8 + 0.2 * u
+          camera.position.lerpVectors(flight.camPeak, flight.camTo, u)
+        }
+        globe.quaternion.slerpQuaternions(flight.from, flight.to, g)
         if (flight.t >= flight.dur) {
+          /* garante o alvo exato (sem deriva de float) */
+          globe.quaternion.copy(flight.to)
+          camera.position.copy(flight.camTo)
           flight = null
           controls.enabled = true
         }
       } else if (o.autoRotate && !reducedMotion) {
-        globe.rotation.y += dt * 0.12 * o.rotateSpeed
+        /* giro em torno do eixo Y do MUNDO via quaternion: não tomba o globo
+           depois que um voo redefine a orientação (o Euler XYZ inclinava) */
+        _qSpin.setFromAxisAngle(WORLD_UP, dt * 0.12 * o.rotateSpeed)
+        globe.quaternion.premultiply(_qSpin)
       }
 
       /* partículas ao longo das curvas */
@@ -892,8 +1056,8 @@ export default function Globe3DCanvas(props: Props) {
         for (let i = 0; i < movers.length; i++) {
           const m = movers[i]
           const a = arcs[m.arc]
-          /* arco em destaque corre até 2.4× mais rápido */
-          const boost = live.current.selectedFlowId === a.id ? 2.4 : 1
+          /* arco em destaque corre até 3× mais rápido */
+          const boost = live.current.selectedFlowId === a.id ? 3 : 1
           m.t += (dt * sp * 0.22 * boost) / Math.max(0.4, a.len)
           if (m.t > 1) m.t -= 1
           const p = a.curve.getPoint(m.t, _v3)
@@ -909,7 +1073,7 @@ export default function Globe3DCanvas(props: Props) {
       /* reavalia seleção quando muda (inclui modo detalhado por zoom + spot do tour) */
       const camDist = camera.position.length()
       const spotSig = live.current.spot ? `${live.current.spot.color}|${live.current.spot.isos.join(',')}` : ''
-      const key = `${live.current.selectedFlowId}|${live.current.highlightFlowIds.join(',')}|${JSON.stringify(live.current.visibleLayers)}|${camDist.toFixed(2)}|${o.showArcs}|${spotSig}`
+      const key = `${live.current.selectedFlowId}|${live.current.highlightFlowIds.join(',')}|${layerSignature(live.current.visibleLayers)}|${camDist.toFixed(2)}|${o.showArcs}|${o.showArrows}|${o.layer}|${spotSig}`
       if (key !== selCache) {
         selCache = key
         applySelection()
@@ -928,12 +1092,12 @@ export default function Globe3DCanvas(props: Props) {
 
       /* pulso dos brilhos do fluxo selecionado */
       if (selGlowA.visible || selGlowB.visible) {
-        const s = 0.13 + 0.035 * Math.sin(performance.now() * 0.005)
+        const s = 0.17 + 0.05 * Math.sin(performance.now() * 0.006)
         selGlowA.scale.setScalar(s)
         selGlowB.scale.setScalar(s)
       }
 
-      controls.update()
+      if (!flight) controls.update() /* no voo, a câmera é 100% roteirizada */
       renderer.render(scene, camera)
 
       /* rótulos */
@@ -960,7 +1124,12 @@ export default function Globe3DCanvas(props: Props) {
     let lastVisual = ''
     const syncTimer = window.setInterval(() => {
       const o = live.current.opts
-      const key = JSON.stringify({ ...o, showLs: o.showLabels })
+      /* assinatura barata: sem JSON.stringify a cada tick (evita alocação) */
+      const key =
+        `${o.themeDot}|${o.themeGlow}|${o.dotSize}|${o.atmosphere}|${o.atmosphereIntensity}|${o.glowColor}|` +
+        `${o.bloom}|${o.bloomIntensity}|${o.rotateSpeed}|${o.arcSpeed}|${o.showArcs}|${o.showArrows}|${o.layer}|` +
+        `${o.showMarkers}|${o.showLabels}|${o.showGraticule}|${o.showBorders}|${o.showStars}|${o.showCountryTip}|` +
+        `${o.autoRotate}|${o.highlightFill}|${o.highlightIsos.length}`
       if (key !== lastVisual) {
         lastVisual = key
         applyVisual()

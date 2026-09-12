@@ -133,6 +133,34 @@ export const BLOCS: BlocVisual[] = [
   { id: 'irn', code: 'IRN', color: '#b39ddb', anchor: [53.7, 32.4], tier: 'secondary' },
 ]
 
+/**
+ * Ponto médio de uma rota em [lng, lat], calculado em 3D (soma vetorial
+ * normalizada). Diferente da média aritmética de longitude, funciona para
+ * rotas que cruzam o antimeridiano (ex.: China→EUA pelo Pacífico).
+ */
+export function routeMidpoint(a: [number, number], b: [number, number]): [number, number] {
+  const toVec = (lng: number, lat: number): [number, number, number] => {
+    const phi = ((90 - lat) * Math.PI) / 180
+    const theta = ((lng + 180) * Math.PI) / 180
+    return [-Math.sin(phi) * Math.cos(theta), Math.cos(phi), Math.sin(phi) * Math.sin(theta)]
+  }
+  const [ax, ay, az] = toVec(a[0], a[1])
+  const [bx, by, bz] = toVec(b[0], b[1])
+  let x = ax + bx
+  let y = ay + by
+  let z = az + bz
+  const len = Math.hypot(x, y, z)
+  if (len < 1e-6) return a // antípodas: mantém a origem
+  x /= len
+  y /= len
+  z /= len
+  const lat = 90 - (Math.acos(Math.max(-1, Math.min(1, y))) * 180) / Math.PI
+  let lng = (Math.atan2(z, -x) * 180) / Math.PI - 180
+  while (lng < -180) lng += 360
+  while (lng > 180) lng -= 360
+  return [lng, lat]
+}
+
 export function project(lngLat: [number, number]): [number, number] {
   const p = projection(lngLat)
   // guarda defensiva: coordenadas inválidas nunca derrubam o mapa

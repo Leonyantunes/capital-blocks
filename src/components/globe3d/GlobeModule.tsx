@@ -188,6 +188,9 @@ export default function GlobeModule() {
   const [showBorders, setShowBorders] = useState(true)
   const [showCountryTip, setShowCountryTip] = useState(true)
   const [showStars, setShowStars] = useState(true)
+  const [showArrows, setShowArrows] = useState(true)
+  /** camada temática dos pontos quando NÃO há tour (o tour tem a sua) */
+  const [baseLayer, setBaseLayer] = useState<'none' | 'wages' | 'deaths'>('none')
   const [regionKey, setRegionKey] = useState('brics')
   const [regionOn, setRegionOn] = useState(true)
   const [highlightFill, setHighlightFill] = useState('#facc15')
@@ -270,8 +273,13 @@ export default function GlobeModule() {
       showStars,
       highlightIsos: regionOn ? REGION_SETS[regionKey]?.isos ?? [] : [],
       highlightFill,
+      /* o tour define a própria camada temática; fora dele, vale a escolha base */
+      layer: tourStep !== null && STOPS[tourStep]?.layer
+        ? (STOPS[tourStep]!.layer as 'wages' | 'deaths')
+        : baseLayer,
+      showArrows,
     }),
-    [themeDot, themeGlow, dotSize, atmosphere, atmoIntensity, glowColor, bloom, bloomIntensity, autoRotate, tourStep, selFlow, rotateSpeed, arcSpeed, showArcs, showMarkers, showLabels, showGraticule, showBorders, showCountryTip, showStars, regionOn, regionKey, highlightFill],
+    [themeDot, themeGlow, dotSize, atmosphere, atmoIntensity, glowColor, bloom, bloomIntensity, autoRotate, tourStep, selFlow, rotateSpeed, arcSpeed, showArcs, showMarkers, showLabels, showGraticule, showBorders, showCountryTip, showStars, regionOn, regionKey, highlightFill, baseLayer, showArrows],
   )
 
   const onStats = useCallback((s: { fps: number; lat: number; lng: number; alt: number }) => setHud(s), [])
@@ -280,6 +288,9 @@ export default function GlobeModule() {
   const flyNonce = useRef(1)
   const flyTo = (lng: number, lat: number, dist?: number, lift?: number) =>
     setFocus({ lng, lat, nonce: flyNonce.current++, dist, lift })
+  /** voa enquadrando a rota inteira (ponta a ponta), sem média de longitude */
+  const flyToFlow = (id: string, lift?: number) =>
+    setFocus({ lng: 0, lat: 0, nonce: flyNonce.current++, flowId: id, lift })
 
   /* clique em marcador/rótulo/país: abre o bloco E voa até ele */
   const handleBloc = (id: string) => {
@@ -305,7 +316,9 @@ export default function GlobeModule() {
   const applyTourStep = (i: number) => {
     const s = STOPS[i]
     if (!s) return
-    flyTo(s.lng, s.lat, 2.3, 0.55)
+    /* parada com rota: enquadra as duas pontas; senão, o ponto da parada */
+    if (s.flowId) flyToFlow(s.flowId, 0.55)
+    else flyTo(s.lng, s.lat, undefined, 0.55)
     setSelFlow(s.flowId ?? null)
     setConflict((s.conflict as typeof conflict) ?? null)
   }
@@ -334,14 +347,16 @@ export default function GlobeModule() {
 
   /* clique num arco (globo ou lista): seleciona E dá zoom na rota */
   const handleFlow = (id: string | null) => {
+    /* no tour, clique no vazio restaura o destaque da parada (sem revoar) */
+    if (tourStep !== null && !id) {
+      const s = STOPS[tourStep]
+      if (s?.flowId) setSelFlow(s.flowId)
+      return
+    }
     setSelFlow(id)
     if (!id) return
-    const f = FLOWS.find((x) => x.id === id)
-    if (f) {
-      const ra = typeof f.from === 'string' ? BLOCS.find((b) => b.id === f.from)?.anchor : f.from
-      const rb = typeof f.to === 'string' ? BLOCS.find((b) => b.id === f.to)?.anchor : f.to
-      if (ra && rb) flyTo((ra[0] + rb[0]) / 2, (ra[1] + rb[1]) / 2 + 8, 1.95, 0.5)
-    }
+    /* enquadra a rota inteira (robusto p/ rotas que cruzam o Pacífico) */
+    flyToFlow(id, 0.5)
   }
   const focusFlow = handleFlow
 
@@ -787,6 +802,7 @@ export default function GlobeModule() {
           <div className="mt-3 text-[11px] font-semibold text-zinc-300">🛰 Camadas 3D</div>
           <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
             <Row label="Arcos de fluxo"><Toggle on={showArcs} onClick={() => setShowArcs((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label="Setas de direção"><Toggle on={showArrows} onClick={() => setShowArrows((s) => !s)} accent="#22d3ee" /></Row>
             <Row label="Fronteiras dos países"><Toggle on={showBorders} onClick={() => setShowBorders((s) => !s)} accent="#22d3ee" /></Row>
             <Row label="Dica de país no hover"><Toggle on={showCountryTip} onClick={() => setShowCountryTip((s) => !s)} accent="#22d3ee" /></Row>
             <Row label="Marcadores de blocos"><Toggle on={showMarkers} onClick={() => setShowMarkers((s) => !s)} accent="#22d3ee" /></Row>
@@ -795,8 +811,33 @@ export default function GlobeModule() {
             <Row label="Estrelas"><Toggle on={showStars} onClick={() => setShowStars((s) => !s)} accent="#22d3ee" /></Row>
           </div>
 
+          <div className="mt-3 text-[11px] font-semibold text-zinc-300">🌡 Camada temática do globo</div>
+          <div className="mt-1 grid grid-cols-3 gap-1.5">
+            {([
+              { k: 'none' as const, label: 'Tema' },
+              { k: 'wages' as const, label: 'Salários' },
+              { k: 'deaths' as const, label: 'Mortes' },
+            ]).map((opt) => (
+              <button
+                key={opt.k}
+                onClick={() => setBaseLayer(opt.k)}
+                className={`rounded-lg border px-2 py-1.5 text-[10.5px] font-semibold transition-colors ${
+                  baseLayer === opt.k ? 'border-sky-400/80 bg-sky-400/10 text-sky-200' : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-600'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {baseLayer === 'wages' && (
+            <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5">
+              <div className="h-3 w-full rounded-full" style={{ background: 'linear-gradient(to right, #f44336, #ff8a65, #ffc107, #42a5f5, #26a69a)' }} />
+              <div className="mt-0.5 flex justify-between font-mono text-[8.5px] text-zinc-500"><span>&lt;300</span><span>700</span><span>1,5k</span><span>3k+</span></div>
+            </div>
+          )}
+
           <button
-            onClick={() => { pickTheme('quantum'); setGlowColor(''); setBloom(true); setBloomIntensity(1.2); setAtmoIntensity(1.15); setRotateSpeed(1); setArcSpeed(1.2); setDotSize(window.innerWidth < 768 ? 0.014 : 0.0115); setRegionKey('brics'); setRegionOn(true); setHighlightFill('#facc15'); setShowBorders(true); setShowCountryTip(true) }}
+            onClick={() => { pickTheme('quantum'); setGlowColor(''); setBloom(true); setBloomIntensity(1.2); setAtmoIntensity(1.15); setRotateSpeed(1); setArcSpeed(1.2); setDotSize(window.innerWidth < 768 ? 0.014 : 0.0115); setRegionKey('brics'); setRegionOn(true); setHighlightFill('#facc15'); setShowBorders(true); setShowCountryTip(true); setShowArrows(true); setBaseLayer('none') }}
             className="mt-3 w-full rounded-lg border border-zinc-700 px-3 py-1.5 text-[11px] font-semibold text-zinc-300 hover:border-sky-400/60 hover:text-sky-300"
           >
             ⟲ restaurar visual padrão

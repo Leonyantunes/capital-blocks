@@ -23,6 +23,38 @@ import { useApp, type ConflictId } from '../store/useApp'
 
 const A = Object.fromEntries(BLOCS.map((b) => [b.id, b.anchor])) as Record<string, [number, number]>
 
+/**
+ * GEOMETRIA DOS FLUXOS — calculada UMA vez (projeção fixa).
+ * Evita recomputar arcPath/quadPoint/projeções a cada rebuild de camada.
+ */
+interface FlowGeo {
+  from: [number, number]
+  to: [number, number]
+  d: string
+  mid: [number, number]
+  fromCode: string
+  toCode: string
+}
+const FLOW_GEO: Record<string, FlowGeo> = {}
+for (const f of FLOWS) {
+  const from = typeof f.from === 'string' ? A[f.from] : f.from
+  const to = typeof f.to === 'string' ? A[f.to] : f.to
+  const d = arcPath(from, to, f.bend)
+  const codeOf = (side: 'from' | 'to', v: string | [number, number], label?: string) =>
+    typeof v === 'string'
+      ? (BLOCS.find((b) => b.id === v)?.code ?? label ?? v)
+      : (label ?? '—')
+  FLOW_GEO[f.id] = {
+    from, to, d,
+    mid: quadPoint(d, 0.5),
+    fromCode: codeOf('from', f.from, f.fromLabel),
+    toCode: codeOf('to', f.to, f.toLabel),
+  }
+}
+
+/** cache do fetch dos contornos estaduais (IBGE) por sessão */
+let brGeoCache: { code: string; d: string }[] | null = null
+
 interface ConflictDef {
   id: Exclude<ConflictId, null>
   chip: string
@@ -214,14 +246,15 @@ export default function MapWorld() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
   }
-  const flyTo = (mx: number, my: number, k2 = 2.6, fy = 0.5) => {
+  const flyTo = (mx: number, my: number, k2 = 2.6, fy = 0.5, kLift?: number) => {
     stopFlight()
     const k1 = view.k
     const c1x = (MAP_W / 2 - view.x) / k1
     const c1y = (MAP_H / 2 - view.y) / k1
-    const kMid = Math.max(1, Math.min(k1, k2, 1.25))
+    /* viagem de verdade: sobe (zoom out) → cruza → desce; tour força kLift=1 */
+    const kMid = kLift ?? Math.max(1, Math.min(k1, k2, 1.25))
     const t0 = performance.now()
-    const D1 = 520, D2 = 780, D3 = 560
+    const D1 = 560, D2 = 920, D3 = 620
     const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
     const CY = MAP_H * fy // altura focal: 0.5 = centro; tour usa ~0.36 p/ não tapar o país com o card
     const frame = (now: number) => {
@@ -250,9 +283,9 @@ export default function MapWorld() {
   }
 
   /** variante geográfica: aceita lng/lat e projeta antes de voar */
-  const flyToLL = (lng: number, lat: number, k = 2.6, fy = 0.5) => {
+  const flyToLL = (lng: number, lat: number, k = 2.6, fy = 0.5, kLift?: number) => {
     const [px, py] = project([lng, lat])
-    flyTo(px, py, k, fy)
+    flyTo(px, py, k, fy, kLift)
   }
 
   /** tela inteira do mapa (o tour e os overlays acompanham) */
@@ -288,7 +321,9 @@ export default function MapWorld() {
     if (tourStep === null) return
     const s = STOPS[tourStep]
     if (!s) return
-    flyToLL(s.lng, s.lat, s.k, 0.36)
+    /* blindagem: rotas detail somem com k<2 (e o auto-close apaga a seleção) */
+    const kk = s.flowId?.startsWith('det-') ? Math.max(s.k, 2.05) : s.k
+    flyToLL(s.lng, s.lat, kk, 0.36, 1)
     if (s.flowId) setSelFlow(s.flowId)
     else setSelFlow(null)
     if (s.conflict) setConflict(s.conflict)
@@ -338,9 +373,10 @@ export default function MapWorld() {
   }, [view.k, selFlow])
 
   /* ── contornos oficiais dos estados (IBGE) — carregados sob demanda ── */
-  const [brGeo, setBrGeo] = useState<{ code: string; d: string }[] | null>(null)
+  const [brGeo, setBrGeo] = useState<{ code: string; d: string }[] | null>(brGeoCache)
   useEffect(() => {
     if (!statesOn || brGeo) return
+    if (brGeoCache) { setBrGeo(brGeoCache); return }
     let cancelled = false
     const UF: Record<string, string> = {
       '12': 'AC', '27': 'AL', '16': 'AP', '13': 'AM', '29': 'BA', '23': 'CE', '53': 'DF',
@@ -371,11 +407,11 @@ export default function MapWorld() {
             .join(' ')
           out.push({ code, d })
         }
-        if (out.length) setBrGeo(out)
+        if (out.length) { brGeoCache = out; setBrGeo(out) }
       })
       .catch(() => { /* offline: mantém círculos */ })
     return () => { cancelled = true }
-  }, [statesOn])
+  }, [statesOn, brGeo])
 
   const [hover, setHover] = useState<{ name: string; x: number; y: number; iso: string; wageUsd?: number } | null>(null)
   const [selectedInfo, setSelectedInfo] = useState<{ name: string; iso: string } | null>(null)
@@ -562,7 +598,8 @@ export default function MapWorld() {
     [visibleLayers.brics, detailOn, showWages, tourHi],
   )
 
-  /* ── fluxos: memoizados por [camadas, seleção, hover, conflito, kq] ── */
+  /* ── fluxos: camada BASE memoizada (NÃO depende de hover — passar o mouse
+     não reconcilia os ~49 fluxos; o hover vira um overlay por cima) ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const flowsLayer = useMemo(
     () => (
@@ -571,39 +608,34 @@ export default function MapWorld() {
           if (!visibleLayers[fl.type]) return null
           if (fl.tier === 'detail' && kq < 2) return null
           const st = TYPE_STYLE[fl.type]
-          const from = typeof fl.from === 'string' ? A[fl.from] : fl.from
-          const to = typeof fl.to === 'string' ? A[fl.to] : fl.to
-          const d = arcPath(from, to, fl.bend)
+          const geo = FLOW_GEO[fl.id]
+          const { from, to, d } = geo
           const isSel = selFlow === fl.id
-          const isHover = hoverFlow === fl.id
           const conflictBoost = active?.highlight.includes(fl.id) ?? false
-          let opacity: number
-          if (selFlow) opacity = isSel ? 1 : 0.05
-          else if (active) opacity = (active.highlight.includes(fl.id) || isHover) ? 1 : 0.08
-          else opacity = 1
-          const emphasized = isSel || isHover || conflictBoost
-          const baseW = (1 + (fl.peso - 1) * 1.5) / kq // compensação de escala
+          const opacity = selFlow ? (isSel ? 1 : 0.05) : active ? (conflictBoost ? 1 : 0.08) : 1
+          const emphasized = isSel || conflictBoost
+          /* vectorEffect=non-scaling-stroke: largura em px de tela, sem /kq */
+          const baseW = 1 + (fl.peso - 1) * 1.5
           return (
             <g key={fl.id} style={{ transition: 'opacity .35s' }} opacity={opacity}>
               {isSel && (
-                <>
-                  <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 4.5}
-                    opacity="0.3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-                  <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 0.9}
-                    opacity="0.5" strokeLinecap="round" vectorEffect="non-scaling-stroke"
-                    style={{ pointerEvents: 'none' }} />
-                </>
+                <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 10px ${st.color})` }}>
+                  <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 5.5}
+                    opacity="0.42" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                  <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1}
+                    opacity="0.65" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                </g>
               )}
               <path d={d} fill="none" stroke={st.color}
-                strokeWidth={isSel ? baseW * 3.2 : emphasized ? baseW * 1.9 : baseW}
+                strokeWidth={isSel ? baseW * 4.2 : emphasized ? baseW * 1.9 : baseW}
                 strokeDasharray={st.dash || undefined}
                 opacity={emphasized ? 1 : 0.62}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
-                style={isSel ? { pointerEvents: 'none', filter: `drop-shadow(0 0 7px ${st.color})` } : { pointerEvents: 'none' }} />
+                style={{ pointerEvents: 'none' }} />
               {(fl.peso >= 2.5 ? [0, 1, 2] : [0, 1]).map((i) => (
-                <circle key={i} r={(isSel ? 4 : emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
-                  <animateMotion dur={`${fl.dur / (isSel ? 2.6 : 1)}s`} repeatCount="indefinite"
+                <circle key={i} r={(isSel ? 5 : emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
+                  <animateMotion dur={`${fl.dur / (isSel ? 3.2 : 1)}s`} repeatCount="indefinite"
                     begin={`-${(fl.dur * i) / 3}s`} path={d} />
                 </circle>
               ))}
@@ -624,7 +656,7 @@ export default function MapWorld() {
               {/* endpoints destacados no fluxo selecionado */}
               {isSel && (
                 <g pointerEvents="none">
-                  <circle cx={from[0]} cy={from[1]} r={6 / kq} fill={st.color} stroke="#0d1117" strokeWidth={1.4 / kq} />
+                  <circle cx={from[0]} cy={from[1]} r={7.5 / kq} fill={st.color} stroke="#0d1117" strokeWidth={1.4 / kq} />
                   <circle cx={to[0]} cy={to[1]} r={6 / kq} fill="none" stroke={st.color} strokeWidth={1.6 / kq}>
                     <animate attributeName="r" values={`${5 / kq};${10 / kq};${5 / kq}`} dur="1.6s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="1;.2;1" dur="1.6s" repeatCount="indefinite" />
@@ -636,8 +668,27 @@ export default function MapWorld() {
         })}
       </g>
     ),
-    [visibleLayers, selFlow, hoverFlow, active, kq],
+    [visibleLayers, selFlow, active, kq],
   )
+
+  /* ── overlay de destaque do fluxo em hover (só 1 caminho; não toca na base) ── */
+  const flowHoverLayer = useMemo(() => {
+    if (!hoverFlow || selFlow === hoverFlow) return null
+    const fl = FLOWS.find((f) => f.id === hoverFlow)
+    if (!fl || !visibleLayers[fl.type]) return null
+    if (fl.tier === 'detail' && kq < 2) return null
+    const st = TYPE_STYLE[fl.type]
+    const { d } = FLOW_GEO[fl.id]
+    const baseW = 1 + (fl.peso - 1) * 1.5
+    return (
+      <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 8px ${st.color})` }}>
+        <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1} opacity="0.5"
+          strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 1.9} opacity="1"
+          strokeDasharray={st.dash || undefined} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      </g>
+    )
+  }, [hoverFlow, selFlow, visibleLayers, kq])
 
   /* ── arcos de conflito: memoizados ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -836,13 +887,14 @@ export default function MapWorld() {
     <div ref={containerRef}
       className={`map-root relative overflow-hidden border-zinc-800 bg-zinc-900/60 ${
         isFs
-          ? 'fixed inset-0 z-[100] flex items-center justify-center rounded-none border-0 bg-black'
+          ? 'fixed inset-0 z-[100] flex flex-col items-stretch justify-start rounded-none border-0 bg-black'
           : 'rounded-xl border'
       }`}>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-        className={`map-svg select-none ${isFs ? 'h-screen w-screen' : 'h-auto w-full'} ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        preserveAspectRatio="xMidYMid meet"
+        className={`map-svg select-none ${isFs ? 'w-full flex-1 min-h-0' : 'h-auto w-full'} ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         role="img"
         aria-label="Mapa-múndi geopolítico interativo com fluxos de capital"
         onPointerDown={onPointerDown}
@@ -875,6 +927,7 @@ export default function MapWorld() {
 
           {/* ── fluxos · conflitos · Brasil · mortes · blocos: TODOS memoizados ── */}
           {flowsLayer}
+          {flowHoverLayer}
           {conflictLayer}
           {brazilLayer}
           {deathsLayer}
@@ -1074,15 +1127,7 @@ export default function MapWorld() {
                   {TYPE_STYLE[t].label}
                 </div>
                 {items.map((f) => {
-                  const from = typeof f.from === 'string' ? A[f.from] : f.from
-                  const to = typeof f.to === 'string' ? A[f.to] : f.to
-                  const mid = quadPoint(arcPath(from, to, f.bend), 0.5)
-                  const fc = typeof f.from === 'string'
-                    ? BLOCS.find((b) => b.id === f.from)?.code ?? f.fromLabel ?? '—'
-                    : f.fromLabel ?? '—'
-                  const tc = typeof f.to === 'string'
-                    ? BLOCS.find((b) => b.id === f.to)?.code ?? f.toLabel ?? '—'
-                    : f.toLabel ?? '—'
+                  const { mid, fromCode: fc, toCode: tc } = FLOW_GEO[f.id]
                   return (
                     <button key={f.id}
                       onClick={() => { setSelFlow(f.id); flyTo(mid[0], mid[1], f.tier === 'detail' ? 3.2 : 2.4); setShowFlowList(false) }}

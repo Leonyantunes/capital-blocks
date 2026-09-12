@@ -240,7 +240,7 @@ export const TOUR_STOPS: TourStop[] = [
     id: 'credor',
     chapter: 'Cap. 5 · A moeda que manda',
     titulo: 'Quem financia o patrão da moeda',
-    lng: 160, lat: 40, k: 1.9, flowId: 'det-jpn-tsy',
+    lng: 160, lat: 40, k: 2.3, flowId: 'det-jpn-tsy',
     did: 'Plot twist: o maior financiador do governo americano é o Japão, com mais de US$ 1 trilhão em títulos. Décadas vendendo carros e eletrônicos geraram um cofre — que voltou para os EUA como empréstimo barato. Até o dono da moeda precisa de credor.',
     didStats: [
       { v: 'US$ 1,1 tri', k: 'em títulos americanos' },

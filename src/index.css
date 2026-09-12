@@ -111,17 +111,21 @@ input[type='range'].range-labor::-webkit-slider-thumb { @apply bg-red-400; }
 }
 
 /* ---- tela inteira nativa do mapa (independente de estado React) ---- */
+/* IMPORTANTE: coluna â€” svg empilha sobre a legenda; em linha o flex espremeria o mapa */
 .map-root:fullscreen {
   border-radius: 0;
   border: none;
   background: #000;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 .map-root:fullscreen svg.map-svg {
-  height: 100vh;
-  width: 100vw;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* ------------------ MOBILE / TOUCH ------------------ */
@@ -134,7 +138,7 @@ body {
   overscroll-behavior-y: contain;
 }
 
-/* o mapa trata pan/pinch via Pointer Events — o browser não pode roubar o gesto */
+/* o mapa trata pan/pinch via Pointer Events â€” o browser nÃ£o pode roubar o gesto */
 .map-svg {
   touch-action: none;
 }
@@ -143,15 +147,14 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
-/* fullscreen ocupa a tela DINÂMICA real (barra de URL do celular some/entra) */
+/* fullscreen ocupa a tela DINÃ‚MICA real (barra de URL do celular some/entra) */
 @supports (height: 100dvh) {
-  .map-root:fullscreen svg.map-svg {
+  .map-root:fullscreen {
     height: 100dvh;
-    width: 100vw;
   }
 }
 
-/* respeito à preferência de movimento reduzido (acessibilidade + bateria) */
+/* respeito Ã  preferÃªncia de movimento reduzido (acessibilidade + bateria) */
 @media (prefers-reduced-motion: reduce) {
   .marker-ring,
   .flow-line,
@@ -166,14 +169,14 @@ body {
   }
 }
 
-/* alvos de toque maiores em telas pequenas (mín. recomendado ~44px) */
+/* alvos de toque maiores em telas pequenas (mÃ­n. recomendado ~44px) */
 @media (pointer: coarse) and (max-width: 767px) {
   .map-root button {
     min-height: 36px;
   }
 }
 
-/* trava de segurança: nada pode gerar rolagem horizontal no app */
+/* trava de seguranÃ§a: nada pode gerar rolagem horizontal no app */
 body {
   overflow-x: clip;
 }
