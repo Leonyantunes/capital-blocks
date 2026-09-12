@@ -101,6 +101,6 @@ export const PAY_RATIOS = [
 export const JG = {
   pibBrTri: 11.7, // PIB nominal BR 2024, R$ tri (IBGE)
   jurosAnoBi: 900, // serviço de juros ≈ R$ 900 bi (Tesouro, 2024, est.)
-  salarioMinAno: 18216, // R$ 1.518 × 13,3
+  salarioMinAno: 20189, // R$ 1.518 × 13,3 (12 meses + 13º + 1/3 de férias)
   reservaMilhoes: 30, // desempregados + subempregados (est. ampla)
 }

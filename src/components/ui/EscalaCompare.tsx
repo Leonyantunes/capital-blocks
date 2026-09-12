@@ -6,7 +6,7 @@ import { useState } from 'react'
  * (DATA-GUIDELINES): câmbio R$5,5 · escola pública ≈ R$15 mi · hospital ≈ R$150 mi.
  */
 
-const SM_BR_ANO = 18216 // R$ 1.518 × 13,3 (mês + 13º simplificado)
+const SM_BR_ANO = 20189 // R$ 1.518 × 13,3 (12 meses + 13º + 1/3 de férias)
 const CAMBIO = 5.5
 const SM_US_ANO = 15080 // federal $7,25/h × 2.080h
 const ESCOLA_BRL = 15e6

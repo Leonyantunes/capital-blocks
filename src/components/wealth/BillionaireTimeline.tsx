@@ -145,7 +145,7 @@ export default function BillionaireTimeline() {
           <div className="rounded-lg border border-dashed border-money/40 bg-money/5 p-3 text-[11px] leading-relaxed text-zinc-300">
             {didatico ? (
               <>
-                <strong className="text-money">Compare com o Módulo 06:</strong> o funcionário médio da Walmart
+                <strong className="text-money">Compare com o Módulo 05:</strong> o funcionário médio da Walmart
                 ganha ~US$ 32 mil <em>por ano</em>. Em 2025, a fortuna do topo equivale a{' '}
                 <strong>13.750 anos</strong> desse salário. E nenhuma fortuna dessa lista foi construída sem a
                 jornada não paga de milhões de trabalhadores.

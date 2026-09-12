@@ -50,10 +50,9 @@ function PayPyramid() {
 }
 
 function didaticoText(r: number) {
-  const anos = Math.round((r * 1518) / 1518) // 1 salário do topo = r salários da base/mês
   if (r <= 10)
     return `No topo da cooperativa, 1 pessoa ganha ${r} salários de base. Na corporação equivalente do topo da lista, seriam centenas. A diferença não vem da “genialidade” do CEO — vem de quem define as regras.`
-  return `O topo ganha ${r} vezes a base — ou seja, ${anos} salários por mês. Em uma jornada de 40 anos, a base acumula o que o topo recebe em ${(40 / (r / 12) * 12).toFixed(0)} meses... de trabalho. O resto é estrutura de poder.`
+  return `O topo ganha ${r} vezes a base — ou seja, ${r} salários por mês. Em uma jornada de 40 anos, a base acumula o que o topo recebe em ${(40 / (r / 12) * 12).toFixed(0)} meses... de trabalho. O resto é estrutura de poder.`
 }
 
 /** Simulador da Garantia de Emprego (MMT). */

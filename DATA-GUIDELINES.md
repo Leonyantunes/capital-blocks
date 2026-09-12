@@ -83,8 +83,8 @@ Para dar dados a um país novo:
 
 ## 6. Fluxos geopolíticos (partículas)
 
-Novo fluxo = entrada em `FLOWS` (`src/components/MapWorld.tsx`) com âncoras
-`[lng, lat]` reais, `type` conforme camada (commodities/drain/dollar/brics),
+Novo fluxo = entrada em `FLOWS` (`src/data/flows.ts`) com âncoras
+`[lng, lat]` reais, `type` conforme camada (commodities/manufatura/drain/dollar/brics/fantasma),
 bend e dur escolhidos para legibilidade. Máx. 3 partículas por rota.
 
 ## 7. Cadência de atualização sugerida
@@ -124,7 +124,7 @@ Regras:
 2. `receitaBi`, `lucroBi`, `funcionariosMil`: relatórios anuais FY2024/FY2025
    (10-K/20-F/Fortune). Lucros GAAP/IFRS marcados quando distorcidos (ex.: Broadcom pós-
    VMware, Berkshire mark-to-market).
-3. `salarioMedioUsdK` é ESTIMATIVA por país/setor → sempre exibida com badge “est.” e
+3. `salarioMedioK` é ESTIMATIVA por país/setor → sempre exibida com badge “est.” e
    tooltip revelando a premissa.
 4. Métricas derivadas exibidas: `% do market cap mundial` (÷ US$124 tri, WFE),
    `% do PIB mundial` (÷ US$115 tri, IMF WEO) e `Mercado ÷ Receita` (“anos de produção”

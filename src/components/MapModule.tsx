@@ -4,7 +4,6 @@ import WorldWealthPanel from './WorldWealthPanel'
 import { COUNTRIES, FRACTION_META, fmtTri } from '../data/countries'
 import { StackedBar } from './DonutChart'
 import ModeBadge from './ui/ModeBadge'
-import { mt } from '../i18n'
 import { useApp } from '../store/useApp'
 
 function segmentsOf(c: (typeof COUNTRIES)[number]) {
@@ -18,7 +17,7 @@ function segmentsOf(c: (typeof COUNTRIES)[number]) {
 
 /** HOME — "Mapa Geopolítico Interativo de Blocos e Fluxos de Capital" */
 export default function MapModule() {
-  const { basis, setBasis, openCountry, lang } = useApp()
+  const { basis, setBasis, openCountry } = useApp()
 
   return (
     <div className="flex flex-col gap-4">

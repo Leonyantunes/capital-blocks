@@ -39,7 +39,7 @@ function TmdBlock({ countryName }: { countryName: string }) {
 
       <div className="mt-2 space-y-1.5">
         {TMD_CHANNELS.map((ch, i) => (
-          <Tip key={ch.tipo} text={didatico ? ch.textoAvancado : ch.textoDidatico}>
+          <Tip key={ch.tipo} text={didatico ? ch.textoDidatico : ch.textoAvancado}>
             <div className="cursor-help rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 transition-colors hover:border-zinc-600">
               <div className="flex items-center gap-1.5 text-[11px] font-bold"
                 style={{ color: ['#f44336', '#ba68c8', '#ffc107'][i] }}>

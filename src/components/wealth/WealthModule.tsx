@@ -9,7 +9,7 @@ import { mt } from '../../i18n'
 import { useApp } from '../../store/useApp'
 
 /**
- * MÓDULO 08 — QUEM SUSTENTA QUÊ?
+ * MÓDULO 07 — QUEM SUSTENTA QUÊ?
  * Duas demonstrações centrais das diretrizes:
  *   A) o trabalhador sustenta todo o circuito — e o dinheiro não fica com ele;
  *   B) a concentração patrimonial é tendência de regime (Piketty: r > g),

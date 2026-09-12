@@ -18,7 +18,7 @@ export const BUDGET_BR: BudgetItem[] = [
   },
   {
     key: 'social', label: 'Transferências e assistência social', pct: 15, color: '#ffc107',
-    desc: 'Bolsa Família, BNDES? Não: benefícios previdenciários e sociais em sentido amplo.',
+    desc: 'Previdência e assistência em sentido amplo — aposentadorias, Bolsa Família, seguro-desemprego: o Estado amortecendo o mercado de trabalho.',
   },
   {
     key: 'saude', label: 'Saúde (SUS)', pct: 11.5, color: '#f44336',

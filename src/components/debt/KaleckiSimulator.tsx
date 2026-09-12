@@ -77,7 +77,7 @@ export default function KaleckiSimulator() {
                 </Tip>
                 <span className="font-mono font-bold text-zinc-200">{p[k].toLocaleString('pt-BR')}%</span>
               </div>
-              <input type="range" min={k === 'nx' ? -4 : k === 'deficit' ? 0 : 0}
+              <input type="range" min={k === 'nx' ? -4 : 0}
                 max={k === 'investimento' ? 30 : k === 'consumoCap' ? 25 : k === 'deficit' ? 14 : k === 'nx' ? 8 : 10}
                 step={1} value={p[k]} onChange={(e) => set(k)(parseFloat(e.target.value))} />
             </div>
