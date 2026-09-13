@@ -12,6 +12,12 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico
 > aos baselines, FPS do globo 68 → 87 no HUD (software rendering; ganho maior esperado
 > em GPU mobile), picking e drawers OK. Falta ainda medir em device real Android.
+>
+> **2026-09-13 — Tour padronizado (c39b86b):** rota selecionada sempre visível (2D e 3D),
+> enquadramento com folga + distância mínima, distância 3D derivada do k (`distFromK`),
+> `stopIsos` em união + isos nas paradas cegas, auto-close não dispara no tour, voos
+> mais suaves (3D 2.5s · 2D ~3s) e aba restaurada da URL (`?t=`). Contrato de parada
+> documentado no cabeçalho de `tours.ts` — tours novos não precisam mexer no código.
 
 ---
 
