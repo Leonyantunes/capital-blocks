@@ -23,6 +23,9 @@ import { useApp, type ConflictId } from '../store/useApp'
 
 const A = Object.fromEntries(BLOCS.map((b) => [b.id, b.anchor])) as Record<string, [number, number]>
 
+/** Dispositivo de toque: orçamento menor de partículas e sem tooltips de hover. */
+const COARSE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
 /**
  * GEOMETRIA DOS FLUXOS — calculada UMA vez (projeção fixa).
  * Evita recomputar arcPath/quadPoint/projeções a cada rebuild de camada.
@@ -522,6 +525,7 @@ export default function MapWorld() {
   }
 
   const showHoverLabel = (e: React.PointerEvent, iso: string, name: string, wageUsd?: number) => {
+    if (e.pointerType === 'touch') return // rótulo de país é ferramenta de mouse
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
     setHover({ name, iso, x: e.clientX - rect.left, y: e.clientY - rect.top, wageUsd })
@@ -546,13 +550,43 @@ export default function MapWorld() {
     return null
   }, [tourStep, activeTourId, selFlow]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* glow do destaque: UMA passada de filtro sobre o grupo dos poucos países
+     acesos (em vez de um drop-shadow por path — que re-rasteriza cada filtro
+     nos degraus de zoom/pinch do celular com o mesmo resultado visual). */
+  const tourGlowLayer = useMemo(() => {
+    if (!tourHi) return null
+    return (
+      <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 5px ${tourHi.color})` }}>
+        {COUNTRY_FEATURES.filter((f) => tourHi.isos.has(f.id)).map((f) => (
+          <path key={f.id} d={f.d} fill={`${tourHi.color}3d`} stroke={tourHi.color} strokeWidth={1.4} strokeLinejoin="round" />
+        ))}
+      </g>
+    )
+  }, [tourHi])
+
   /* camada de países é ESTÁTICA — memoizada p/ não reconciliar ~177 paths
-     a cada interação do mouse (tooltip atualiza isoladamente).
+     a cada interação do mouse (tooltip atualiza isoladamente). Eventos
+     delegados no <g> (2 closures em vez de 354); hover/tooltip só em
+     ponteiro fino (toque usa clique → drawer).
      Modos: bloco (padrão) · heatmap salarial · glow de rotas regionais no zoom · destaque do tour. */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const countriesLayer = useMemo(
     () => (
-      <g strokeLinejoin="round">
+      <g
+        strokeLinejoin="round"
+        onPointerOver={(e) => {
+          const el = e.target as SVGPathElement
+          const iso = el.getAttribute('data-iso')
+          if (!iso) return
+          const wageAttr = el.getAttribute('data-wage')
+          showHoverLabel(e, iso, el.getAttribute('data-name') ?? iso, wageAttr !== null ? Number(wageAttr) : undefined)
+        }}
+        onClick={(e) => {
+          const el = e.target as SVGPathElement
+          const iso = el.getAttribute('data-iso')
+          if (iso) handleCountryClick(iso, el.getAttribute('data-name') ?? iso)
+        }}
+      >
         {COUNTRY_FEATURES.map((f) => {
           const bloc = ISO_TO_BLOC[f.id]
           const isBrics = BRICS_ISO.has(f.id)
@@ -562,9 +596,10 @@ export default function MapWorld() {
           const wage = WAGES[f.id]
           const wageOn = showWages && wage !== undefined
           const thi = tourHi !== null && tourHi.isos.has(f.id)
-          const tcol = tourHi?.color ?? '#f472b6'
+          /* país destacado: tourGlowLayer pinta o destaque + glow acima;
+             aqui fica o fundo neutro (a composição final é idêntica) */
           const fill = thi
-            ? `${tcol}3d`
+            ? '#10151d'
             : wageOn
               ? wageColor(wage)
               : glow
@@ -572,22 +607,20 @@ export default function MapWorld() {
                 : blocColor
                   ? `${blocColor}26`
                   : '#151b23'
-          const stroke = thi ? tcol : glow ? '#8ab4f8' : wageOn ? '#0d1117' : bricsOn ? '#26c6da' : '#262f3b'
+          const stroke = thi ? 'none' : glow ? '#8ab4f8' : wageOn ? '#0d1117' : bricsOn ? '#26c6da' : '#262f3b'
           return (
             <path
               key={f.id}
               d={f.d}
+              data-iso={f.id}
+              data-name={f.name}
+              data-wage={wageOn && wage !== undefined ? wage : undefined}
               className="country-path transition-[stroke] duration-150"
               style={{
                 fill,
                 stroke,
-                strokeWidth: thi ? 1.4 : glow ? 1.1 : bricsOn ? 0.9 : wageOn ? 0.4 : 0.5,
-                ...(thi ? { filter: `drop-shadow(0 0 5px ${tcol})` } : {}),
+                strokeWidth: glow ? 1.1 : bricsOn ? 0.9 : wageOn ? 0.4 : 0.5,
               }}
-              onPointerEnter={(e) =>
-                showHoverLabel(e, f.id, f.name, wageOn && wage !== undefined ? wage : undefined)
-              }
-              onClick={() => handleCountryClick(f.id, f.name)}
             >
               <title>{`${f.name}${wageOn && wage !== undefined ? ` · salário médio ≈ US$ ${wage}/mês (${wageBucketLabel(wage)})` : ''}${thi ? ' · no caminho da rota' : glow ? ' · rota regional ativa' : bloc ? ' · clique para anatomia do bloco' : ''}`}</title>
             </path>
@@ -633,7 +666,8 @@ export default function MapWorld() {
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
                 style={{ pointerEvents: 'none' }} />
-              {(fl.peso >= 2.5 ? [0, 1, 2] : [0, 1]).map((i) => (
+              {/* partículas: toque ganha 1 por rota (selecionada 3); desktop inalterado */}
+              {(isSel ? [0, 1, 2] : COARSE ? [0] : fl.peso >= 2.5 ? [0, 1, 2] : [0, 1]).map((i) => (
                 <circle key={i} r={(isSel ? 5 : emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
                   <animateMotion dur={`${fl.dur / (isSel ? 3.2 : 1)}s`} repeatCount="indefinite"
                     begin={`-${(fl.dur * i) / 3}s`} path={d} />
@@ -644,6 +678,7 @@ export default function MapWorld() {
                 style={{ cursor: 'pointer' }}
                 onClick={() => { if (!movedRef.current) setSelFlow(isSel ? null : fl.id) }}
                 onPointerEnter={(e) => {
+                  if (e.pointerType === 'touch') return // no toque, o clique abre os detalhes
                   setHoverFlow(fl.id)
                   const r = containerRef.current?.getBoundingClientRect()
                   if (r) setFlowTip({ x: e.clientX - r.left, y: e.clientY - r.top, id: fl.id })
@@ -922,8 +957,9 @@ export default function MapWorld() {
           <path d={SPHERE_D} fill="#10151d" stroke="#1b2430" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           <path d={GRATICULE_D} fill="none" stroke="#141b24" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
 
-          {/* países (camada memoizada) */}
+          {/* países (camada memoizada) + overlay de destaque do tour */}
           {countriesLayer}
+          {tourGlowLayer}
 
           {/* ── fluxos · conflitos · Brasil · mortes · blocos: TODOS memoizados ── */}
           {flowsLayer}
