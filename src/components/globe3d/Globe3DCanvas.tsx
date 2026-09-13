@@ -305,14 +305,19 @@ export default function Globe3DCanvas(props: Props) {
       type: FlowType
       detail: boolean
       curve: THREE.QuadraticBezierCurve3
-      line: THREE.Line
-      core: THREE.Line
-      /** seta de direção na ponta de chegada */
-      arrow: THREE.Mesh
+      /** amostras locais da curva ((ARC_SEG+1)×3) p/ picking raio→curva */
+      samples: Float32Array
       len: number
       from: [number, number]
       to: [number, number]
-      bend: number
+      /** fatia de vértices deste arco nos buffers mesclados do tipo */
+      vStart: number
+      vCount: number
+      /** opacidade corrente — 0 = invisível (render, picking e partículas) */
+      op: number
+      /** pose da seta na ponta de chegada (instância = pose × escala) */
+      arrowPos: THREE.Vector3
+      arrowQuat: THREE.Quaternion
     }
     let arcs: ArcRec[] = []
     /* índice id→arco: evita FLOWS.find() O(n) dentro dos loops por frame */
@@ -323,31 +328,70 @@ export default function Globe3DCanvas(props: Props) {
     let moverPoints: THREE.Points | null = null
     let moverColors: Float32Array | null = null
     let moverBase: THREE.Color[] = []
-
-    const markerMeshes: THREE.Mesh[] = []
     const markerGroup = new THREE.Group()
     globe.add(markerGroup)
+
+    /* ── ARCO EM LOTE — 1 LineSegments por tipo de fluxo (cor por vértice
+       simula opacidade no blending aditivo) + 1 LineSegments de núcleo
+       branco para todos os arcos + setas/marcadores instanciados.
+       Reduz ~200 draw calls por frame para ~20 (gargalo dominante de GPU
+       mobile), com aparência idêntica. */
+    const dummy = new THREE.Object3D()
+    const _c = new THREE.Color()
+    const _m4 = new THREE.Matrix4()
+    const _s3 = new THREE.Vector3()
+    const TYPE_RGB: Record<FlowType, THREE.Color> = Object.fromEntries(
+      (Object.keys(TYPE_STYLE) as FlowType[]).map((t) => [t, new THREE.Color(TYPE_STYLE[t].color)]),
+    ) as Record<FlowType, THREE.Color>
+    const WHITE = new THREE.Color('#ffffff')
+    /** Escreve rgb×f nos vértices [vStart, vStart+vCount) do buffer. */
+    const writeColor = (arr: Float32Array, rgb: THREE.Color, f: number, vStart: number, vCount: number) => {
+      const r = rgb.r * f
+      const g = rgb.g * f
+      const b = rgb.b * f
+      for (let v = vStart; v < vStart + vCount; v++) {
+        const o = v * 3
+        arr[o] = r
+        arr[o + 1] = g
+        arr[o + 2] = b
+      }
+    }
+    interface TypeBatch {
+      mesh: THREE.LineSegments
+      colors: THREE.BufferAttribute
+    }
+    const typeBatches = {} as Record<FlowType, TypeBatch>
+    let coreMesh: THREE.LineSegments | null = null
+    let coreColors: THREE.BufferAttribute | null = null
+    let arrowsMesh: THREE.InstancedMesh | null = null
+    let markersMesh: THREE.InstancedMesh | null = null
 
     /* marcadores de mortes corporativas (camada "deaths", paridade com o 2D) */
     const disasterGroup = new THREE.Group()
     disasterGroup.visible = false
     globe.add(disasterGroup)
-    for (const d of DISASTERS) {
-      const p = latLngToVec3(d.lngLat[0], d.lngLat[1], 1.014)
-      const r = 0.008 + Math.sqrt(d.mortosNum / 500000) * 0.012
-      const mark = new THREE.Mesh(
-        new THREE.SphereGeometry(r, 12, 12),
-        new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336') }),
-      )
-      mark.position.set(p[0], p[1], p[2])
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(r * 1.4, r * 1.9, 24),
-        new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336'), transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false }),
-      )
-      ring.position.copy(mark.position)
-      ring.lookAt(0, 0, 0)
-      disasterGroup.add(mark)
-      disasterGroup.add(ring)
+    {
+      const dSphGeo = new THREE.SphereGeometry(1, 12, 12)
+      const dRingGeo = new THREE.RingGeometry(0.74, 1, 24)
+      const dMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336') })
+      const dRingMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#f44336'), transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false })
+      const dSph = new THREE.InstancedMesh(dSphGeo, dMat, DISASTERS.length)
+      const dRing = new THREE.InstancedMesh(dRingGeo, dRingMat, DISASTERS.length)
+      DISASTERS.forEach((d, i) => {
+        const p = latLngToVec3(d.lngLat[0], d.lngLat[1], 1.014)
+        const r = 0.008 + Math.sqrt(d.mortosNum / 500000) * 0.012
+        dummy.position.set(p[0], p[1], p[2])
+        dummy.quaternion.identity()
+        dummy.scale.setScalar(r)
+        dummy.updateMatrix()
+        dSph.setMatrixAt(i, dummy.matrix)
+        dummy.scale.setScalar(r * 1.9)
+        dummy.lookAt(0, 0, 0)
+        dummy.updateMatrix()
+        dRing.setMatrixAt(i, dummy.matrix)
+      })
+      disasterGroup.add(dSph)
+      disasterGroup.add(dRing)
     }
 
     /* fronteiras dos países (uma geometria, um draw call) */
@@ -417,15 +461,16 @@ export default function Globe3DCanvas(props: Props) {
       loadingEl.remove()
     }
 
-    /* posiciona a seta na ponta de chegada, orientada pela tangente do arco */
-    const placeArrow = (rec: ArcRec) => {
+    /* pose da seta na ponta de chegada, orientada pela tangente do arco
+       (aplicada como matriz de instância no applySelection) */
+    const UP_Y = new THREE.Vector3(0, 1, 0)
+    const arrowPose = (rec: ArcRec) => {
       const pTip = rec.curve.getPoint(0.965, _v1)
       const pBack = rec.curve.getPoint(1, _v2)
-      rec.arrow.position.copy(pBack)
+      rec.arrowPos.copy(pBack)
       const dir = _v3.copy(pBack).sub(pTip)
-      if (dir.lengthSq() > 1e-9) {
-        rec.arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize())
-      }
+      if (dir.lengthSq() > 1e-9) rec.arrowQuat.setFromUnitVectors(UP_Y, dir.normalize())
+      else rec.arrowQuat.identity()
     }
 
     const build = () => {
@@ -447,60 +492,121 @@ export default function Globe3DCanvas(props: Props) {
       } catch {
         /* globo segue funcional sem fronteiras */
       }
-      /* arcos — `bend` do dado (mesmo do 2D) desloca o ápice perpendicularmente,
-         mantendo a leitura de curvatura idêntica nos dois mapas */
-      for (const f of FLOWS) {
-        const a = resolveAnchor(f.from)
-        const b = resolveAnchor(f.to)
-        const s = latLngToVec3(a[0], a[1], 1.005)
-        const e = latLngToVec3(b[0], b[1], 1.005)
-        const start = new THREE.Vector3(s[0], s[1], s[2])
-        const end = new THREE.Vector3(e[0], e[1], e[2])
-        const dist = start.distanceTo(end)
-        const mid = start
-          .clone()
-          .add(end)
-          .multiplyScalar(0.5)
-          .normalize()
-        /* elevação pela distância + peso, e deslocamento lateral pelo bend */
-        const radial = 1 + dist * 0.3 + f.peso * 0.012
-        const perp = new THREE.Vector3().crossVectors(mid, new THREE.Vector3(0, 1, 0))
-        if (perp.lengthSq() < 1e-6) perp.set(1, 0, 0)
-        perp.normalize()
-        mid.multiplyScalar(radial).addScaledVector(perp, f.bend * dist * 0.12)
-        const curve = new THREE.QuadraticBezierCurve3(start, mid, end)
-        const st = TYPE_STYLE[f.type]
-        const dashed = st.dash !== ''
+      /* ── arcos mesclados por tipo — `bend` do dado (mesmo do 2D) desloca o
+         ápice perpendicularmente, mantendo a leitura de curvatura idêntica
+         nos dois mapas. 1 LineSegments por tipo (cor por vértice ≈ opacidade
+         no blending aditivo; traço via atributo lineDistance). ── */
+      const byType: Partial<Record<FlowType, (typeof FLOWS)[number][]>> = {}
+      for (const f of FLOWS) (byType[f.type] ??= []).push(f)
+      /* setas: 1 geometria compartilhada, 1 draw call para todas */
+      const arrowsGeo = new THREE.ConeGeometry(0.011, 0.03, 10)
+      const arrows = new THREE.InstancedMesh(
+        arrowsGeo,
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false }),
+        FLOWS.length,
+      )
+      arrows.renderOrder = 5
+      arrows.raycast = () => {}
+      arrows.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+      arrowsMesh = arrows
+      /* núcleo de energia: um único buffer para todos os arcos */
+      const perArc = ARC_SEG * 2
+      const corePos = new Float32Array(FLOWS.length * perArc * 3)
+      coreColors = new THREE.BufferAttribute(new Float32Array(FLOWS.length * perArc * 3), 3)
+      let arcIndex = 0
+      for (const t of Object.keys(TYPE_STYLE) as FlowType[]) {
+        const list = byType[t] ?? []
+        const dashed = TYPE_STYLE[t].dash !== ''
+        const pos = new Float32Array(list.length * perArc * 3)
+        const cols = new Float32Array(list.length * perArc * 3)
+        const ld = dashed ? new Float32Array(list.length * perArc) : null
+        list.forEach((f, ai) => {
+          const a = resolveAnchor(f.from)
+          const b = resolveAnchor(f.to)
+          const s = latLngToVec3(a[0], a[1], 1.005)
+          const e = latLngToVec3(b[0], b[1], 1.005)
+          const start = new THREE.Vector3(s[0], s[1], s[2])
+          const end = new THREE.Vector3(e[0], e[1], e[2])
+          const dist = start.distanceTo(end)
+          const mid = start
+            .clone()
+            .add(end)
+            .multiplyScalar(0.5)
+            .normalize()
+          /* elevação pela distância + peso, e deslocamento lateral pelo bend */
+          const radial = 1 + dist * 0.3 + f.peso * 0.012
+          const perp = new THREE.Vector3().crossVectors(mid, new THREE.Vector3(0, 1, 0))
+          if (perp.lengthSq() < 1e-6) perp.set(1, 0, 0)
+          perp.normalize()
+          mid.multiplyScalar(radial).addScaledVector(perp, f.bend * dist * 0.12)
+          const curve = new THREE.QuadraticBezierCurve3(start, mid, end)
+          const pts = curve.getPoints(ARC_SEG)
+          const samples = new Float32Array(pts.length * 3)
+          pts.forEach((p, i) => {
+            samples[i * 3] = p.x
+            samples[i * 3 + 1] = p.y
+            samples[i * 3 + 2] = p.z
+          })
+          const vStart = ai * perArc
+          /* pares (p_i, p_i+1) → LineSegments; traço contínuo via lineDistance */
+          let cum = 0
+          for (let i = 0; i < ARC_SEG; i++) {
+            const p0 = pts[i]
+            const p1 = pts[i + 1]
+            const o = (vStart + i * 2) * 3
+            pos[o] = p0.x; pos[o + 1] = p0.y; pos[o + 2] = p0.z
+            pos[o + 3] = p1.x; pos[o + 4] = p1.y; pos[o + 5] = p1.z
+            const segLen = p0.distanceTo(p1)
+            if (ld) {
+              ld[vStart + i * 2] = cum
+              ld[vStart + i * 2 + 1] = cum + segLen
+            }
+            cum += segLen
+          }
+          /* o núcleo recebe os mesmos vértices (índice global do arco) */
+          corePos.set(pos.subarray(vStart * 3, (vStart + perArc) * 3), arcIndex * perArc * 3)
+          const rec: ArcRec = {
+            id: f.id, type: t, detail: f.tier === 'detail', curve, samples,
+            len: curve.getLength(), from: a, to: b,
+            vStart, vCount: perArc, op: 0.8,
+            arrowPos: new THREE.Vector3(), arrowQuat: new THREE.Quaternion(),
+          }
+          arrowPose(rec)
+          dummy.position.copy(rec.arrowPos)
+          dummy.quaternion.copy(rec.arrowQuat)
+          dummy.scale.setScalar(1)
+          dummy.updateMatrix()
+          arrows.setMatrixAt(arcIndex, dummy.matrix)
+          arrows.setColorAt(arcIndex, TYPE_RGB[t])
+          arcs.push(rec)
+          arcById[f.id] = rec
+          arcIndex++
+        })
+        const g = new THREE.BufferGeometry()
+        g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+        const colAttr = new THREE.BufferAttribute(cols, 3)
+        g.setAttribute('color', colAttr)
+        if (ld) g.setAttribute('lineDistance', new THREE.BufferAttribute(ld, 1))
         const mat = dashed
-          ? new THREE.LineDashedMaterial({ color: new THREE.Color(st.color), dashSize: 0.035, gapSize: 0.024, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
-          : new THREE.LineBasicMaterial({ color: new THREE.Color(st.color), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
-        const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(ARC_SEG))
-        const line = new THREE.Line(geo, mat)
-        line.renderOrder = 3
-        if (dashed) line.computeLineDistances()
-        line.userData.flowId = f.id
-        /* núcleo de energia: filete claro sobre a mesma geometria */
-        const core = new THREE.Line(
-          geo,
-          new THREE.LineBasicMaterial({ color: new THREE.Color('#ffffff'), transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false }),
-        )
-        core.renderOrder = 4
-        core.raycast = () => {}
-        /* seta de direção na chegada (aponta o sentido do fluxo) */
-        const arrow = new THREE.Mesh(
-          new THREE.ConeGeometry(0.011, 0.03, 10),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(st.color), transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }),
-        )
-        arrow.renderOrder = 5
-        arrow.raycast = () => {}
-        const rec: ArcRec = { id: f.id, type: f.type, detail: f.tier === 'detail', curve, line, core, arrow, len: curve.getLength(), from: a, to: b, bend: f.bend }
-        placeArrow(rec)
-        arcGroup.add(line)
-        arcGroup.add(core)
-        arcGroup.add(arrow)
-        arcs.push(rec)
-        arcById[f.id] = rec
+          ? new THREE.LineDashedMaterial({ color: 0xffffff, vertexColors: true, dashSize: 0.035, gapSize: 0.024, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false })
+          : new THREE.LineBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false })
+        const mesh = new THREE.LineSegments(g, mat)
+        mesh.renderOrder = 3
+        mesh.raycast = () => {}
+        arcGroup.add(mesh)
+        typeBatches[t] = { mesh, colors: colAttr }
       }
+      const coreGeo = new THREE.BufferGeometry()
+      coreGeo.setAttribute('position', new THREE.BufferAttribute(corePos, 3))
+      coreGeo.setAttribute('color', coreColors)
+      coreMesh = new THREE.LineSegments(
+        coreGeo,
+        new THREE.LineBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false }),
+      )
+      coreMesh.renderOrder = 4
+      coreMesh.raycast = () => {}
+      arcGroup.add(coreMesh)
+      arcGroup.add(arrows)
 
       /* partículas (movers) */
       {
@@ -525,29 +631,37 @@ export default function Globe3DCanvas(props: Props) {
         globe.add(moverPoints)
       }
 
-      /* marcadores */
+      /* marcadores de blocos: esfera + anel instanciados (2 draw calls);
+         o raycast por instância resolve o bloco clicado */
       const markerScale = isMobile ? 1.4 : 1
-      for (const b of BLOCS) {
+      const sphereGeo = new THREE.SphereGeometry(1, 16, 16)
+      const ringGeo = new THREE.RingGeometry(0.83, 1, 32)
+      const spheres = new THREE.InstancedMesh(sphereGeo, new THREE.MeshBasicMaterial(), BLOCS.length)
+      spheres.userData.blocIds = BLOCS.map((b) => b.id)
+      const ringsMesh = new THREE.InstancedMesh(
+        ringGeo,
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }),
+        BLOCS.length,
+      )
+      BLOCS.forEach((b, i) => {
         const p = latLngToVec3(b.anchor[0], b.anchor[1], 1.012)
-        const baseR = b.tier === 'secondary' ? 0.008 : 0.013
-        const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(baseR * markerScale, 16, 16),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(b.color) }),
-        )
-        mesh.position.set(p[0], p[1], p[2])
-        mesh.userData.blocId = b.id
-        const ringIn = (b.tier === 'secondary' ? 0.014 : 0.02) * markerScale
+        const baseR = (b.tier === 'secondary' ? 0.008 : 0.013) * markerScale
         const ringOut = (b.tier === 'secondary' ? 0.017 : 0.024) * markerScale
-        const ring = new THREE.Mesh(
-          new THREE.RingGeometry(ringIn, ringOut, 32),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(b.color), transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }),
-        )
-        ring.position.copy(mesh.position)
-        ring.lookAt(0, 0, 0)
-        markerGroup.add(mesh)
-        markerGroup.add(ring)
-        markerMeshes.push(mesh)
-      }
+        dummy.position.set(p[0], p[1], p[2])
+        dummy.quaternion.identity()
+        dummy.scale.setScalar(baseR)
+        dummy.updateMatrix()
+        spheres.setMatrixAt(i, dummy.matrix)
+        spheres.setColorAt(i, new THREE.Color(b.color))
+        dummy.scale.setScalar(ringOut)
+        dummy.lookAt(0, 0, 0)
+        dummy.updateMatrix()
+        ringsMesh.setMatrixAt(i, dummy.matrix)
+        ringsMesh.setColorAt(i, new THREE.Color(b.color))
+      })
+      markerGroup.add(spheres)
+      markerGroup.add(ringsMesh)
+      markersMesh = spheres
 
       applyVisual()
       applySelection()
@@ -656,32 +770,53 @@ export default function Globe3DCanvas(props: Props) {
     }
 
     function applySelection() {
+      /* antes do build (60ms) não há buffers mesclados — o loop de frames
+         chama esta função desde o primeiro frame */
+      if (!coreColors || !arcs.length) return
       const { visibleLayers, selectedFlowId, highlightFlowIds } = live.current
       const anySel = !!selectedFlowId
       const anyHl = highlightFlowIds.length > 0
       const camDist = camera.position.length()
       const detailOn = camDist < 2.75
+      const showArrows = live.current.opts.showArrows
+
       for (const a of arcs) {
         const vis = visibleLayers[a.type] !== false
-        const isSel = selectedFlowId === a.id
-        const isHl = highlightFlowIds.includes(a.id)
         let op = 0.8
         if (!vis) op = 0
         else if (a.detail && !detailOn) op = 0
-        else if (anySel) op = isSel ? 1 : 0.05
-        else if (anyHl) op = isHl ? 1 : 0.07
-        a.line.visible = op > 0
-        ;(a.line.material as THREE.LineBasicMaterial).opacity = Math.min(1, op)
+        else if (anySel) op = selectedFlowId === a.id ? 1 : 0.05
+        else if (anyHl) op = highlightFlowIds.includes(a.id) ? 1 : 0.07
+        a.op = op
+        /* cor × fator ≡ opacidade no blending aditivo */
+        writeColor(typeBatches[a.type].colors.array as Float32Array, TYPE_RGB[a.type], op, a.vStart, a.vCount)
         /* núcleo acompanha: forte no selecionado, sutil no normal */
-        a.core.visible = a.line.visible
-        ;(a.core.material as THREE.LineBasicMaterial).opacity =
-          !a.line.visible ? 0 : selectedFlowId === a.id ? 0.95 : anySel || anyHl ? 0 : 0.16
-        a.arrow.visible = a.line.visible && live.current.opts.showArrows
-        ;(a.arrow.material as THREE.MeshBasicMaterial).opacity = Math.min(1, op)
+        const coreOp = op === 0 ? 0 : selectedFlowId === a.id ? 0.95 : anySel || anyHl ? 0 : 0.16
+        writeColor(coreColors!.array as Float32Array, WHITE, coreOp, a.vStart, a.vCount)
       }
+      for (const t of Object.keys(typeBatches) as FlowType[]) {
+        typeBatches[t].colors.needsUpdate = true
+        typeBatches[t].mesh.visible = visibleLayers[t] !== false
+      }
+      coreColors!.needsUpdate = true
+
+      /* setas: cor = opacidade (aditivo); escala 0 esconde a instância */
+      const am = arrowsMesh
+      if (am) {
+        arcs.forEach((a, i) => {
+          const on = a.op > 0 && showArrows
+          _c.copy(TYPE_RGB[a.type]).multiplyScalar(on ? Math.min(1, a.op) : 0)
+          am.setColorAt(i, _c)
+          _m4.compose(a.arrowPos, a.arrowQuat, _s3.set(on ? 1 : 0, on ? 1 : 0, on ? 1 : 0))
+          am.setMatrixAt(i, _m4)
+        })
+        if (am.instanceColor) am.instanceColor.needsUpdate = true
+        am.instanceMatrix.needsUpdate = true
+      }
+
       /* brilho pulsante nas pontas do fluxo selecionado */
-      const sel = arcs.find((a) => a.id === selectedFlowId && a.line.visible)
-      if (sel) {
+      const sel = selectedFlowId ? arcById[selectedFlowId] : undefined
+      if (sel && sel.op > 0) {
         const st = TYPE_STYLE[sel.type]
         selGlowA.visible = true
         selGlowB.visible = true
@@ -698,13 +833,11 @@ export default function Globe3DCanvas(props: Props) {
         const attr = moverPoints.geometry.getAttribute('color') as THREE.BufferAttribute
         movers.forEach((m, i) => {
           const a = arcs[m.arc]
-          const vis = visibleLayers[a.type] !== false && (!a.detail || detailOn)
           const emph = selectedFlowId === a.id || highlightFlowIds.includes(a.id) || (!anySel && !anyHl)
-          const base = moverBase[i]
-          const f = !vis ? 0 : emph ? 1 : 0.08
-          moverColors![i * 3] = base.r * f
-          moverColors![i * 3 + 1] = base.g * f
-          moverColors![i * 3 + 2] = base.b * f
+          const f = a.op === 0 ? 0 : emph ? 1 : 0.08
+          moverColors![i * 3] = moverBase[i].r * f
+          moverColors![i * 3 + 1] = moverBase[i].g * f
+          moverColors![i * 3 + 2] = moverBase[i].b * f
         })
         attr.needsUpdate = true
       }
@@ -726,13 +859,35 @@ export default function Globe3DCanvas(props: Props) {
 
     /* ── interação ────────────────────────────────────────── */
     const ray = new THREE.Raycaster()
-    ray.params.Line = { threshold: isMobile ? 0.045 : 0.025 } as never
     const ndc = new THREE.Vector2()
     const castAt = (cx: number, cy: number) => {
       const r = renderer.domElement.getBoundingClientRect()
       ndc.x = ((cx - r.left) / r.width) * 2 - 1
       ndc.y = -((cy - r.top) / r.height) * 2 + 1
       ray.setFromCamera(ndc, camera)
+    }
+    const _wp = new THREE.Vector3()
+    /** Arco visível mais próximo do raio (distância raio→amostra, em mundo).
+     *  Substitui o raycast por linha: com as geometrias mescladas por tipo,
+     *  o raio não identifica mais o arco sozinho. 52×~72 amostras = trivial. */
+    const pickArc = (): string | null => {
+      const thresh = isMobile ? 0.045 : 0.025
+      let best: string | null = null
+      let bestD = thresh * thresh
+      const m3 = arcGroup.matrixWorld
+      for (const a of arcs) {
+        if (a.op === 0) continue
+        const s = a.samples
+        for (let i = 0; i < s.length; i += 3) {
+          _wp.set(s[i], s[i + 1], s[i + 2]).applyMatrix4(m3)
+          const d = ray.ray.distanceSqToPoint(_wp)
+          if (d < bestD) {
+            bestD = d
+            best = a.id
+          }
+        }
+      }
+      return best
     }
     /** País sob um pixel (raio → oceano → local → lat/lng → lookup). */
     const countryAt = (cx: number, cy: number): { iso: string; name: string } | null => {
@@ -776,15 +931,15 @@ export default function Globe3DCanvas(props: Props) {
       }
       if (Math.hypot(e.clientX - downX, e.clientY - downY) > 7) return
       castAt(e.clientX, e.clientY)
-      const hitM = ray.intersectObjects(markerMeshes, false)[0]
-      if (hitM) {
-        live.current.onSelectBloc(hitM.object.userData.blocId as string)
+      const mk = markersMesh
+      const hitM = mk ? ray.intersectObject(mk, false)[0] : null
+      if (mk && hitM && hitM.instanceId !== undefined) {
+        live.current.onSelectBloc((mk.userData.blocIds as string[])[hitM.instanceId])
         return
       }
-      const hitL = ray.intersectObjects(arcGroup.children, false)[0]
-      if (hitL) {
-        const id = hitL.object.userData.flowId as string
-        live.current.onSelectFlow(live.current.selectedFlowId === id ? null : id)
+      const hitArc = pickArc()
+      if (hitArc) {
+        live.current.onSelectFlow(live.current.selectedFlowId === hitArc ? null : hitArc)
         return
       }
       /* clique no país abre a anatomia do bloco (atalho mobile); senão, desseleciona */
@@ -803,13 +958,13 @@ export default function Globe3DCanvas(props: Props) {
       if (now - hoverTick < 90) return
       hoverTick = now
       castAt(e.clientX, e.clientY)
-      const hitM = ray.intersectObjects(markerMeshes, false)[0]
-      const hitL = hitM ? undefined : ray.intersectObjects(arcGroup.children, false)[0]
-      const hit = hitM ?? hitL
+      const hitM = markersMesh ? ray.intersectObject(markersMesh, false)[0] : null
+      const hitArc = hitM ? null : pickArc()
+      const hit = !!hitM || hitArc !== null
       renderer.domElement.style.cursor = hit ? 'pointer' : 'grab'
       /* tooltip do arco: título + escala anual (só desktop com mouse fino) */
-      if (finePointer && hitL) {
-        const f = FLOWS.find((x) => x.id === (hitL.object.userData.flowId as string))
+      if (finePointer && hitArc) {
+        const f = flowById[hitArc]
         if (f) {
           if (hoverIso !== null) {
             hoverIso = null
@@ -829,7 +984,7 @@ export default function Globe3DCanvas(props: Props) {
           hoverIso = null
           recolorDots()
         }
-        if (!hitL) tipEl.style.display = 'none'
+        if (!hitArc) tipEl.style.display = 'none'
         return
       }
       const c = countryAt(e.clientX, e.clientY)

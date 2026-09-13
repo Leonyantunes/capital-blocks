@@ -1,13 +1,18 @@
 /**
  * Matriz de pontos terrestres do globo 3D.
- * Amostra uma grade lat/lng e mantém só os pontos sobre terra (geoContains),
- * com bbox por país para acelerar ~50x. Resultado em cache por sessão.
+ * Amostra uma grade lat/lng e mantém só os pontos sobre terra (geoContains).
+ * O cálculo roda num Web Worker (landWorker.ts) para não travar o render no
+ * celular; sem worker disponível, cai no fatiamento por setTimeout (original).
+ * Resultado em cache por sessão.
  */
 import { geoContains } from 'd3-geo'
-import { feature, mesh } from 'topojson-client'
+import { mesh } from 'topojson-client'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JSON do world-atlas sem tipagem
 import topology from 'world-atlas/countries-110m.json'
+import { collectFeats, latLngToVec3, type BBoxFeat } from './landSample'
+
+export { latLngToVec3 }
 
 export interface LandMatrix {
   /** xyz na esfera unitária (x,y,z por ponto) */
@@ -18,58 +23,12 @@ export interface LandMatrix {
 }
 
 let cache: LandMatrix | null = null
-
-interface BBoxFeat {
-  iso: string
-  name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  geom: any
-  minLng: number
-  maxLng: number
-  minLat: number
-  maxLat: number
-}
+let pending: Promise<LandMatrix> | null = null
 
 let featCache: BBoxFeat[] | null = null
-
-function eachCoord(coords: unknown, cb: (lng: number, lat: number) => void) {
-  const c = coords as { [k: number]: unknown } | null | undefined
-  if (typeof c?.[0] === 'number') {
-    cb(c[0] as number, c[1] as number)
-    return
-  }
-  for (const sub of (coords as unknown[])) eachCoord(sub, cb)
-}
-
 function buildFeatures(): BBoxFeat[] {
-  if (featCache) return featCache
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const topo = topology as unknown as any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fc = feature(topo, topo.objects.countries) as unknown as any
-  const out: BBoxFeat[] = []
-  for (const f of fc.features ?? []) {
-    const iso = String(f.id ?? '')
-    const name = f.properties?.name ?? ''
-    if (name === 'Antarctica') continue
-    let minLng = 180
-    let maxLng = -180
-    let minLat = 90
-    let maxLat = -90
-    try {
-      eachCoord(f.geometry?.coordinates, (lng, lat) => {
-        if (lng < minLng) minLng = lng
-        if (lng > maxLng) maxLng = lng
-        if (lat < minLat) minLat = lat
-        if (lat > maxLat) maxLat = lat
-      })
-    } catch {
-      continue
-    }
-    out.push({ iso, name, geom: f.geometry, minLng, maxLng, minLat, maxLat })
-  }
-  featCache = out
-  return out
+  if (!featCache) featCache = collectFeats()
+  return featCache
 }
 
 /** País sob um ponto lng/lat (para hover e clique). Retorna null no oceano. */
@@ -137,27 +96,8 @@ export function getBorderPositions(radius = 1.0025): Float32Array {
   return borderCache
 }
 
-export function latLngToVec3(lng: number, lat: number, radius: number, out?: [number, number, number]): [number, number, number] {
-  const phi = ((90 - lat) * Math.PI) / 180
-  const theta = ((lng + 180) * Math.PI) / 180
-  const x = -radius * Math.sin(phi) * Math.cos(theta)
-  const z = radius * Math.sin(phi) * Math.sin(theta)
-  const y = radius * Math.cos(phi)
-  if (out) {
-    out[0] = x
-    out[1] = y
-    out[2] = z
-    return out
-  }
-  return [x, y, z]
-}
-
-/** Gera (ou devolve do cache) a matriz de pontos de forma NÃO-bloqueante (fatia por faixas de latitude). */
-export function buildLandMatrixAsync(step = 0.85, onProgress?: (done: number, total: number) => void): Promise<LandMatrix> {
-  if (cache) {
-    onProgress?.(1, 1)
-    return Promise.resolve(cache)
-  }
+/** Fallback original: fatia por faixas de latitude na thread principal. */
+function viaChunks(step: number, onProgress?: (done: number, total: number) => void): Promise<LandMatrix> {
   return new Promise((resolve) => {
     const feats = buildFeatures()
     const rows: number[] = []
@@ -192,10 +132,54 @@ export function buildLandMatrixAsync(step = 0.85, onProgress?: (done: number, to
       if (i < rows.length) {
         window.setTimeout(chunk, 0)
       } else {
-        cache = { positions: new Float32Array(pts), isos, count: isos.length }
-        resolve(cache)
+        resolve({ positions: new Float32Array(pts), isos, count: isos.length })
       }
     }
     window.setTimeout(chunk, 0)
   })
+}
+
+/** Matriz via Web Worker (transfere o Float32Array sem cópia). */
+function viaWorker(step: number, onProgress?: (done: number, total: number) => void): Promise<LandMatrix> {
+  return new Promise((resolve, reject) => {
+    let w: Worker
+    try {
+      w = new Worker(new URL('./landWorker.ts', import.meta.url), { type: 'module' })
+    } catch (err) {
+      reject(err)
+      return
+    }
+    w.onmessage = (e: MessageEvent) => {
+      const d = e.data as { type: string; done?: number; total?: number; positions?: Float32Array; isos?: string[]; count?: number }
+      if (d?.type === 'progress') {
+        onProgress?.(d.done ?? 0, d.total ?? 1)
+      } else if (d?.type === 'done' && d.positions && d.isos) {
+        w.terminate()
+        resolve({ positions: d.positions, isos: d.isos, count: d.count ?? d.isos.length })
+      }
+    }
+    w.onerror = () => {
+      w.terminate()
+      reject(new Error('landWorker falhou'))
+    }
+    w.postMessage({ step })
+  })
+}
+
+/** Gera (ou devolve do cache) a matriz de pontos de forma NÃO-bloqueante. */
+export function buildLandMatrixAsync(step = 0.85, onProgress?: (done: number, total: number) => void): Promise<LandMatrix> {
+  if (cache) {
+    onProgress?.(1, 1)
+    return Promise.resolve(cache)
+  }
+  if (!pending) {
+    pending = viaWorker(step, onProgress)
+      .catch(() => viaChunks(step, onProgress))
+      .then((m) => {
+        cache = m
+        pending = null
+        return m
+      })
+  }
+  return pending
 }
