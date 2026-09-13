@@ -9,6 +9,7 @@ import Globe3DCanvas, { type GlobeFocus } from './Globe3DCanvas'
 import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../../data/tours'
+import { distFromK } from '../../data/tour'
 import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
 
@@ -316,9 +317,10 @@ export default function GlobeModule() {
   const applyTourStep = (i: number) => {
     const s = STOPS[i]
     if (!s) return
-    /* parada com rota: enquadra as duas pontas; senão, o ponto da parada */
+    /* parada com rota: enquadra as duas pontas; senão, o ponto da parada com
+       distância derivada do k do 2D (paridade entre os mapas) */
     if (s.flowId) flyToFlow(s.flowId, 0.55)
-    else flyTo(s.lng, s.lat, undefined, 0.55)
+    else flyTo(s.lng, s.lat, s.dist ?? distFromK(s.k), 0.55)
     setSelFlow(s.flowId ?? null)
     setConflict((s.conflict as typeof conflict) ?? null)
   }

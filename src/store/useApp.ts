@@ -48,8 +48,17 @@ interface AppState {
   setLang: (l: 'pt' | 'en' | 'es') => void
 }
 
+const URL_TABS: TabId[] = ['home', 'globe3d', 'circuit', 'war', 'debt', 'companies', 'platform', 'wealth', 'consequences', 'alternatives']
+
+function initialTab(): TabId {
+  if (typeof window === 'undefined') return 'home'
+  const t = new URLSearchParams(window.location.search).get('t')
+  return (URL_TABS as string[]).includes(t ?? '') ? (t as TabId) : 'home'
+}
+
 export const useApp = create<AppState>((set) => ({
-  tab: 'home',
+  /* ?t=<aba> na URL restaura a aba (links compartilháveis; o mapa 2D escreve t=) */
+  tab: initialTab(),
   setTab: (tab) => set({ tab }),
 
   mode: 'didatico',

@@ -1,9 +1,16 @@
 /**
  * REGISTRO DE TOURS TEMÁTICOS — base para vários tours no 2D e no 3D.
  * Cada tour: mesmas paradas (TourStop), acento visual próprio e saída final.
- * - principal: o tour completo "Como o capitalismo funciona"
- * - guerra: guerras e o fluxo de capital (tema vermelho) + 1 tour por guerra
- * - mortes: os massacres do Módulo 08, país por país
+ *
+ * CONTRATO DE PARADA (tours novos NÃO precisam mexer no código dos mapas):
+ * - flowId → a rota é enquadrada de ponta a ponta (2D e 3D) e aparece em
+ *   qualquer zoom, mesmo sendo tier 'detail' (seleção ignora o gate);
+ * - lng/lat + k → ponto único; o 3D deriva a distância via distFromK(k)
+ *   (ou usa s.dist como override);
+ * - isos → países destacados, SOMADOS às pontas do fluxo do flowId;
+ * - conflict/layer → acendem guerras de blocos e camadas temáticas;
+ * - toda parada com assunto específico deve destacar ALGO (flowId ou isos) —
+ *   só aberturas/fechamentos em visão mundial podem ficar sem destaque.
  */
 import type { TabId } from '../store/useApp'
 import { FLOWS, TYPE_STYLE } from './flows'
@@ -27,14 +34,15 @@ const byId = (id: string): TourStop => {
   return s
 }
 
-/** ISOs destacados numa parada: pontas do fluxo ou lista manual. */
+/** ISOs destacados numa parada: pontas do fluxo + lista manual da parada. */
 export function stopIsos(s: TourStop): string[] {
+  const out = new Set<string>()
   if (s.flowId) {
     const f = FLOWS.find((x) => x.id === s.flowId)
-    const isos = flowIsos(f)
-    if (isos.length) return isos
+    flowIsos(f).forEach((iso) => out.add(iso))
   }
-  return s.isos ?? []
+  ;(s.isos ?? []).forEach((iso) => out.add(iso))
+  return [...out]
 }
 
 /** Cor do fluxo da parada (p/ pintar os países com cor que faz sentido). */
@@ -69,7 +77,7 @@ export const TOURES: TourDef[] = [
     stops: [
       {
         id: 'w-intro', chapter: 'Guerra · Abertura', titulo: 'Quando a guerra redesenha o mapa',
-        lng: 20, lat: 30, k: 1.6,
+        lng: 20, lat: 30, k: 1.6, isos: ['840', '156', '643'],
         did: 'Guerras não destroem só cidades: elas redesenham o mapa do dinheiro. Dutos mudam de direção, sanções desviam petroleiros inteiros, orçamentos militares incham — e sempre há quem fature com isso. Este tour segue o dinheiro das guerras.',
         didStats: [
           { v: 'US$ 1,5 tri', k: 'gasto militar da OTAN/ano' },
@@ -102,7 +110,7 @@ export const TOURES: TourDef[] = [
       byId('saida'),
       {
         id: 'w-fim', chapter: 'Guerra · Fechamento', titulo: 'Quem enriqueceu?',
-        lng: 30, lat: 35, k: 1.8,
+        lng: 30, lat: 35, k: 1.8, isos: ['840', '643'],
         did: 'Faça as contas do tour: fabricantes de chips e armas, petroleiras com desconto, traders de rotas novas. E do outro lado: salários corroídos, energia cara, países inteiros pagando pedágio. Guerra move fronteiras no mapa — e dinheiro no bolso de poucos.',
         didStats: [
           { v: 'armas + energia', k: 'quem fatura' },
@@ -124,7 +132,7 @@ export const TOURES: TourDef[] = [
     stops: [
       {
         id: 'ws-intro', chapter: 'Semicondutores', titulo: 'A guerra pelo cérebro',
-        lng: 122, lat: 30, k: 2.2, conflict: 'semis',
+        lng: 122, lat: 30, k: 2.2, conflict: 'semis', isos: ['840', '158', '156'],
         did: 'Celular, carro, míssil, inteligência artificial: tudo precisa do chip mais avançado — e quase todos saem de Taiwan. Os EUA tentam travar a China bloqueando máquinas e programas; a China corre para fazer os seus. É uma guerra sem tiros, pelo objeto mais estratégico do século.',
         didStats: [
           { v: '~90%', k: 'dos chips avançados: Taiwan' },
@@ -136,7 +144,7 @@ export const TOURES: TourDef[] = [
       byId('fabrica-muda'),
       {
         id: 'ws-fim', chapter: 'Semicondutores', titulo: 'E o Brasil nisso?',
-        lng: -53, lat: -10, k: 2.4,
+        lng: -53, lat: -10, k: 2.4, isos: ['076'],
         did: 'O Brasil assiste de fora: importa os chips prontos dentro de celulares e máquinas, sem fabricar nenhum. Na guerra do século, quem não produz tecnologia assiste ao jogo — e paga ingresso caro em cada aparelho.',
         didStats: [
           { v: 'zero', k: 'fábricas de chips avançados' },
@@ -156,7 +164,7 @@ export const TOURES: TourDef[] = [
     stops: [
       {
         id: 'we-intro', chapter: 'Energia', titulo: 'A guerra dos dutos',
-        lng: 60, lat: 50, k: 2.0, conflict: 'energia',
+        lng: 60, lat: 50, k: 2.0, conflict: 'energia', isos: ['643', '276'],
         did: 'Antes da guerra, o gás russo aquecia a Europa por dutos gigantes. Com as sanções, os dutos viraram para a Ásia — e a Europa passou a comprar energia bem mais cara de outros. O mapa da energia foi redesenhado em dois anos.',
         didStats: [
           { v: 'leste', k: 'o novo rumo do gás russo' },
@@ -169,7 +177,7 @@ export const TOURES: TourDef[] = [
       byId('canal'),
       {
         id: 'we-fim', chapter: 'Energia', titulo: 'Quem ficou com a conta?',
-        lng: 10, lat: 48, k: 2.2,
+        lng: 10, lat: 48, k: 2.2, isos: ['643', '276'],
         did: 'A Rússia vende com desconto, a China e a Índia compram barato, as petroleiras ocidentais lucram com preço alto — e a indústria europeia paga a conta em energia cara. Sanção também é transferência de renda: a pergunta é sempre de quem para quem.',
         didStats: [
           { v: 'desconto', k: 'para quem compra da Rússia' },
@@ -189,7 +197,7 @@ export const TOURES: TourDef[] = [
     stops: [
       {
         id: 'wr-intro', chapter: 'Reprimarização', titulo: 'A guerra lenta',
-        lng: -53, lat: -10, k: 2.2,
+        lng: -53, lat: -10, k: 2.2, isos: ['076'],
         did: 'Nem toda guerra tem bomba: há a guerra lenta de um país que desmonta a própria indústria e volta a viver de grãos e minério. O Brasil tinha 27% da economia na indústria em 1985; hoje tem 11%. Este tour mostra como se perde uma guerra sem nenhum tiro.',
         didStats: [
           { v: '27% → 11%', k: 'indústria no PIB desde 1985' },
@@ -202,7 +210,7 @@ export const TOURES: TourDef[] = [
       byId('remessas'),
       {
         id: 'wr-fim', chapter: 'Reprimarização', titulo: 'Dá para reverter?',
-        lng: -53, lat: -10, k: 2.8,
+        lng: -53, lat: -10, k: 2.8, isos: ['076'],
         did: 'Reverter exige o que foi desmontado: indústria, tecnologia, emprego formal — e segurar aqui parte do excedente que hoje viaja para fora. O Módulo 03 mostra as frentes; o Módulo 09, os caminhos.',
         didStats: [
           { v: 'indústria', k: 'o que foi desmontado' },

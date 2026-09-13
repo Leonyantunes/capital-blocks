@@ -254,12 +254,13 @@ export default function MapWorld() {
     const k1 = view.k
     const c1x = (MAP_W / 2 - view.x) / k1
     const c1y = (MAP_H / 2 - view.y) / k1
-    /* viagem de verdade: sobe (zoom out) → cruza → desce; tour força kLift=1 */
+    /* viagem de verdade: sobe (zoom out) → cruza → desce; durações generosas
+       p/ o olho acompanhar o trajeto (o gesto do usuário cancela o voo) */
     const kMid = kLift ?? Math.max(1, Math.min(k1, k2, 1.25))
     const t0 = performance.now()
-    const D1 = 560, D2 = 920, D3 = 620
+    const D1 = 800, D2 = 1300, D3 = 900
     const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
-    const CY = MAP_H * fy // altura focal: 0.5 = centro; tour usa ~0.36 p/ não tapar o país com o card
+    const CY = MAP_H * fy // altura focal: 0.5 = centro; tour usa ~0.36 p/ não tapar o país
     const frame = (now: number) => {
       const e = now - t0
       if (e <= D1) {
@@ -324,9 +325,7 @@ export default function MapWorld() {
     if (tourStep === null) return
     const s = STOPS[tourStep]
     if (!s) return
-    /* blindagem: rotas detail somem com k<2 (e o auto-close apaga a seleção) */
-    const kk = s.flowId?.startsWith('det-') ? Math.max(s.k, 2.05) : s.k
-    flyToLL(s.lng, s.lat, kk, 0.36, 1)
+    flyToLL(s.lng, s.lat, s.k, 0.36, 1)
     if (s.flowId) setSelFlow(s.flowId)
     else setSelFlow(null)
     if (s.conflict) setConflict(s.conflict)
@@ -370,10 +369,11 @@ export default function MapWorld() {
     return s
   }, [])
 
-  /* auto-fechar painel de rota regional se o usuário afastar o zoom */
+  /* auto-fechar painel de rota regional se o usuário afastar o zoom
+     (exceto no tour, que seleciona rotas regionais de propósito) */
   useEffect(() => {
-    if (selFlow?.startsWith('det-') && view.k < 2) setSelFlow(null)
-  }, [view.k, selFlow])
+    if (tourStep === null && selFlow?.startsWith('det-') && view.k < 2) setSelFlow(null)
+  }, [view.k, selFlow, tourStep])
 
   /* ── contornos oficiais dos estados (IBGE) — carregados sob demanda ── */
   const [brGeo, setBrGeo] = useState<{ code: string; d: string }[] | null>(brGeoCache)
@@ -639,7 +639,11 @@ export default function MapWorld() {
       <g>
         {FLOWS.map((fl) => {
           if (!visibleLayers[fl.type]) return null
-          if (fl.tier === 'detail' && kq < 2) return null
+          /* rotas regionais (detail) ficam ocultas sem zoom — EXCETO quando
+             selecionadas ou acesas por um conflito/tour: o destaque sempre
+             aparece (o tour pode selecioná-las em visão mundial) */
+          const isEmph = selFlow === fl.id || active?.highlight.includes(fl.id) === true
+          if (fl.tier === 'detail' && kq < 2 && !isEmph) return null
           const st = TYPE_STYLE[fl.type]
           const geo = FLOW_GEO[fl.id]
           const { from, to, d } = geo

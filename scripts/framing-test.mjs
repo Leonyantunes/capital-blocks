@@ -32,13 +32,15 @@ function routeMidpoint(a, b) {
 // formula ANTIGA (bug): media aritmetica de longitude
 const oldMid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
-// assinatura de distancia do app (Globe3DCanvas autoDist)
+// assinatura de distancia do app (Globe3DCanvas autoDist):
+// 25% de folga no frame (rota ocupa ~80% da tela) e minimo 2.0 (fluxos curtos
+// nao colam a camera no pais)
 function autoDist(spanRad, fovDeg, aspect) {
   const halfV = (fovDeg * Math.PI) / 360;
   const halfH = Math.atan(Math.tan(halfV) * Math.max(1, aspect));
   const half = Math.min(halfV, halfH);
   const fit = spanRad / 2 / Math.max(0.08, half);
-  return Math.min(5, Math.max(1.6, 1.42 / Math.cos(Math.min(1.35, fit))));
+  return Math.min(5, Math.max(2.0, 1.42 / Math.cos(Math.min(1.35, fit)) / 0.8));
 }
 
 const worldSrc = fs.readFileSync('src/lib/world.ts', 'utf8');

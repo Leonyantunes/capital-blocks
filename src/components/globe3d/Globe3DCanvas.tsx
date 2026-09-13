@@ -782,11 +782,14 @@ export default function Globe3DCanvas(props: Props) {
 
       for (const a of arcs) {
         const vis = visibleLayers[a.type] !== false
+        const isSel = selectedFlowId === a.id
+        const isHl = highlightFlowIds.includes(a.id)
         let op = 0.8
         if (!vis) op = 0
+        else if (isSel || isHl) op = 1
         else if (a.detail && !detailOn) op = 0
-        else if (anySel) op = selectedFlowId === a.id ? 1 : 0.05
-        else if (anyHl) op = highlightFlowIds.includes(a.id) ? 1 : 0.07
+        else if (anySel) op = 0.05
+        else if (anyHl) op = 0.07
         a.op = op
         /* cor × fator ≡ opacidade no blending aditivo */
         writeColor(typeBatches[a.type].colors.array as Float32Array, TYPE_RGB[a.type], op, a.vStart, a.vCount)
@@ -1116,13 +1119,16 @@ export default function Globe3DCanvas(props: Props) {
           const mid = routeMidpoint(rec.from, rec.to)
           focusLng = mid[0]
           focusLat = mid[1]
-          /* distância p/ caber o span angular (com folga p/ a curvatura) */
+          /* distância p/ caber o span angular — com 25% de folga no frame
+             (a rota ocupa ~80% da tela) e mínimo de 2.0: fluxos curtos não
+             colam a câmera no país; o gate de rotas regionais não se aplica
+             à seleção (ver applySelection) */
           const span = Math.acos(THREE.MathUtils.clamp(va.dot(vb), -1, 1)) // rad
           const halfV = (camera.fov * Math.PI) / 360
           const halfH = Math.atan(Math.tan(halfV) * Math.max(1, camera.aspect))
           const half = Math.min(halfV, halfH)
           const fit = span / 2 / Math.max(0.08, half)
-          autoDist = THREE.MathUtils.clamp(1.42 / Math.cos(Math.min(1.35, fit)), 1.6, 5)
+          autoDist = THREE.MathUtils.clamp(1.42 / Math.cos(Math.min(1.35, fit)) / 0.8, 2.0, 5)
         }
         const p = latLngToVec3(focusLng, focusLat, 1)
         /* LOCAL (sem o quaternion atual): uprightQuat mapeia local→alvo;
@@ -1161,7 +1167,7 @@ export default function Globe3DCanvas(props: Props) {
         const camPeak = midDir.normalize().multiplyScalar(peakR)
         flight = {
           t: 0,
-          dur: reducedMotion ? 1.0 : 1.9,
+          dur: reducedMotion ? 1.0 : 2.5,
           from: globe.quaternion.clone(),
           to,
           camFrom,

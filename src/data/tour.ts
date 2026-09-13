@@ -18,12 +18,14 @@ export interface TourStop {
   titulo: string
   lng: number
   lat: number
-  /** zoom do mapa 2D */
+  /** zoom do mapa 2D (o 3D deriva a distância da câmera via distFromK) */
   k: number
+  /** override da distância da câmera 3D (opcional; padrão = distFromK(k)) */
+  dist?: number
   flowId?: string
   conflict?: 'semis' | 'energia' | 'reprimaria'
   layer?: 'deaths' | 'wages'
-  /** ISOs destacados quando a parada não tem fluxo (ex.: tour das mortes) */
+  /** ISOs destacados, SOMADOS às pontas do fluxo do flowId (ver stopIsos) */
   isos?: string[]
   /** narrativa didática (suave, poucos dados no texto) */
   did: string
@@ -33,6 +35,13 @@ export interface TourStop {
   adv: string
   dica?: string
 }
+
+/**
+ * k (zoom do 2D) → distância da câmera no 3D — FONTE ÚNICA de paridade entre
+ * os mapas. k=1.3 (visão mundial) → ~4.0 · k=2.2 (região) → ~3.0 · k=3.2
+ * (país de perto) → ~1.9. Paradas de tour novo não precisam definir dist.
+ */
+export const distFromK = (k: number): number => Math.min(4.6, Math.max(1.7, 5.4 - 1.1 * k))
 
 export const TOUR_STOPS: TourStop[] = [
   {
@@ -325,7 +334,7 @@ export const TOUR_STOPS: TourStop[] = [
     id: 'energia',
     chapter: 'Cap. 6 · A tentativa de saída',
     titulo: 'Quando a energia vira arma',
-    lng: 65, lat: 33, k: 2.0, conflict: 'energia',
+    lng: 65, lat: 33, k: 2.0, conflict: 'energia', isos: ['643', '276'],
     did: 'Com as sanções, os dutos russos mudaram de direção: o gás e o petróleo que iam para a Europa agora vão para a Ásia — e a indústria europeia ficou com energia bem mais cara. Energia também é poder: quem controla o cano, participa da decisão.',
     didStats: [
       { v: 'leste', k: 'o novo rumo do gás russo' },
@@ -376,7 +385,7 @@ export const TOUR_STOPS: TourStop[] = [
     id: 'agora',
     chapter: 'Encerramento',
     titulo: 'E agora?',
-    lng: -53, lat: -10, k: 2.8,
+    lng: -53, lat: -10, k: 2.8, isos: ['076'],
     did: 'O diagnóstico está completo: o trabalho produz, o Sul fornece barato, o lucro viaja para o Norte, a moeda comanda e a conta chega em vidas. Mas o Módulo 09 mostra que alternativas REAIS já funcionam — cooperativas gigantes, cidades com orçamento democrático, comunidades que cuidam do comum. O tabuleiro pode ser reorganizado.',
     didStats: [
       { v: '09', k: 'o módulo das alternativas' },
