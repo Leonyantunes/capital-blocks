@@ -146,7 +146,7 @@ export const FLOWS: FlowDef[] = [
     did: 'Taiwan exporta para os EUA os CHIPS mais avançados do mundo (TSMC). Sem essa linha, não existe IA, smartphone ou míssil americano — por isso a ilha é o ponto mais sensível do mapa.',
     adv: 'TSMC→EUA: semicondutores avançados (<7nm) como chokepoint estratégico — o "escudo de silício" que estrutura a contenção da China (ver conflito Semicondutores).',
     itens: [
-      { rotulo: 'Semicondutores avançados', valor: '≈ US$ 70 bi/ano', nota: '~90% dos nós <7nm mundiais' },
+      { rotulo: 'Semicondutores avançados', valor: '≈ US$ 70 bi/ano', nota: 'mais de 90% da lógica de ponta (TSMC)' },
     ],
     fonte: 'US Census · TSMC filings · 2024',
   },

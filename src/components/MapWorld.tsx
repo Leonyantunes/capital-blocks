@@ -77,9 +77,9 @@ export const CONFLICTS: ConflictDef[] = [
     chip: 'Guerra dos Semicondutores',
     title: 'EUA × China — Guerra dos Semicondutores',
     didatico:
-      'Os EUA bloqueiam a venda dos chips mais avançados para frear a indústria chinesa — quase 90% dos chips de ponta são feitos na ilha de Taiwan. Quem controla o "cérebro" da produção controla o século.',
+      'Os EUA bloqueiam a venda dos chips mais avançados para frear a indústria chinesa — a TSMC faz mais de 90% dos chips lógicos de ponta do mundo. Quem controla o "cérebro" da produção controla o século.',
     avancado:
-      'Export controls (ASML/EUV, NVIDIA) sobre o capital constante mais avançado: contenção da composição orgânica tecnológica chinesa + defesa da renda de monopólio anglo-americana (TSMC ~90% dos nós <7nm).',
+      'Export controls (ASML/EUV, NVIDIA) sobre o capital constante mais avançado: contenção da composição orgânica tecnológica chinesa + defesa da renda de monopólio anglo-americana (TSMC: mais de 90% da lógica de ponta, segundo o NIST).',
     color: '#ef5350',
     highlight: [],
     arcs: [

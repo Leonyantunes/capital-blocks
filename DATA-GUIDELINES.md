@@ -4,6 +4,9 @@ Normas obrigatórias para qualquer informação exibida no sistema. O objetivo �
 rigor das fontes, a didática dual-mode e a coerência conceitual (marxista + lente MMT
 onde couber).
 
+Implementação normativa: `DATA-STANDARD.md` é o contrato legível por humanos e por IA,
+com schemas, vocabulários controlados, roteamento de arquivos e workflow de verificação.
+
 **§0 — Constituição teórica:** nenhuma informação pode violar `THEORY.md`
 (Marx · Heterodoxia Keynes/Kalecki · MMT · TMD). Premissas neoclássicas são banidas;
 temas fiscais exigem dupla lente (ortodoxa citada como dominante a criticar + heterodoxa);
@@ -14,7 +17,8 @@ gargalo cambial) quando aplicável.
 
 ## 1. Regras universais para cada número exibido
 
-Todo dado no app DEVE carregar os campos abaixo (ver modelo em `src/data/indicators.ts`):
+Todo dado no app DEVE carregar os campos abaixo (ver modelo em `src/data/indicadores.ts`
+e o contrato em `DATA-STANDARD.md`):
 
 | Campo | Exigência |
 | :--- | :--- |
@@ -100,6 +104,9 @@ bend e dur escolhidos para legibilidade. Máx. 3 partículas por rota.
 ## 8. Checklist antes de commitar dados novos
 
 - [ ] Fonte primária + ano no objeto de dados?
+- [ ] Entrada correspondente em `src/data/sources.ts`?
+- [ ] ID estável em kebab-case e `usadoEm` atualizado?
+- [ ] URL direta aberta quando existir; se não existir, `revisao-pendente`?
 - [ ] Textos `didatico` E `avancado` escritos?
 - [ ] `estimate: true` se ilustrativo?
 - [ ] Cores respeitam §4?

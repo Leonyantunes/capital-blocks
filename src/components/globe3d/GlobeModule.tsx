@@ -17,8 +17,8 @@ import { useApp } from '../../store/useApp'
 const GLOBE_CONFLICTS: { id: 'semis' | 'energia' | 'reprimaria'; chip: string; title: string; didatico: string; avancado: string; color: string }[] = [
   {
     id: 'semis', chip: 'Guerra dos Semicondutores', title: 'EUA × China — Guerra dos Semicondutores', color: '#ef5350',
-    didatico: 'Os EUA bloqueiam a venda dos chips mais avançados para frear a indústria chinesa — quase 90% dos chips de ponta são feitos em Taiwan.',
-    avancado: 'Export controls sobre o capital constante mais avançado: contenção tecnológica chinesa + renda de monopólio anglo-americana (TSMC ~90% dos nós <7nm).',
+    didatico: 'Os EUA bloqueiam a venda dos chips mais avançados para frear a indústria chinesa — a TSMC faz mais de 90% dos chips lógicos de ponta do mundo.',
+    avancado: 'Export controls sobre o capital constante mais avançado: contenção tecnológica chinesa + renda de monopólio anglo-americana (TSMC: mais de 90% da lógica de ponta, segundo o NIST).',
   },
   {
     id: 'energia', chip: 'Energia & Sanções (RUS × UE)', title: 'Rússia × OTAN/UE — Guerra de Energia e Sanções', color: '#ffb300',

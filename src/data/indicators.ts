@@ -22,10 +22,10 @@ export const INDICATORS: Indicator[] = [
     id: 'cofer-usd',
     label: 'Dólar nas reservas mundiais',
     value: '56,8%',
-    sub: 'de 71% em 2000 · € 20,3% · ¥ 1,95%',
+    sub: 'de 71% em 2000 · € 20,3% · ¥ 5,6%',
     year: 'Q4 2025',
     source: 'IMF COFER',
-    sourceUrl: 'https://data.imf.org/?sk=E6A5F467-C14B-4AA8-9F6D-5A09EC4E62A4',
+    sourceUrl: 'https://data.imf.org/en/datasets/IMF.STA:COFER',
     didatico:
       'De cada US$100 guardados nos cofres dos bancos centrais do mundo, quase US$57 estão em dólar. É o que dá aos EUA um "cartão de crédito infinito" — e o que os BRICS tentam furar.',
     avancado:
@@ -90,16 +90,16 @@ export const INDICATORS: Indicator[] = [
   },
   {
     id: 'tsmc-advanced',
-    label: 'Chips avançados feitos pela TSMC',
+    label: 'Chips de lógica de ponta feitos pela TSMC',
     value: '~90% do mundo',
-    sub: '< 5 nm · gargalo da guerra tech',
+    sub: 'lógica leading-edge · gargalo da guerra tech',
     year: '2024',
-    source: 'SIA / TrendForce',
-    sourceUrl: 'https://www.semiconductors.org/global-semiconductor-sales-figures-q3-2024/',
+    source: 'NIST / Dept. de Comércio dos EUA',
+    sourceUrl: 'https://www.nist.gov/news-events/news/2024/04/biden-harris-administration-announces-preliminary-terms-tsmc-expanded',
     didatico:
-      'Quase todos os chips mais sofisticados do planeta são fabricados numa única ilha: Taiwan. Por isso a guerra dos semicondutores entre EUA e China é tão feroz — quem controla a fábrica controla o futuro.',
+      'Quase todos os chips lógicos mais sofisticados do planeta são fabricados pela TSMC. Por isso a guerra dos semicondutores entre EUA e China é tão feroz — quem controla a fábrica controla o futuro.',
     avancado:
-      'Concentração monopolista do capital constante mais avançado (foundry <7nm) em TSMC: alvo das export controls EUA (ASML/EUV, NVIDIA). O bloqueio tecnológico busca conter k chinês e preservar renda de monopólio anglo-americana.',
+      'O NIST afirma que a TSMC fabrica mais de 90% dos chips lógicos de ponta do mundo. A formulação canônica é “leading-edge logic chips”, não um único nó nanométrico; controles de exportação usam 7 nm e abaixo como limiar operacional.',
     color: '#42a5f5',
   },
 ]

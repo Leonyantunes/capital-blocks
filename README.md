@@ -105,13 +105,18 @@ Tipografia Inter (UI) + JetBrains Mono (números). Tokens definidos via `@theme`
 * **Módulo 07 — Plataformização** (`PlatformModule.tsx`): simulador do salário por peça
   (corridas, tarifa, comissão, km, custo/km); barra "para onde vai o bruto"; diagrama de
   transferência do capital constante; taxa oculta >400% nos extremos.
+* **Módulo 10 — Fontes & Referências** (`sources/SourcesModule.tsx` + `src/data/sources.ts`):
+  base documental pesquisável do app, com instituição, safra, cobertura por dataset,
+  estado de verificação e links diretos quando existem.
 
 ## Diretrizes de dados
 
 **`DATA-GUIDELINES.md`** define as normas obrigatórias: fonte primária + ano em todo
 número, textos dual-mode, flag `estimate`, semântica de cores conceituais, regras da
 dupla lente (marxista + MMT) para temas fiscais e o passo a passo para plugar novos
-países no mapa (`BLOC_MEMBERS` → `countries.ts`).
+países no mapa (`BLOC_MEMBERS` → `countries.ts`). **`DATA-STANDARD.md`** é o contrato
+legível por humanos e por IA, com schemas, vocabulários controlados, roteamento de
+arquivos e workflow de verificação.
 
 Módulo 03 vive agora como atalhos dentro do mapa; Timeline (04) permanece planejada.
 

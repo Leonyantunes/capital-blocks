@@ -14,6 +14,7 @@ const D: Record<string, [string, string, string]> = {
   riqueza: ['Riqueza', 'Wealth', 'Riqueza'],
   consequencias: ['Consequências', 'Consequences', 'Consecuencias'],
   alternativas: ['Alternativas', 'Alternatives', 'Alternativas'],
+  fontes: ['Fontes', 'Sources', 'Fuentes'],
   glossario: ['Glossário', 'Glossary', 'Glosario'],
   didatico: ['Didático', 'Simple', 'Didáctico'],
   avancado: ['Avançado', 'Advanced', 'Avanzado'],
@@ -72,6 +73,10 @@ export const MOD_META: Record<string, { kicker: [string, string, string]; title:
   alternatives: {
     kicker: ['Módulo 09 · O Terceiro Ato', 'Module 09 · The Third Act', 'Módulo 09 · El Tercer Acto'],
     title: ['E Para Onde Podemos Ir?', 'And Where Can We Go?', '¿Y Hacia Dónde Podemos Ir?'],
+  },
+  sources: {
+    kicker: ['Módulo 10 · Base documental', 'Module 10 · Source base', 'Módulo 10 · Base documental'],
+    title: ['Fontes & Referências', 'Sources & References', 'Fuentes y Referencias'],
   },
 }
 

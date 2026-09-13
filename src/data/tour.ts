@@ -167,7 +167,7 @@ export const TOUR_STOPS: TourStop[] = [
     lng: 122, lat: 28, k: 2.4, flowId: 'det-twn-usa', conflict: 'semis',
     did: 'Existe um produto sem o qual nada moderno funciona: o chip avançado. Quase todos saem de uma ilha, Taiwan. Sem essa linha não há inteligência artificial, smartphone — nem míssil. Por isso dois blocos disputam esse pedacinho do mapa.',
     didStats: [
-      { v: '~90%', k: 'dos chips avançados vêm de Taiwan' },
+      { v: '~90%', k: 'da lógica de ponta vem da TSMC' },
       { v: '1 ilha', k: 'no centro da disputa' },
     ],
     adv: 'TSMC→EUA (<7nm) como chokepoint estratégico: o "escudo de silício" estrutura a contenção à China — export controls (ASML/EUV, NVIDIA) sobre o capital constante mais avançado.',

@@ -160,11 +160,11 @@ export const WAR_CONFLICTS: WarConflict[] = [
     mecanismoAvancado:
       'Conflito de acumulação por controle do capital constante avançado (foundry <7nm, EUV): export-controls tentam conter k chinês; militarização paralela do Pacífico monetiza dissuasão (contratos US-Japão-Austrália).',
     empresas: [
-      { nome: 'TSMC', pais: 'Taiwan', setor: 'Foundry dominante', ganhoDidatico: '~90% dos chips mais avançados do mundo saem de uma única ilha — o "escudo de silício" que todos precisam proteger.', ganhoAvancado: 'Posição monopolista = renda tecnológica extraordinária; geografia da produção vira arma estratégica.' },
+      { nome: 'TSMC', pais: 'Taiwan', setor: 'Foundry dominante', ganhoDidatico: '~90% dos chips lógicos de ponta do mundo saem da TSMC — o "escudo de silício" que todos precisam proteger.', ganhoAvancado: 'Posição monopolista = renda tecnológica extraordinária; geografia da produção vira arma estratégica.' },
       { ref: 'lockheed', nome: 'Lockheed Martin / contratadas EUA', pais: 'EUA', setor: 'Deterrence no Pacífico', ganhoDidatico: 'A possibilidade da guerra já vende: mísseis anti-navio, caças e baterias para Japão, Austrália e EUA mesmos.', ganhoAvancado: 'Valorização da opção bélica: incerteza estrutural sustenta trajetória ascendente de contratos de dissuasão.' },
     ],
     stats: [
-      { label: 'Chips avançados (<7nm) fabricados pela TSMC', valor: '~90% mundial', fonte: 'SIA/TrendForce 2024' },
+      { label: 'Chips de lógica de ponta feitos pela TSMC', valor: '~90% mundial', fonte: 'NIST/Dept. de Comércio dos EUA, 2024' },
       { label: 'Export controls EUA→CHN (chips/EUV)', valor: 'regime desde out/2022', fonte: 'BIS/DOC' },
     ],
   },

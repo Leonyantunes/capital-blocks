@@ -4,7 +4,7 @@ import { t } from '../i18n'
 
 const GlossaryDrawer = lazy(() => import('./GlossaryDrawer'))
 
-const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'divida' | 'raio' | 'plataformas' | 'riqueza' | 'consequencias' | 'alternativas'; title: string }[] = [
+const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'divida' | 'raio' | 'plataformas' | 'riqueza' | 'consequencias' | 'alternativas' | 'fontes'; title: string }[] = [
   { id: 'home', num: '01', key: 'mapa', title: 'Mapa 2D ⇄ Mapa 3D — clique para alternar entre as duas versões' },
   { id: 'circuit', num: '02', key: 'circuito', title: 'Módulo 02 — O Circuito do Capital' },
   { id: 'war', num: '03', key: 'guerra', title: 'Módulo 03 — Guerra de Capitais & Conflitos Imperialistas (War Room)' },
@@ -14,6 +14,7 @@ const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'div
   { id: 'wealth', num: '07', key: 'riqueza', title: 'Módulo 07 — Quem Sustenta Quê? Trabalho & Concentração' },
   { id: 'consequences', num: '08', key: 'consequencias', title: 'Módulo 08 — Consequências Sistêmicas: As Mortes do Capitalismo' },
   { id: 'alternatives', num: '09', key: 'alternativas', title: 'Módulo 09 — E Para Onde Podemos Ir? Sistemas que já funcionam' },
+  { id: 'sources', num: '10', key: 'fontes', title: 'Módulo 10 — Fontes & Referências: base documental do site' },
 ]
 
 function Logo() {

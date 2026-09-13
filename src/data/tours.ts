@@ -135,7 +135,7 @@ export const TOURES: TourDef[] = [
         lng: 122, lat: 30, k: 2.2, conflict: 'semis', isos: ['840', '158', '156'],
         did: 'Celular, carro, míssil, inteligência artificial: tudo precisa do chip mais avançado — e quase todos saem de Taiwan. Os EUA tentam travar a China bloqueando máquinas e programas; a China corre para fazer os seus. É uma guerra sem tiros, pelo objeto mais estratégico do século.',
         didStats: [
-          { v: '~90%', k: 'dos chips avançados: Taiwan' },
+          { v: '~90%', k: 'da lógica de ponta: TSMC' },
           { v: 'bloqueio', k: 'a arma americana' },
         ],
         adv: 'Contenção tecnológica como disputa pela composição orgânica futura do rival: export controls + CHIPS Act vs. autossuficiência chinesa (Mate 60, SMIC 7nm).',

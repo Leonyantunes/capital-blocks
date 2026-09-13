@@ -20,6 +20,7 @@ const PlatformModule = lazy(() => import('./components/PlatformModule'))
 const WealthModule = lazy(() => import('./components/wealth/WealthModule'))
 const ConsequencesModule = lazy(() => import('./components/consequences/ConsequencesModule'))
 const AlternativesModule = lazy(() => import('./components/alternatives/AlternativesModule'))
+const SourcesModule = lazy(() => import('./components/sources/SourcesModule'))
 const CountryDrawer = lazy(() => import('./components/CountryDrawer'))
 
 function ModuleFallback() {
@@ -72,6 +73,7 @@ export default function App() {
                 {tab === 'wealth' && <WealthModule />}
                 {tab === 'consequences' && <ConsequencesModule />}
                 {tab === 'alternatives' && <AlternativesModule />}
+                {tab === 'sources' && <SourcesModule />}
               </ErrorBoundary>
             </Suspense>
           </m.main>

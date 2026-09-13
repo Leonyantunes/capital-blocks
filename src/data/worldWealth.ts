@@ -38,7 +38,7 @@ export const CLAIMS: WealthItem[] = [
   {
     key: 'privdebt', label: 'Dívida privada não-financeira', tri: 95,
     year: '2024', source: 'BIS', color: '#c084fc',
-    sourceUrl: 'https://www.bis.org/statistics/totcredit.htm',
+    sourceUrl: 'https://data.bis.org/topics/TOTAL_CREDIT',
     didatico: 'Empresas e famílias devem ~US$95 tri a bancos e ao mercado de crédito.',
     avancado: 'Crédito bancário cria depósitos (dinheiro endógeno): o endividamento privado antecipa demanda e hipoteca mais-valia futura via serviço da dívida.',
   },
