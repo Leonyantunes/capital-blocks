@@ -15,7 +15,7 @@ const CAT_LABEL: Record<GlossaryTerm['categoria'], { label: string; color: strin
 export default function GlossaryDrawer() {
   const { glossaryOpen, setGlossaryOpen, mode } = useApp()
   const [query, setQuery] = useState('')
-  const trapRef = useFocusTrap(glossaryOpen)
+  const trapRef = useFocusTrap(glossaryOpen, () => setGlossaryOpen(false))
   const didatico = mode === 'didatico'
 
   const list = GLOSSARY.filter((g) =>

@@ -61,10 +61,24 @@ interface BrRow extends RowBase {
   moeda: 'BRL' | 'USD'
 }
 
+/**
+ * Base + cotações de API SEM duplicar: quando ticker (ou nome) coincide,
+ * a cotação fresca da API substitui o registro da base — e empresas que só
+ * existem na API entram no fim da lista.
+ */
+function mergeApiRecords(apiRecords: CompanyRecord[]): CompanyRecord[] {
+  if (!apiRecords.length) return COMPANIES_ALL
+  const key = (r: CompanyRecord) => (r.ticker ?? r.nome).trim().toUpperCase()
+  const apiByKey = new Map(apiRecords.map((r) => [key(r), r]))
+  const baseKeys = new Set(COMPANIES_ALL.map(key))
+  const out: CompanyRecord[] = COMPANIES_ALL.map((r) => apiByKey.get(key(r)) ?? r)
+  for (const [k, r] of apiByKey) if (!baseKeys.has(k)) out.push(r)
+  return out
+}
+
 function buildGlRows(apiRecords: CompanyRecord[]): GlRow[] {
-  return COMPANIES_ALL
+  return mergeApiRecords(apiRecords)
     .filter((r) => r.mercado === 'GLOBAL')
-    .concat(apiRecords.filter((r) => r.mercado === 'GLOBAL'))
     .map((rec) => {
       const d = metricsFor(rec)
       return {
@@ -79,9 +93,8 @@ function buildGlRows(apiRecords: CompanyRecord[]): GlRow[] {
 }
 
 function buildBrRows(apiRecords: CompanyRecord[]): BrRow[] {
-  return COMPANIES_ALL
+  return mergeApiRecords(apiRecords)
     .filter((r) => r.mercado === 'BR')
-    .concat(apiRecords.filter((r) => r.mercado === 'BR'))
     .map((rec) => {
       const v = brView(rec)
       return {
@@ -101,9 +114,10 @@ function MarketSyncPanel({ records, onLoad }: {
   records: CompanyRecord[]
   onLoad: (recs: CompanyRecord[]) => void
 }) {
-  const [enabled, setEnabled] = useState(() => loadSyncSettings().enabled)
-  const [provider, setProvider] = useState<ApiProvider>(() => loadSyncSettings().provider)
-  const [token, setToken] = useState(() => loadSyncSettings().token)
+  const [initial] = useState(loadSyncSettings)
+  const [enabled, setEnabled] = useState(initial.enabled)
+  const [provider, setProvider] = useState<ApiProvider>(initial.provider)
+  const [token, setToken] = useState(initial.token)
   const [syncing, setSyncing] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [errors, setErrors] = useState<string[]>([])
@@ -407,17 +421,19 @@ const BrCardM = memo(function BrCardM({ r }: { r: BrRow }) {
 
 /* ───────────────────── linha expandida (raio-X completo) ───────────────────── */
 
-function ExpandedRow({ segments, centerLabel, centerValue, notes, bars, texto }: {
+function ExpandedRow({ segments, centerLabel, centerValue, notes, bars, texto, colSpan = 7 }: {
   segments: { key: string; label: string; value: number; color: string }[]
   centerLabel: string
   centerValue: string
   notes: React.ReactNode
   bars?: React.ReactNode
   texto: string
+  /** nº de colunas da tabela (global = 7, brasil = 5) */
+  colSpan?: number
 }) {
   return (
     <tr className="bg-zinc-950/70">
-      <td colSpan={7} className="border-t border-zinc-800/60 px-4 py-4">
+      <td colSpan={colSpan} className="border-t border-zinc-800/60 px-4 py-4">
         <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
           <div className="flex items-center gap-3">
             <DonutChart segments={segments} centerLabel={centerLabel} centerValue={centerValue} />
@@ -747,6 +763,7 @@ function ExpandedBrRow({ r }: { r: BrRow }) {
   ]
   return (
     <ExpandedRow
+      colSpan={5}
       segments={segments} centerLabel="receita W" centerValue="= c+v+m"
       notes={
         <>

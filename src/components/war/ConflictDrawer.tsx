@@ -50,7 +50,7 @@ export default function ConflictDrawer({
 }) {
   const mode = useApp((s) => s.mode)
   const didatico = mode === 'didatico'
-  const trapRef = useFocusTrap(!!conflictId)
+  const trapRef = useFocusTrap(!!conflictId, onClose)
   const c = WAR_CONFLICTS.find((x) => x.id === conflictId) ?? null
 
   return (

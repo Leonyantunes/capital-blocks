@@ -108,7 +108,7 @@ function IlaiseBlock() {
 export default function CountryDrawer() {
   const { countryId, closeCountry, basis, setBasis, hiddenFractions, toggleFraction } = useApp()
   const c = countryId ? COUNTRIES.find((x) => x.id === countryId) ?? null : null
-  const trapRef = useFocusTrap(!!c)
+  const trapRef = useFocusTrap<HTMLElement>(!!c, closeCountry)
 
   return (
     <>

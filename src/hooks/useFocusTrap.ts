@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
-/** FOCUS TRAP — prende o Tab dentro do drawer/modal e devolve o foco ao fechar (a11y). */
-export function useFocusTrap<T extends HTMLElement>(active: boolean) {
+/** FOCUS TRAP — prende o Tab dentro do drawer/modal, fecha com Esc e devolve o foco ao fechar (a11y). */
+export function useFocusTrap<T extends HTMLElement>(active: boolean, onEscape?: () => void) {
   const ref = useRef<T>(null)
   useEffect(() => {
     if (!active || !ref.current) return
@@ -11,6 +11,11 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean) {
     const focusables = () => Array.from(el.querySelectorAll<HTMLElement>(sel))
     focusables()[0]?.focus()
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onEscape?.()
+        return
+      }
       if (e.key !== 'Tab') return
       const list = focusables()
       if (!list.length) return
@@ -24,6 +29,7 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean) {
       el.removeEventListener('keydown', onKey)
       prev?.focus()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active])
   return ref
 }
