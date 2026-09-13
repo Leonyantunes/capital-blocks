@@ -8,9 +8,14 @@ Regra de ouro das P0: **nenhuma regressão visual aceitável** — otimizar sem 
 Critério de sucesso: 60fps sustentados no mapa base e ≥45fps durante tour/zoom em celular
 mid-range (perfis DevTools mobile + device real), com aparência idêntica lado a lado.
 
+> **Status (2026-09-12):** P0 concluída (commit 7cc5f7a 2D · e59d585 3D+worker) e P2
+> concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico
+> aos baselines, FPS do globo 68 → 87 no HUD (software rendering; ganho maior esperado
+> em GPU mobile), picking e drawers OK. Falta ainda medir em device real Android.
+
 ---
 
-## P0 · Otimização mobile dos mapas 2D e 3D (analisado — executar primeiro)
+## P0 · Otimização mobile dos mapas 2D e 3D — ✅ CONCLUÍDA (7cc5f7a + e59d585)
 
 ### Globo 3D — o maior ganho está em draw calls (~200 → ~30)
 
@@ -104,7 +109,7 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
 
 ---
 
-## P2 · Correções e limpezas conhecidas (podem ir de carona)
+## P2 · Correções e limpezas conhecidas — ✅ CONCLUÍDAS (8e2a90a + e7b8bcb)
 
 22. **Bugs de UI**: tooltip TMD com texto invertido (`CountryDrawer.tsx:42` — mostra o
     texto do modo oposto); `colSpan={7}` na tabela BR de 5 colunas
