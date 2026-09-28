@@ -1,21 +1,29 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { useApp, type TabId } from '../store/useApp'
+import { useApp } from '../store/useApp'
 import { t } from '../i18n'
+import { MODULES, MAP_TAB_TOOLTIP, TABS, modTitle, type TabId } from '../data/modules'
 
 const GlossaryDrawer = lazy(() => import('./GlossaryDrawer'))
 
-const TABS: { id: TabId; num: string; key: 'mapa' | 'circuito' | 'guerra' | 'divida' | 'raio' | 'plataformas' | 'riqueza' | 'consequencias' | 'alternativas' | 'fontes'; title: string }[] = [
-  { id: 'home', num: '01', key: 'mapa', title: 'Mapa 2D ⇄ Mapa 3D — clique para alternar entre as duas versões' },
-  { id: 'circuit', num: '02', key: 'circuito', title: 'Módulo 02 — O Circuito do Capital' },
-  { id: 'war', num: '03', key: 'guerra', title: 'Módulo 03 — Guerra de Capitais & Conflitos Imperialistas (War Room)' },
-  { id: 'debt', num: '04', key: 'divida', title: 'Módulo 04 — Morte e Ressurreição do Capital (MMT × Ortodoxia)' },
-  { id: 'companies', num: '05', key: 'raio', title: 'Módulo 05 — Raio-X das Empresas (ILAESE + Globais)' },
-  { id: 'platform', num: '06', key: 'plataformas', title: 'Módulo 06 — Indústria 4.0 & Plataformização do Trabalho' },
-  { id: 'wealth', num: '07', key: 'riqueza', title: 'Módulo 07 — Quem Sustenta Quê? Trabalho & Concentração' },
-  { id: 'consequences', num: '08', key: 'consequencias', title: 'Módulo 08 — Consequências Sistêmicas: As Mortes do Capitalismo' },
-  { id: 'alternatives', num: '09', key: 'alternativas', title: 'Módulo 09 — E Para Onde Podemos Ir? Sistemas que já funcionam' },
-  { id: 'sources', num: '10', key: 'fontes', title: 'Módulo 10 — Fontes & Referências: base documental do site' },
-]
+/* A lista de abas e a numeração vêm de `data/modules.ts` (registro canônico).
+   Aqui só acrescentamos o complemento editorial de cada módulo — o número nunca
+   é escrito à mão, vem de `modTitle(id)` (ver TODO P2-24). */
+const TITLES: Record<TabId, string> = {
+  home: MAP_TAB_TOOLTIP.pt,
+  globe3d: MAP_TAB_TOOLTIP.pt,
+  circuit: `${modTitle('circuit')} — composição orgânica, exploração e tendência decrescente`,
+  war: `${modTitle('war')} — linha do tempo reversa, matriz militar e quem lucra`,
+  debt: `${modTitle('debt')} — lente monetária, identidade setorial e simulador kaleckiano`,
+  companies: `${modTitle('companies')} — ILAESE + maiores do mundo, decompostos em c·v·m`,
+  platform: `${modTitle('platform')} — salário por peça e transferência de capital constante`,
+  wealth: `${modTitle('wealth')} — Concentração, bilionários e o que sustenta o quê`,
+  consequences: `${modTitle('consequences')} — massacres, territórios e custos deslocados`,
+  alternatives: `${modTitle('alternatives')} — cooperativas, orçamento democrático e garantia de emprego`,
+  sources: `${modTitle('sources')} — busca, filtros, estado de verificação e links diretos`,
+}
+
+/* Abas numeradas na ordem de navegação, derivadas do registro canônico. */
+const NAV_TABS = TABS.filter((id) => id !== 'globe3d')
 
 function Logo() {
   return (
@@ -167,12 +175,13 @@ export default function Navbar() {
 
           {/* ── navegação horizontal (desktop) ── */}
           <nav className="thin-scroll hidden flex-1 items-center gap-1 overflow-x-auto md:flex">
-            {TABS.map((tb) => {
-              const isMap = tb.id === 'home'
-              const active = isMap ? tab === 'home' || is3D : tab === tb.id
+            {NAV_TABS.map((id) => {
+              const m = MODULES[id]
+              const isMap = id === 'home'
+              const active = isMap ? tab === 'home' || is3D : tab === id
               const show3D = isMap && is3D
               return (
-                <button key={tb.id} onClick={() => pressTab(tb.id)} title={tb.title}
+                <button key={id} onClick={() => pressTab(id)} title={TITLES[id]}
                   aria-pressed={isMap ? is3D : undefined}
                   className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
                     active
@@ -183,8 +192,8 @@ export default function Navbar() {
                         ? 'border border-sky-400/50 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20'
                         : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
                   }`}>
-                  <span className="mr-1 font-mono text-[10px] opacity-70">{show3D ? '3D' : tb.num}</span>
-                  {show3D ? `🌍 ${t(lang, tb.key)}` : t(lang, tb.key)}
+                  <span className="mr-1 font-mono text-[10px] opacity-70">{show3D ? '3D' : m.num}</span>
+                  {show3D ? `🌍 ${t(lang, m.labelKey)}` : t(lang, m.labelKey)}
                 </button>
               )
             })}
@@ -238,12 +247,13 @@ export default function Navbar() {
             </div>
 
             <nav className="flex-1 space-y-0.5 p-2">
-              {TABS.map((tb) => {
-                const isMap = tb.id === 'home'
-                const active = isMap ? tab === 'home' || is3D : tab === tb.id
+              {NAV_TABS.map((id) => {
+                const m = MODULES[id]
+                const isMap = id === 'home'
+                const active = isMap ? tab === 'home' || is3D : tab === id
                 const show3D = isMap && is3D
                 return (
-                  <button key={tb.id} onClick={() => go(tb.id)} title={tb.title}
+                  <button key={id} onClick={() => go(id)} title={TITLES[id]}
                     className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors ${
                       active
                         ? show3D
@@ -253,9 +263,9 @@ export default function Navbar() {
                     }`}>
                     <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                       active ? (show3D ? 'bg-sky-400 text-zinc-950' : 'bg-money text-zinc-950') : 'bg-zinc-800 text-zinc-400'
-                    }`}>{show3D ? '3D' : tb.num}</span>
+                    }`}>{show3D ? '3D' : m.num}</span>
                     <span className="text-[13px] font-medium leading-tight">
-                      {show3D ? `🌍 ${t(lang, tb.key)} · toque p/ 2D` : t(lang, tb.key)}
+                      {show3D ? `🌍 ${t(lang, m.labelKey)} · toque p/ 2D` : t(lang, m.labelKey)}
                     </span>
                   </button>
                 )

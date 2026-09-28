@@ -1,7 +1,10 @@
 import { create } from 'zustand'
 import type { FractionKey } from '../data/countries'
+import { TABS, type TabId } from '../data/modules'
 
-export type TabId = 'home' | 'globe3d' | 'circuit' | 'war' | 'debt' | 'companies' | 'platform' | 'wealth' | 'consequences' | 'alternatives' | 'sources'
+/* TabId mora em data/modules.ts (registro canônico); reexportado aqui para
+   manter `import { type TabId } from '../store/useApp'` funcionando. */
+export type { TabId }
 export type PriceBasis = 'nominal' | 'ppp'
 export type UIMode = 'didatico' | 'avancado'
 export type ConflictId = 'semis' | 'energia' | 'reprimaria' | null
@@ -48,12 +51,10 @@ interface AppState {
   setLang: (l: 'pt' | 'en' | 'es') => void
 }
 
-const URL_TABS: TabId[] = ['home', 'globe3d', 'circuit', 'war', 'debt', 'companies', 'platform', 'wealth', 'consequences', 'alternatives', 'sources']
-
 function initialTab(): TabId {
   if (typeof window === 'undefined') return 'home'
   const t = new URLSearchParams(window.location.search).get('t')
-  return (URL_TABS as string[]).includes(t ?? '') ? (t as TabId) : 'home'
+  return (TABS as string[]).includes(t ?? '') ? (t as TabId) : 'home'
 }
 
 export const useApp = create<AppState>((set) => ({
