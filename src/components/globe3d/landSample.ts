@@ -3,12 +3,17 @@
  * thread principal (fallback) e dentro do Web Worker (landWorker.ts).
  * Grade lat/lng filtrada por bbox por país + geoContains; os dois caminhos
  * produzem exatamente a mesma matriz.
+ *
+ * A topologia NÃO é importada aqui de propósito: quem chama (a thread
+ * principal) a entrega ao worker por `postMessage`. Importar faria o bundler
+ * embutir de novo os ~105 kB do TopoJSON dentro do chunk do worker,
+ * duplicando o mesmo dado que já está no vendor-geo — 105 kB a mais para
+ * quem abre o globo 3D.
  */
 import { geoContains } from 'd3-geo'
 import { feature } from 'topojson-client'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — JSON do world-atlas sem tipagem
-import topology from 'world-atlas/countries-110m.json'
+
+export type Topology = Parameters<typeof feature>[0]
 
 export interface SampledLand {
   positions: Float32Array
@@ -38,7 +43,7 @@ function eachCoord(coords: unknown, cb: (lng: number, lat: number) => void) {
 
 /** Países (sem Antártida) com bbox pré-calculada p/ acelerar o teste de ponto. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function collectFeats(): BBoxFeat[] {
+export function collectFeats(topology: Topology): BBoxFeat[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const topo = topology as unknown as any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,8 +88,12 @@ export function latLngToVec3(lng: number, lat: number, radius: number, out?: [nu
 }
 
 /** Amostra a grade inteira (síncrono — chamado no worker ou fatiado fora). */
-export function sampleLand(step = 0.85, onProgress?: (done: number, total: number) => void): SampledLand {
-  const feats = collectFeats()
+export function sampleLand(
+  topology: Topology,
+  step = 0.85,
+  onProgress?: (done: number, total: number) => void,
+): SampledLand {
+  const feats = collectFeats(topology)
   const rows: number[] = []
   for (let lat = -60; lat <= 84; lat += step) rows.push(lat)
   const pts: number[] = []

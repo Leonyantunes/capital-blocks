@@ -10,7 +10,7 @@ import { mesh } from 'topojson-client'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JSON do world-atlas sem tipagem
 import topology from 'world-atlas/countries-110m.json'
-import { collectFeats, latLngToVec3, type BBoxFeat } from './landSample'
+import { collectFeats, latLngToVec3, type BBoxFeat, type Topology } from './landSample'
 
 export { latLngToVec3 }
 
@@ -27,7 +27,7 @@ let pending: Promise<LandMatrix> | null = null
 
 let featCache: BBoxFeat[] | null = null
 function buildFeatures(): BBoxFeat[] {
-  if (!featCache) featCache = collectFeats()
+  if (!featCache) featCache = collectFeats(topology as unknown as Topology)
   return featCache
 }
 
@@ -150,19 +150,24 @@ function viaWorker(step: number, onProgress?: (done: number, total: number) => v
       return
     }
     w.onmessage = (e: MessageEvent) => {
-      const d = e.data as { type: string; done?: number; total?: number; positions?: Float32Array; isos?: string[]; count?: number }
+      const d = e.data as { type: string; done?: number; total?: number; positions?: Float32Array; isos?: string[]; count?: number; message?: string }
       if (d?.type === 'progress') {
         onProgress?.(d.done ?? 0, d.total ?? 1)
       } else if (d?.type === 'done' && d.positions && d.isos) {
         w.terminate()
         resolve({ positions: d.positions, isos: d.isos, count: d.count ?? d.isos.length })
+      } else if (d?.type === 'error') {
+        /* o worker recebeu a topologia estruturada (postMessage a clona) —
+           se algo falhar, cai no caminho fatiado em vez de travar o globe */
+        w.terminate()
+        reject(new Error(d.message ?? 'landWorker: erro interno'))
       }
     }
     w.onerror = () => {
       w.terminate()
       reject(new Error('landWorker falhou'))
     }
-    w.postMessage({ step })
+    w.postMessage({ step, topology })
   })
 }
 
