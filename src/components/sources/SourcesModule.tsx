@@ -1,27 +1,50 @@
 import { useMemo, useState } from 'react'
 import { SOURCES, SOURCE_CATEGORIES, SOURCE_KINDS, sourcesSummary } from '../../data/sources'
-import { mt } from '../../i18n'
+import { mt, type Lang } from '../../i18n'
 import { useApp } from '../../store/useApp'
 import ModeBadge from '../ui/ModeBadge'
 import Tip from '../ui/Tip'
 
-const VERIFICATION_LABEL: Record<string, { rotulo: string; classe: string; dica: string }> = {
+/**
+ * Estados de verificação, em PT/EN/ES.
+ * São o coração da honestidade do app: o rótulo diz o quanto se pode confiar
+ * naquele número. Traduzir aqui é o mínimo — o conteúdo de cada fonte segue
+ * em PT-BR até a fase de tradução integral do conteúdo.
+ */
+const VERIFICATION_LABEL: Record<
+  string,
+  { rotulo: [string, string, string]; classe: string; dica: [string, string, string] }
+> = {
   'url-incluida': {
-    rotulo: 'link direto',
+    rotulo: ['link verificado', 'verified link', 'enlace verificado'],
     classe: 'border-sky-400/50 text-sky-300',
-    dica: 'Há link direto copiado do app ou conferido como acessível. O link não garante atualização automática.',
+    dica: [
+      'Há link direto copiado do app ou conferido como acessível. O link não garante atualização automática.',
+      'A direct link was copied from the app or checked as reachable. The link does not guarantee automatic updates.',
+      'Hay un enlace directo copiado de la app o verificado como accesible. El enlace no garantiza actualización automática.',
+    ],
   },
   'fonte-declarada': {
-    rotulo: 'fonte declarada',
+    rotulo: ['fonte declarada', 'declared source', 'fuente declarada'],
     classe: 'border-zinc-700 text-zinc-300',
-    dica: 'Instituição e safra estão nomeadas no app. A página/tabela exata pode ainda estar pendente.',
+    dica: [
+      'Instituição e safra estão nomeadas no app. A página/tabela exata pode ainda estar pendente.',
+      'Institution and vintage are named in the app. The exact page/table may still be pending.',
+      'Institución y campaña están nombradas en la app. La página/tabla exacta puede seguir pendiente.',
+    ],
   },
   'revisao-pendente': {
-    rotulo: 'revisão pendente',
+    rotulo: ['revisão pendente', 'review pending', 'revisión pendiente'],
     classe: 'border-amber-400/60 text-amber-300',
-    dica: 'Falta página exata, há inconsistência possível ou safra desatualizada. Não citar como fato fechado sem checar.',
+    dica: [
+      'Falta página exata, há inconsistência possível ou safra desatualizada. Não citar como fato fechado sem checar.',
+      'Exact page missing, possible inconsistency or outdated vintage. Do not cite as settled fact without checking.',
+      'Falta la página exacta, hay inconsistencia posible o campaña desactualizada. No citar como hecho cerrado sin verificar.',
+    ],
   },
 }
+
+const idx = (l: Lang) => (l === 'pt' ? 0 : l === 'en' ? 1 : 2)
 
 /** MÓDULO 10 — FONTES & REFERÊNCIAS: a base documental do app. */
 export default function SourcesModule() {
@@ -161,9 +184,9 @@ export default function SourcesModule() {
                 <span className="rounded border border-zinc-700 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-zinc-400">
                   {rotuloTipo(s.tipo)}
                 </span>
-                <Tip text={v.dica}>
+                <Tip text={v.dica[idx(lang)]}>
                   <span className={`cursor-help rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider ${v.classe}`}>
-                    {v.rotulo}
+                    {v.rotulo[idx(lang)]}
                   </span>
                 </Tip>
                 {s.estimate && (
