@@ -10,7 +10,8 @@
     "test:globe": "node scripts/flight-test.mjs",
     "test:framing": "node scripts/framing-test.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:tours": "node scripts/tour-audit.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

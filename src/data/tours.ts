@@ -9,8 +9,10 @@
  *   (ou usa s.dist como override);
  * - isos → países destacados, SOMADOS às pontas do fluxo do flowId;
  * - conflict/layer → acendem guerras de blocos e camadas temáticas;
- * - toda parada com assunto específico deve destacar ALGO (flowId ou isos) —
- *   só aberturas/fechamentos em visão mundial podem ficar sem destaque.
+ * - toda parada com assunto específico deve destacar ALGO — por flowId, por
+ *   isos OU por layer (a camada temática pinta o mapa inteiro: 'wages' acende
+ *   o termômetro salarial, 'deaths' os marcadores de disaster). Só
+ *   aberturas/fechamentos em visão mundial podem ficar sem destaque.
  */
 import type { TabId } from '../store/useApp'
 import { FLOWS, TYPE_STYLE } from './flows'
