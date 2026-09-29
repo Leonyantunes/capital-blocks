@@ -309,6 +309,25 @@ const WORLD_RAW: W[] = [
   // ── Periferia do Sul Global ──
   ['Reliance Industries', 'Índia', 'Conglomerado / Energia', 0.2, 110.0, 8.4, 389, 20],
   ['Saudi Arabian Mining (Maaden)', 'Arábia Saudita', 'Mineração estatal', 0.04, 9.5, 0.6, 8, 45],
+  // ── Defesa europeia/asiática, indústria pesada, mineração, química e logística ──
+  ['Thales', 'França', 'Defesa · militar-industrial', 0.062, 23.4, 1.6, 83, 100],
+  ['Leonardo S.p.A.', 'Itália', 'Defesa · militar-industrial', 0.033, 23.4, 1.3, 67, 95],
+  ['Saab AB', 'Suécia', 'Defesa · militar-industrial', 0.034, 8.1, 0.7, 25, 100],
+  ['Mitsubishi Heavy Industries', 'Japão', 'Defesa · militar-industrial', 0.084, 32.0, 1.6, 79, 85],
+  ['Hitachi', 'Japão', 'Indústria / Infraestrutura', 0.158, 70.4, 5.1, 288, 90],
+  ['Kubota', 'Japão', 'Maquinário agrícola', 0.020, 20.7, 1.7, 53, 80],
+  ['Nucor', 'EUA', 'Siderurgia', 0.061, 32.5, 1.7, 33, 95],
+  ['Freeport-McMoRan', 'EUA', 'Mineração', 0.104, 25.9, 2.2, 29, 110],
+  ['Anglo American', 'Reino Unido', 'Mineração', 0.057, 20.0, -2.8, 26, 100],
+  ['BASF', 'Alemanha', 'Produtos químicos', 0.051, 68.0, 1.8, 95, 105],
+  ['LyondellBasell Industries', 'EUA', 'Petroquímica', 0.019, 31.2, -0.4, 19, 100],
+  ['Celanese', 'EUA', 'Produtos químicos', 0.005, 9.7, -1.2, 11, 100],
+  ['FedEx', 'EUA', 'Logística / Shipping', 0.074, 87.7, 4.3, 530, 65],
+  ['DHL Group', 'Alemanha', 'Logística / Shipping', 0.072, 95.0, 4.0, 577, 60],
+  ['Enel', 'Itália', 'Energia', 0.100, 90.5, 4.8, 62, 80],
+  ['Heineken', 'Países Baixos (UE)', 'Cervejaria', 0.044, 32.7, 2.2, 85, 75],
+  ['Mondelez International', 'EUA', 'Alimentos globalizados', 0.078, 39.7, 3.5, 91, 80],
+  ['The Kraft Heinz Company', 'EUA', 'Alimentos globalizados', 0.030, 24.9, -3.4, 35, 75],
 ]
 
 /** Notas pedagógicas por nome (mantém o array de dados compacto). */
@@ -343,6 +362,22 @@ const WORLD_NOTES: Record<string, string> = {
   BP: 'GAAP 2024 quase zerado por write-downs de transição energética',
   McDonald: 'Franquia: margem alta sobre receita baixa',
   Palantir: 'Contratos militares/policiais; margem alta com folha mínima',
+  // ── Notas pedagógicas das adições de 2026-09 ──
+  Thales: 'Raio-X e sistemas de defesa; a guerra como demanda estatal dirigida',
+  Leonardo: 'Aeroespacial e defesa; dependência histórica do orçamento público',
+  Saab: 'Aeronaves de combate suecas; identidade nacional sobre a base exportadora',
+  'Mitsubishi Heavy': 'Defesa, aeroespacial e construção naval — a guerra como mercado doméstico do Japão',
+  Hitachi: 'Conglomerado industrial: infraestrutura, energia e trens; a fração produtiva do capital',
+  Nucor: 'Maior produtora de aço dos EUA; a junção do minério importado à posse',
+  Freeport: 'Mineração de cobre nos EUA e Indonésia — a dependência mineral do Centro',
+  'Anglo American': 'Prejuízo 2024; mineração pressionada pela transição energética',
+  BASF: 'Maior química europeia: a base material da indústria pesada',
+  LyondellBasell: 'Prejuízo 2024 (custo de energia e supercapacidade petroquímica)',
+  FedEx: 'A nervura logística dos EUA; a marca do custo fixo sobre a entrega',
+  'DHL Group': 'Logística global; a espinha que move o comércio mundial',
+  Enel: 'Maior utility europeia; estatal italiana e o peso da transição energética',
+  Mondelez: 'Transformadora de alimentos: a marca captura a margem do pequeno produtor',
+  'Kraft Heinz': 'Prejuízo 2024 de US$ 3,4 bi: a impunidade da escassez de lé Farmer',
 }
 
 function slug(nome: string): string {
