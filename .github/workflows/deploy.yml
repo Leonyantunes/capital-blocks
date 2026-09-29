@@ -1,12 +1,10 @@
 name: Deploy — GitHub Pages
 
-# DESATIVADO para push (repo privado não tem Pages no plano free).
-# Para publicar depois: torne o repo público (Settings → General → Danger Zone)
-# e troque o gatilho abaixo por:
-#   on:
-#     push:
-#       branches: [main]
+# O repositório é público e tem Pages no plano gratuito: o deploy roda a cada
+# push em `main` e publica em https://<user>.github.io/capital-blocks/
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

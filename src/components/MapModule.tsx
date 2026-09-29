@@ -5,6 +5,7 @@ import { COUNTRIES, FRACTION_META, fmtTri } from '../data/countries'
 import { StackedBar } from './DonutChart'
 import ModeBadge from './ui/ModeBadge'
 import { useApp } from '../store/useApp'
+import { modRef } from '../data/modules'
 
 function segmentsOf(c: (typeof COUNTRIES)[number]) {
   return (Object.keys(FRACTION_META) as (keyof typeof FRACTION_META)[]).map((f) => ({
@@ -24,7 +25,7 @@ export default function MapModule() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-money">Home · Módulo 01</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-money">Home · {modRef('home')}</span>
             <ModeBadge />
           </div>
           <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">

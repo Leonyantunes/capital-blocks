@@ -1,5 +1,5 @@
 /**
- * MÓDULO 06 — Raio-X de Empresas (modelo UNIFICADO, formato Anuário ILAESE).
+ * MÓDULO 05 — Raio-X de Empresas (modelo UNIFICADO, formato Anuário ILAESE).
  *
  * Toda empresa — brasileira ou global — vive no mesmo schema e passa pelo
  * MESMO motor analítico (lib/companyMetrics.ts): W = c + v + m com
@@ -10,6 +10,8 @@
  * produtividade) são invariantes à moeda porque v e m compartilham-a.
  * Campos `salarioMedioK` são ESTIMATIVAS por país/setor (flag estimate).
  */
+
+import { modRef } from './modules'
 
 import { decomposeFromParts, decomposeValue, sectorEstimate } from '../lib/companyMetrics'
 
@@ -166,7 +168,7 @@ const BR: CompanyRecord[] = [
   {
     id: 'br-ifood', nome: 'iFood (Movile)', pais: 'Brasil', setor: 'Plataformas', mercado: 'BR', moeda: 'BRL',
     ticker: undefined, receitaBi: 14, lucroBi: 0.5, funcionariosMil: 8, salarioMedioK: 220,
-    estimate: true, fonte: 'estimativa (companhia fechada)', nota: 'Milhões de entregadores PARCEIROS ficam fora da folha — ver Módulo 07',
+    estimate: true, fonte: 'estimativa (companhia fechada)', nota: `Milhões de entregadores PARCEIROS ficam fora da folha — ver ${modRef('platform')}`,
   },
 ]
 
@@ -322,7 +324,7 @@ const WORLD_NOTES: Record<string, string> = {
   Toyota: 'Lucro recorde histórico FY24',
   AMD: 'GAAP deprimido pela amortização da Xilinx',
   Intel: 'Prejuízo GAAP 2024 (reestruturação) — até gigante queima capital',
-  Uber: 'lucro 2024 c/ crédito fiscal único · ver Módulo 06',
+  Uber: `lucro 2024 c/ crédito fiscal único · ver ${modRef('platform')}`,
   Foxconn: 'Maior empregador privado da China; monta o iPhone',
   PDD: '~US$ 3 mi de receita por funcionário: recorde da lista',
   Meituan: 'milhões de entregadores terceirizados fora da folha',

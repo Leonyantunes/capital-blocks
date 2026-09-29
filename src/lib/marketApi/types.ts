@@ -1,4 +1,4 @@
-/** Tipos compartilhados das fontes dinâmicas de mercado (Raio-X · Módulo 06). */
+/** Tipos compartilhados das fontes dinâmicas de mercado (Raio-X — ver `data/modules.ts`). */
 
 export type ApiProvider = 'brapi' | 'alphavantage'
 

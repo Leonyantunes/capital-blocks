@@ -48,9 +48,10 @@ export const CLAIMS: WealthItem[] = [
 export const REAL_ASSETS: WealthItem[] = [
   {
     key: 'realestate', label: 'Imobiliário mundial', tri: 380,
-    year: '2023', source: 'Savills Global Real Estate', color: '#4caf50',
-    didatico: 'Toda a construção do planeta (casas + comércios) vale ~US$380 tri: a maior "poupança" da humanidade está em tijolo.',
-    avancado: 'Ativo real NÃO-produtivo no sentido estrito: renda fundiária/aluguel drenam mais-valia sem gerá-la. Principal colateral do sistema de crédito — elo imobiliário↔financeiro.',
+    year: 'fim-2022', source: 'Savills Global Real Estate', color: '#4caf50',
+    sourceUrl: 'https://www.savills.com/impacts/market-trends/the-total-value-of-global-real-estate-property-remains-the-worlds-biggest-store-of-wealth.html',
+    didatico: 'Toda a construção do planeta (casas + comércios + terra agrícola) vale ~US$380 tri: a maior "poupança" da humanidade está em tijolo e em terra.',
+    avancado: 'Ativo real NÃO-produtivo no sentido estrito: renda fundiária/aluguel drenam mais-valia sem gerá-la. Principal colateral do sistema de crédito — elo imobiliário↔financeiro. Savills: US$ 379,7 tri no fim-2022 (−2,8% no ano, +18,7% em 3 anos); residencial US$ 287,6 tri (3/4 do total), comercial ~13%, terra agrícola 11%. Quase 4× o PIB mundial.',
   },
 ]
 

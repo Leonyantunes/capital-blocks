@@ -18,6 +18,16 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > `stopIsos` em união + isos nas paradas cegas, auto-close não dispara no tour, voos
 > mais suaves (3D 2.5s · 2D ~3s) e aba restaurada da URL (`?t=`). Contrato de parada
 > documentado no cabeçalho de `tours.ts` — tours novos não precisam mexer no código.
+>
+> **2026-09-28 — Numeração única (da96c6e + fecho):** a numeração de módulos foi
+> centralizada em `src/data/modules.ts` (`MODULES`, `modRef()`, `modTitle()`); Navbar,
+> i18n e store consomem o registro e **nenhum número é escrito à mão no código**.
+> README reescrito na ordem canônica (o antigo tinha 05 duplicado e 08/09 ausentes).
+> Também: preferências agora persistem (aba 2), suíte Vitest criada (aba 3) e 7 fontes
+> promovidas de `revisao-pendente` → `url-incluida` (aba 4).
+>
+> **Estado verificado ao fim:** `npm run build` ✅ · `npm test` 49/49 ✅ ·
+> `test:globe` 392/392 ✅ · `test:framing` 52/52 ✅.
 
 ---
 

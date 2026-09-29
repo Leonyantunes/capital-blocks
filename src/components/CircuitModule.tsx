@@ -6,7 +6,7 @@ import { UnpaidClock } from './Clocks'
 import Tip from './ui/Tip'
 import ModeBadge from './ui/ModeBadge'
 import { computeCircuit, fmtHours, pct, units, unpaidHours } from '../lib/marx'
-import { mt } from '../i18n'
+import { mt, modRef } from '../i18n'
 import { useApp } from '../store/useApp'
 
 function UnpaidWorkCard() {
@@ -208,7 +208,7 @@ export default function CircuitModule() {
               O circuito mostra como o valor nasce — não se ele será realizado. Isso depende da{' '}
               <strong>demanda efetiva</strong>: alguém precisa comprar o produto sob incerteza. Por isso déficit
               público sustenta vendas e lucros, e por isso “todo mundo poupar de uma vez” derruba a economia inteira
-              (paradoxo da parcimônia). Veja o simulador no Módulo 05.
+              (paradoxo da parcimônia). Veja o simulador no {modRef('debt')}.
             </p>
           </div>
         </div>

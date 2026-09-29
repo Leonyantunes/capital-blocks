@@ -5,6 +5,7 @@ import {
   WORLD_GDP_TRI, CLAIMS, REAL_ASSETS, DERIV_NOTIONAL_TRI, PRIVATE_NET_WEALTH_TRI, claimsTotal,
 } from '../data/worldWealth'
 import { worldSummary, WORLD_AGGREGATES, WORLD_COMPANIES } from '../data/companies'
+import { modRef } from '../data/modules'
 
 /**
  * RIQUEZA MUNDIAL SOB RAIO-X — quanto do patrimônio do planeta é
@@ -109,7 +110,7 @@ export default function WorldWealthPanel() {
           onClick={() => useApp.getState().setTab('wealth')}
           className="mt-3 w-full rounded-lg border border-money/50 bg-money/10 px-3 py-2 text-xs font-semibold text-money transition-colors hover:bg-money/20"
         >
-          E quem produz tudo isso? → Módulo 07 · Quem Sustenta Quê?
+          E quem produz tudo isso? → {modRef('wealth')} · Quem Sustenta Quê?
         </button>
       </div>
     </section>

@@ -16,6 +16,7 @@ import type { TabId } from '../store/useApp'
 import { FLOWS, TYPE_STYLE } from './flows'
 import { flowIsos } from '../lib/world'
 import { TOUR_STOPS, type TourStop } from './tour'
+import { modRef, modTitle } from './modules'
 
 export interface TourDef {
   id: string
@@ -54,7 +55,7 @@ export function stopColor(s: TourStop): string | null {
 
 const RED = '#ef4444'
 const ROSE = '#fb7185'
-const WAR_FINAL = { finalTab: 'war' as TabId, finalLabel: 'ir ao Módulo 03 · Guerra de Capitais →' }
+const WAR_FINAL = { finalTab: 'war' as TabId, finalLabel: `ir ao ${modTitle('war')} →` }
 
 export const TOURES: TourDef[] = [
   {
@@ -63,7 +64,7 @@ export const TOURES: TourDef[] = [
     descricao: 'O tour completo: da terra à moeda, do lucro ao custo.',
     accent: '#34d399',
     finalTab: 'alternatives',
-    finalLabel: 'ir ao Módulo 09 · E para onde podemos ir? →',
+    finalLabel: `ir ao ${modTitle('alternatives')} →`,
     stops: TOUR_STOPS,
   },
 
@@ -117,7 +118,7 @@ export const TOURES: TourDef[] = [
           { v: 'salários', k: 'quem paga' },
         ],
         adv: 'Balanço de classe dos conflitos: complexo militar-energético captura rendas extraordinárias; periferia e trabalho assalariado absorvem o choque via preços e austeridade.',
-        dica: 'finalize para abrir o Módulo 03 com cada frente detalhada',
+        dica: `finalize para abrir o ${modRef('war')} com cada frente detalhada`,
       },
     ],
   },
@@ -151,7 +152,7 @@ export const TOURES: TourDef[] = [
           { v: 'tudo', k: 'importado dentro de aparelhos' },
         ],
         adv: 'Dependência tecnológica periférica: sem foundry, sem IP, sem bargaining power — o Brasil entra na guerra dos chips como mercado, não como jogador.',
-        dica: 'finalize para abrir o Módulo 03',
+        dica: `finalize para abrir o ${modRef('war')}`,
       },
     ],
   },
@@ -184,7 +185,7 @@ export const TOURES: TourDef[] = [
           { v: 'conta cheia', k: 'para a indústria europeia' },
         ],
         adv: 'Balanço das sanções: Urals com desconto vs. TTF elevado — traders e produtores capturam o spread; o custo recai sobre salários e indústria do centro europeu.',
-        dica: 'finalize para abrir o Módulo 03',
+        dica: `finalize para abrir o ${modRef('war')}`,
       },
     ],
   },
@@ -211,13 +212,13 @@ export const TOURES: TourDef[] = [
       {
         id: 'wr-fim', chapter: 'Reprimarização', titulo: 'Dá para reverter?',
         lng: -53, lat: -10, k: 2.8, isos: ['076'],
-        did: 'Reverter exige o que foi desmontado: indústria, tecnologia, emprego formal — e segurar aqui parte do excedente que hoje viaja para fora. O Módulo 03 mostra as frentes; o Módulo 09, os caminhos.',
+        did: `Reverter exige o que foi desmontado: indústria, tecnologia, emprego formal — e segurar aqui parte do excedente que hoje viaja para fora. O ${modRef('war')} mostra as frentes; o ${modRef('alternatives')}, os caminhos.`,
         didStats: [
           { v: 'indústria', k: 'o que foi desmontado' },
           { v: 'reter', k: 'o excedente que viaja' },
         ],
         adv: 'Reversão = política industrial + controle de capitais + reforma tributária progressiva — disputa pelo excedente contra as frações agro-financeiras.',
-        dica: 'finalize para abrir o Módulo 03',
+        dica: `finalize para abrir o ${modRef('war')}`,
       },
     ],
   },
@@ -226,15 +227,15 @@ export const TOURES: TourDef[] = [
   {
     id: 'mortes',
     titulo: 'Mortes do Capitalismo',
-    descricao: 'Os massacres do Módulo 08, país por país.',
+    descricao: `Os massacres do ${modRef('consequences')}, país por país.`,
     accent: ROSE,
     finalTab: 'consequences',
-    finalLabel: 'ir ao Módulo 08 · As Mortes do Capitalismo →',
+    finalLabel: `ir ao ${modTitle('consequences')} →`,
     stops: [
       {
         id: 'm-intro', chapter: 'Mortes · Abertura', titulo: 'O preço em vidas',
         lng: 20, lat: 20, k: 1.4, layer: 'deaths',
-        did: 'O Módulo 08 cataloga os massacres da história do capitalismo — e o padrão se repete: o lucro fica com poucos, a conta em vidas fica com os países pobres. Este tour visita cada lugar e mostra como cada tragédia atrasou o país onde aconteceu.',
+        did: `O ${modRef('consequences')} cataloga os massacres da história do capitalismo — e o padrão se repete: o lucro fica com poucos, a conta em vidas fica com os países pobres. Este tour visita cada lugar e mostra como cada tragédia atrasou o país onde aconteceu.`,
         didStats: [
           { v: '10', k: 'casos documentados' },
           { v: '2,9 mi', k: 'mortes do trabalho/ano' },
@@ -334,13 +335,13 @@ export const TOURES: TourDef[] = [
       {
         id: 'm-fim', chapter: 'Mortes · Fechamento', titulo: 'O padrão',
         lng: 20, lat: 10, k: 1.6,
-        did: 'Repare o padrão em todos os casos: o lucro foi privatizado na hora, a conta chegou depois — em vidas, rios e baías — e quase ninguém foi preso. Países que aceitam esse preço ficam presos nele: mão de obra barata e natureza barata para sempre. O Módulo 08 conta cada caso até o fim.',
+        did: `Repare o padrão em todos os casos: o lucro foi privatizado na hora, a conta chegou depois — em vidas, rios e baías — e quase ninguém foi preso. Países que aceitam esse preço ficam presos nele: mão de obra barata e natureza barata para sempre. O ${modRef('consequences')} conta cada caso até o fim.`,
         didStats: [
           { v: 'lucro agora', k: 'conta em vidas depois' },
           { v: 'impunidade', k: 'o subsídio invisível' },
         ],
         adv: 'Padrão estrutural: privatização do excedente + socialização do desastre + blindagem jurídica — a periferia retida como zona de sacrifício permanente do sistema.',
-        dica: 'finalize para abrir o Módulo 08 com todos os casos',
+        dica: `finalize para abrir o ${modRef('consequences')} com todos os casos`,
       },
     ],
   },

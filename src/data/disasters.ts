@@ -1,6 +1,8 @@
 /** MARCADORES DE MORTES CORPORATIVAS — desastres industriais e violência
  *  corporativa documentados, com custo humano. Coordenadas reais. */
 
+import { modRef } from './modules'
+
 export interface Disaster {
   id: string
   local: string
@@ -15,7 +17,7 @@ export interface Disaster {
 
 export const DISASTERS: Disaster[] = [
   { id: 'bhopal', local: 'Bhopal, Índia', lngLat: [77.4, 23.2], ano: '1984', empresa: 'Union Carbide → Dow Chemical', mortos: '3.800 imediatos · 570 mil intoxicados', mortosNum: 570000,
-    did: 'A maior catástrofe industrial da história: gás venenoso sobre uma cidade dormindo porque a matriz cortou custos de segurança. Ver EP06 do Módulo 08.',
+    did: `A maior catástrofe industrial da história: gás venenoso sobre uma cidade dormindo porque a matriz cortou custos de segurança. Ver EP06 do ${modRef('consequences')}.`,
     adv: 'Duplo padrão de segurança + acordo de US$465 mi (≈US$500/vítima) + violência lenta (Nixon): resíduos de MIC contaminam gerações.' },
   { id: 'vila-soco', local: 'Vila Socó, Cubatão (Brasil)', lngLat: [-46.4, -23.9], ano: '1984', empresa: 'Petrobras', mortos: '508 mortos (est. oficial; moradores falam em 700+)', mortosNum: 508,
     did: 'A "Vila do Gás": uma favela inteira explodiu sobre um vazamento de gasolina em plena ditadura. O Brasil se lembrava de Bhopal no mesmo mês — e esqueceu a sua.',
@@ -28,7 +30,7 @@ export const DISASTERS: Disaster[] = [
     adv: 'Barragem B1 (2019): 270 mortos; auditorias internas alertavam (apostila "barragem à montante" sabidamente frágil) — crime ambiental com autoria corporativa documentada.' },
   { id: 'rana-plaza', local: 'Savar, Bangladesh', lngLat: [90.3, 23.7], ano: '2013', empresa: 'Marcas de fast fashion (H&M, Zara, Primark…)', mortos: '1.134 costureiras mortas', mortosNum: 1134,
     did: 'O prédio Rana Plaza desabou com 4 mil costureiras dentro — as marcas ocidentais sabiam das rachaduras no dia anterior. Roupa barata tem endereço.',
-    adv: 'Rana Plaza (2013): 1.134 mortos, 2.500+ feridos; Accord de segurança pós-desastre assinado sob pressão — compressão salarial global com endereço (ver Módulo 07/fluxo BGD→UE).' },
+    adv: `Rana Plaza (2013): 1.134 mortos, 2.500+ feridos; Accord de segurança pós-desastre assinado sob pressão — compressão salarial global com endereço (ver ${modRef('wealth')}/fluxo BGD→UE).` },
   { id: 'deepwater', local: 'Golfo do México (Deepwater Horizon)', lngLat: [-88.4, 28.7], ano: '2010', empresa: 'BP · Transocean · Halliburton', mortos: '11 mortos · maior desastre marinho da história (4,9 mi barris)', mortosNum: 11,
     did: 'A plataforma da BP explodiu e vazou 4,9 milhões de barris de petróleo no Golfo do México por 87 dias seguidos. Decisões de corte de custo foram documentadas antes da explosão.',
     adv: 'Macondo (2010): 4,9 mi barris; decisões de custo documentadas (CSB); acordo de US$20,8 bi (2015) — externalização marinha em escala de ecossistema.' },

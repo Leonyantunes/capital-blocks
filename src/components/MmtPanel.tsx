@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { m } from 'framer-motion'
 import Tip from './ui/Tip'
 import { useApp } from '../store/useApp'
+import { modRef } from '../data/modules'
 
 type Lens = 'marx' | 'mmt' | 'both'
 
@@ -188,7 +189,7 @@ export default function MmtPanel() {
             <ul className="mt-1.5 space-y-1.5 text-[11px] leading-relaxed text-zinc-300">
               <li>· <strong>Classe social:</strong> MMT trata o Estado como gestor neutro da moeda; para Marx, ele organiza condições de acumulação — quem manda no orçamento é a fração dominante do capital.</li>
               <li>· <strong>Inflação:</strong> MMT foca demanda × capacidade; Marx acrescenta conflito distributivo, mark-ups monopolistas e choques de câmbio/commodities.</li>
-              <li>· <strong>Hierarquia monetária global:</strong> a lente MMT nasce em emissores centrais (EUA/Japão/Reino Unido); para a periferia, o dólar-hegemonia impõe restrição externa real (ver módulo 02).</li>
+              <li>· <strong>Hierarquia monetária global:</strong> a lente MMT nasce em emissores centrais (EUA/Japão/Reino Unido); para a periferia, o dólar-hegemonia impõe restrição externa real (ver {modRef('home')}).</li>
             </ul>
           </article>
         </m.div>

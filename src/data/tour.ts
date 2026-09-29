@@ -5,7 +5,12 @@
  * - modo avançado: texto denso completo (o padrão anterior do tour)
  * Linguagem didática suave, ideologia pouco explícita; os dados demonstram.
  * Valores anuais aproximados (2024) — mesma base dos fluxos.
+ *
+ * As referências a módulos no texto usam `modRef()` de `data/modules.ts` —
+ * renumerar um módulo reflete em todos os cards de tour automaticamente.
  */
+
+import { modNum, modRef } from './modules'
 
 export interface TourStat {
   v: string
@@ -109,7 +114,7 @@ export const TOUR_STOPS: TourStop[] = [
       { v: '~60%', k: 'de cada iPhone fica com a marca' },
     ],
     adv: 'GVC (cadeias globais de valor): captura de margem pelo detentor da marca/IP; o déficit bilateral estrutura a guerra tecnológica — montar não é o mesmo que mandar.',
-    dica: 'veja o Módulo 05 para o Raio-X das empresas da rota',
+    dica: `veja o ${modRef('companies')} para o Raio-X das empresas da rota`,
   },
   {
     id: 'fabrica-muda',
@@ -386,12 +391,12 @@ export const TOUR_STOPS: TourStop[] = [
     chapter: 'Encerramento',
     titulo: 'E agora?',
     lng: -53, lat: -10, k: 2.8, isos: ['076'],
-    did: 'O diagnóstico está completo: o trabalho produz, o Sul fornece barato, o lucro viaja para o Norte, a moeda comanda e a conta chega em vidas. Mas o Módulo 09 mostra que alternativas REAIS já funcionam — cooperativas gigantes, cidades com orçamento democrático, comunidades que cuidam do comum. O tabuleiro pode ser reorganizado.',
+    did: `O diagnóstico está completo: o trabalho produz, o Sul fornece barato, o lucro viaja para o Norte, a moeda comanda e a conta chega em vidas. Mas o ${modRef('alternatives')} mostra que alternativas REAIS já funcionam — cooperativas gigantes, cidades com orçamento democrático, comunidades que cuidam do comum. O tabuleiro pode ser reorganizado.`,
     didStats: [
-      { v: '09', k: 'o módulo das alternativas' },
+      { v: modNum('alternatives'), k: 'o módulo das alternativas' },
       { v: 'reais', k: 'casos que já funcionam' },
     ],
     adv: 'Do diagnóstico à transição: pluralismo institucional (cooperativas, commons, democracia fiscal — Ostrom, Albert) + soberania monetária funcional (P3) + fim da superexploração (P4). O mapa deixa de ser destino e vira campo de disputa.',
-    dica: 'finalize o tour para ir ao Módulo 09',
+    dica: `finalize o tour para ir ao ${modRef('alternatives')}`,
   },
 ]

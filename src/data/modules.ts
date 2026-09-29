@@ -122,6 +122,11 @@ export const MAP_TAB_TOOLTIP: Record<'pt' | 'en' | 'es', string> = {
   es: `${modRef('home', 'es')} ⇄ Mapa 3D — haz clic para alternar entre ambas versiones`,
 }
 
+/** Só o número cru ("04") — para números grandes em cards/gráficos. */
+export function modNum(tab: TabId): string {
+  return MODULES[tab].num
+}
+
 /** "Módulo 04" (pt) / "Module 04" (en) / "Módulo 04" (es) — para texto corrido. */
 export function modRef(tab: TabId, lang: 'pt' | 'en' | 'es' = 'pt'): string {
   const num = MODULES[tab].num
