@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { useApp } from '../store/useApp'
+import { useApp, type TabId, type UIMode } from '../store/useApp'
 import { t } from '../i18n'
-import { MODULES, MAP_TAB_TOOLTIP, TABS, modTitle, type TabId } from '../data/modules'
+import { MODULES, MAP_TAB_TOOLTIP, TABS, modTitle } from '../data/modules'
 
 const GlossaryDrawer = lazy(() => import('./GlossaryDrawer'))
 
@@ -36,7 +36,8 @@ function Logo() {
   )
 }
 
-/** Controles de modo/idioma — reutilizados na barra (desktop) e na gaveta (mobile). */
+/** Controles de modo/idioma — reutilizados na barra (desktop) e na gaveta (mobile).
+ *  Três níveis de leitura: Simples (3º modo) ⇄ Didático ⇄ Avançado. */
 function ModeControls({ stacked = false }: { stacked?: boolean }) {
   const mode = useApp((s) => s.mode)
   const setMode = useApp((s) => s.setMode)
@@ -45,18 +46,30 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
   const lang = useApp((s) => s.lang)
   const setLang = useApp((s) => s.setLang)
 
+  const MODOS: { id: UIMode; pt: string }[] = [
+    { id: 'simples', pt: 'Simples' },
+    { id: 'didatico', pt: 'Didático' },
+    { id: 'avancado', pt: 'Avançado' },
+  ]
+
   if (stacked) {
     return (
       <div className="space-y-2.5">
-        <div className="inline-flex w-full items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-          {(['didatico', 'avancado'] as const).map((m) => (
-            <button key={m} onClick={() => setMode(m)}
-              className={`flex-1 rounded-md px-2.5 py-2 text-xs font-semibold transition-colors ${
-                mode === m ? 'bg-money text-zinc-950' : 'text-zinc-400'
-              }`}>
-              {m === 'didatico' ? t(lang, 'didatico') : t(lang, 'avancado')}
-            </button>
-          ))}
+        <div>
+          <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+            Nível de leitura
+          </div>
+          <div className="inline-flex w-full items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
+            {MODOS.map((m) => (
+              <button key={m.id} onClick={() => setMode(m.id)}
+                title={m.id === 'simples' ? 'Para quem está começando' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias'}
+                className={`flex-1 rounded-md px-2 py-2 text-[11px] font-semibold transition-colors ${
+                  mode === m.id ? 'bg-money text-zinc-950' : 'text-zinc-400'
+                }`}>
+                {m.pt}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -95,12 +108,13 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
         <option value="es">ES</option>
       </select>
       <div className="inline-flex shrink-0 items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-        {(['didatico', 'avancado'] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)}
-            className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-              mode === m ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+        {MODOS.map((m) => (
+          <button key={m.id} onClick={() => setMode(m.id)}
+            title={m.id === 'simples' ? 'Para quem está começando: sem fórmula' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias marxistas'}
+            className={`rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors ${
+              mode === m.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
             }`}>
-            {m === 'didatico' ? t(lang, 'didatico') : t(lang, 'avancado')}
+            {m.pt}
           </button>
         ))}
       </div>

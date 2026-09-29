@@ -7,7 +7,14 @@ import { TABS, type TabId } from '../data/modules'
    manter `import { type TabId } from '../store/useApp'` funcionando. */
 export type { TabId }
 export type PriceBasis = 'nominal' | 'ppp'
-export type UIMode = 'didatico' | 'avancado'
+/**
+ * Nível de leitura.
+ * - `simples`  → 3º modo: público do fundamental / início do ensino médio.
+ *                 Linguagem direta, sem fórmula, foco em "o que isso significa".
+ * - `didatico` → padrão: didático com alguma conta e metáfora.
+ * - `avancado` → marxista-contábil: categorias, fórmulas e referências.
+ */
+export type UIMode = 'simples' | 'didatico' | 'avancado'
 export type ConflictId = 'semis' | 'energia' | 'reprimaria' | null
 
 /** Chaves do intervalo dos sliders (espelham ControlsPanel.tsx). */
@@ -106,7 +113,7 @@ interface PersistedState {
 function sanitize(persisted: unknown): Partial<PersistedState> {
   const p = (persisted ?? {}) as Partial<Record<keyof PersistedState, unknown>>
   return {
-    mode: oneOf(p.mode, ['didatico', 'avancado'] as const, 'didatico'),
+    mode: oneOf(p.mode, ['simples', 'didatico', 'avancado'] as const, 'didatico'),
     k: num(p.k, K_MIN, K_MAX, 4),
     e: num(p.e, E_MIN, E_MAX, 1.5),
     basis: oneOf(p.basis, ['nominal', 'ppp'] as const, 'nominal'),

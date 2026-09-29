@@ -6,19 +6,19 @@ import { StackedBar } from './DonutChart'
 import ModeBadge from './ui/ModeBadge'
 import { useApp } from '../store/useApp'
 import { modRef } from '../data/modules'
+import { useFractions } from '../lib/useModo'
 
-function segmentsOf(c: (typeof COUNTRIES)[number]) {
-  return (Object.keys(FRACTION_META) as (keyof typeof FRACTION_META)[]).map((f) => ({
-    key: f,
-    label: FRACTION_META[f].label,
-    value: c.fractions[f],
-    color: FRACTION_META[f].color,
-  }))
+/** Segmentos da rosca com os rótulos do nível de leitura atual. */
+function useSegmentsOf() {
+  const fracs = useFractions()
+  return (c: (typeof COUNTRIES)[number]) =>
+    fracs.map((f) => ({ key: f.key, label: f.label, value: c.fractions[f.key], color: f.color }))
 }
 
 /** HOME — "Mapa Geopolítico Interativo de Blocos e Fluxos de Capital" */
 export default function MapModule() {
   const { basis, setBasis, openCountry } = useApp()
+  const segmentsOf = useSegmentsOf()
 
   return (
     <div className="flex flex-col gap-4">
@@ -112,6 +112,7 @@ export default function MapModule() {
 
 function ComparisonStrip() {
   const { openCountry } = useApp()
+  const segmentsOf = useSegmentsOf()
   return (
     <div className="flex gap-3 overflow-x-auto pb-1 thin-scroll">
       {COUNTRIES.map((c) => (

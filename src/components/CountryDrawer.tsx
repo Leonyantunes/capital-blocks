@@ -5,6 +5,7 @@ import Tip from './ui/Tip'
 import { fmtTri } from '../data/countries'
 import { TMD_CHANNELS } from '../data/theory'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { useFractions } from '../lib/useModo'
 import { useApp } from '../store/useApp'
 
 /** PILAR 4 — bloco TMD: três canais de vazamento + tubo animado Sul → Norte. */
@@ -57,10 +58,15 @@ function TmdBlock({ countryName }: { countryName: string }) {
   )
 }
 
-function toSegments(c: (typeof COUNTRIES)[number], hidden: FractionKey[]) {
-  return (Object.keys(FRACTION_META) as FractionKey[])
-    .filter((f) => !hidden.includes(f))
-    .map((f) => ({ key: f, label: FRACTION_META[f].label, value: c.fractions[f], color: FRACTION_META[f].color }))
+/** Monta os segmentos da rosca com os rótulos do nível de leitura atual. */
+function toSegments(
+  c: (typeof COUNTRIES)[number],
+  hidden: FractionKey[],
+  fracs: { key: FractionKey; label: string; color: string }[],
+) {
+  return fracs
+    .filter((f) => !hidden.includes(f.key))
+    .map((f) => ({ key: f.key, label: f.label, value: c.fractions[f.key], color: f.color }))
 }
 
 function IlaiseBlock() {
@@ -109,6 +115,9 @@ export default function CountryDrawer() {
   const { countryId, closeCountry, basis, setBasis, hiddenFractions, toggleFraction } = useApp()
   const c = countryId ? COUNTRIES.find((x) => x.id === countryId) ?? null : null
   const trapRef = useFocusTrap<HTMLElement>(!!c, closeCountry)
+  /* rótulos das frações no nível de leitura atual (Simples mostra "Fábricas e
+     máquinas" em vez de "Capital Produtivo") */
+  const fracs = useFractions()
 
   return (
     <>
@@ -173,13 +182,13 @@ export default function CountryDrawer() {
                 </h3>
                 <div className="flex items-center gap-4">
                   <DonutChart
-                    segments={toSegments(c, hiddenFractions)}
+                    segments={toSegments(c, hiddenFractions, fracs)}
                     centerLabel={basis === 'nominal' ? 'PIB nominal' : 'PIB PPP'}
                     centerValue={fmtTri(basis === 'nominal' ? c.gdpNominal : c.gdpPPP)}
                   />
                   <ul className="min-w-0 flex-1 space-y-1.5">
                     {(Object.keys(FRACTION_META) as FractionKey[]).map((f) => {
-                      const meta = FRACTION_META[f]
+                      const meta = fracs.find((x) => x.key === f) ?? { ...FRACTION_META[f], key: f }
                       const off = hiddenFractions.includes(f)
                       return (
                         <li key={f}>
