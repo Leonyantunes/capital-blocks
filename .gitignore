@@ -11,3 +11,6 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# cache de ferramentas locais (Hermes, agentes)
+.hermes/

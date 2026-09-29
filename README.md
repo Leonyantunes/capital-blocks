@@ -234,9 +234,12 @@ Ao renumerar um módulo, edite **apenas** `src/data/modules.ts`.
 
 ## Licença
 
-**Ainda não definida pelo autor.** Enquanto não houver um arquivo `LICENSE` neste
-repositório, o padrão legal é "todos os direitos reservados" — use, estude e
-contribua livremente, mas **não redistribua** sem falar com o maintainer.
+**CC BY-NC-SA 4.0** — código e conteúdo sob a **mesma** licença. Ver
+[`LICENSE`](LICENSE) (texto legal) e [`LICENSE.md`](LICENSE.md) (escopo e como citar).
+
+Tradução: reutilize, adapte e compartilhe livremente, com atribuição, **desde que
+não use com finalidade comercial** e distribua derivados sob a mesma licença. Uso
+educacional, pesquisa e material de estudo estão explicitamente permitidos.
 
 **Aviso.** Protótipo educacional. As decomposições, frações e métricas são estimativas
 pedagógicas para visualização e não constituem estatística oficial nem recomendação de

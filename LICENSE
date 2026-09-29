@@ -1,0 +1,65 @@
+CC BY-NC-SA 4.0 — Capital Blocks
+(Código e Conteúdo sob a mesma licença)
+
+Copyright (c) 2026 Capital Blocks contributors
+
+Este projeto — código-fonte e conteúdo — está sob a Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+
+Você pode reutilizar, adaptar e redistribuir este material — inclusive em
+ambientes educacionais — desde que:
+
+  · ATRIBUIÇÃO    — credite a autoria e indique que houve modificação.
+  · NÃO COMERCIAL — não use o material (ou derivados) com finalidade comercial.
+  · COMPARTILHA  — distribua qualquer derivado sob a mesma licença CC BY-NC-SA 4.0.
+
+O código-fonte do aplicativo está sob a MESMA licença do conteúdo, para que
+licença de código e de conteúdo não se separem. Não há licença MIT nem
+qualquer permissão de uso comercial em nenhuma parte deste repositório.
+
+Resumo legal (não substitui o texto oficial):
+https://creativecommons.org/licenses/by-nc-sa/4.0/deed.pt-br
+
+Texto oficial da licença (inglês):
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+────────────────────────────────────────────────────────────────────────────
+O QUE "NÃO COMERCIAL" SIGNIFICA AQUI
+────────────────────────────────────────────────────────────────────────────
+
+Permitido, sem pedir autorização:
+  · uso educacional — sala de aula, universidade, cursinho, treinamento
+  · pesquisa e estudo pessoais
+  · gráficos e materiais derivados, com atribuição
+  · adaptação e tradução
+
+Geralmente exige permiso do autor:
+  · curso pago, plataforma de e-learning comercial
+  · uso em produto ou serviço vendido
+  · material institucional ou de marketing de empresa
+
+Sem garantia: este é um projeto de código aberto sem garantia de qualidade ou
+adequação a qualquer fim específico.
+
+────────────────────────────────────────────────────────────────────────────
+AVISO — PROJETO EDUCACIONAL, NÃO FERRAMENTA DE ANÁLISE
+────────────────────────────────────────────────────────────────────────────
+
+Os números exibidos são ESTIMATIVAS DIDÁTICAS para visualização.
+As decomposições W = c + v + m, as frações internas de PIB, os valores por
+trabalhador e os agregados de riqueza NÃO constituem estatística oficial,
+parecer de investimento ou recomendação de qualquer natureza.
+
+Consulte as fontes primárias citadas em `src/data/sources.ts` e no Módulo 10
+(Fontes & Referências) antes de usar qualquer dado em decisão real.
+
+────────────────────────────────────────────────────────────────────────────
+DADOS ECONÔMICOS DE TERCEIROS
+────────────────────────────────────────────────────────────────────────────
+
+Esta licença cobre o MATERIAL deste repositório. Os dados econômicos e
+estatísticos citados pela aplicação pertencem às instituições que os produzem
+(FMI, ONU, BIS, SIPRI, Banco Central, IBGE…), que têm seus próprios termos de
+uso — a lista completa está em `src/data/sources.ts` e no Módulo 10 do app.
+Este projeto não redistribui a posse desses dados: cita, agrega e computa
+sobre eles, sempre com fonte e ano.
