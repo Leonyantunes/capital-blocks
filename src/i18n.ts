@@ -47,6 +47,14 @@ const D: Record<string, [string, string, string]> = {
   tentarNovamente: ['Tentar novamente', 'Try again', 'Intentar de nuevo'],
   fonte: ['fonte', 'source', 'fuente'],
   ano: ['ano', 'year', 'año'],
+  /* ── página de configurações ── */
+  configuracoes: ['Configurações', 'Settings', 'Configuración'],
+  tema: ['Tema', 'Theme', 'Tema'],
+  claro: ['Claro', 'Light', 'Claro'],
+  escuro: ['Escuro', 'Dark', 'Oscuro'],
+  referencias: ['Referências', 'References', 'Referencias'],
+  mostrarFonte: ['Mostrar a fonte junto dos números', 'Show the source next to figures', 'Mostrar la fuente junto a las cifras'],
+  preferencias: ['Preferências', 'Preferences', 'Preferencias'],
   estimativa: ['estimativa', 'estimate', 'estimación'],
   revisar: ['revisão pendente', 'review pending', 'revisión pendiente'],
   fonteDeclarada: ['fonte declarada', 'source declared', 'fuente declarada'],
@@ -102,6 +110,7 @@ const MOD_TITLES: Record<TabId, [string, string, string]> = {
   consequences: ['Consequências Sistêmicas', 'Systemic Consequences', 'Consecuencias Sistémicas'],
   alternatives: ['E Para Onde Podemos Ir?', 'And Where Can We Go?', '¿Y Hacia Dónde Podemos Ir?'],
   sources: ['Fontes & Referências', 'Sources & References', 'Fuentes y Referencias'],
+  settings: ['Configurações', 'Settings', 'Configuración'],
 }
 
 /** Sufixos temáticos do kicker, por aba (traduzidos; o número vem de MODULES). */

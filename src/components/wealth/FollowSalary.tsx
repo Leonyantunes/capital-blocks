@@ -46,7 +46,7 @@ export default function FollowSalary() {
           {SALARY_PRESETS.map((p) => (
             <button key={p.id} onClick={() => setPresetId(p.id)}
               className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                presetId === p.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                presetId === p.id ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
               }`}>
               {p.label}
             </button>

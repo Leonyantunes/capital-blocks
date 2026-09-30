@@ -97,17 +97,17 @@ export default function ControlsPanel() {
       {/* Leituras derivadas */}
       <div className="grid grid-cols-2 gap-2 border-t border-zinc-800 pt-3">
         <MetricCard label={didatico ? 'Investimento em máquinas' : 'Capital constante c'} value={units(r.c)}
-          formula={didatico ? undefined : 'c = k·v'} accent="text-sky-300"
+          formula={didatico ? undefined : 'c = k·v'} accent="text-sky-300" fonte="modelo do app"
           tip={didatico ? 'Matérias-primas, fábricas, máquinas — transferem valor, mas não criam lucro novo.' : undefined} />
         <MetricCard label={didatico ? 'Folha de salários' : 'Capital variável v'} value={units(r.v)}
           formula={didatico ? undefined : 'v = 100 (base)'}
-          accent="text-red-300"
+          accent="text-red-300" fonte="modelo do app"
           tip={didatico ? 'O que a empresa paga em salários — a única parte que compra "trabalho vivo".' : undefined} />
         <MetricCard label={didatico ? 'Lucro novo produzido' : 'Mais-valia m'} value={units(r.m)}
           formula={didatico ? undefined : 'm = e·v'}
-          accent="text-emerald-300"
+          accent="text-emerald-300" fonte="modelo do app"
           tip={didatico ? 'Nasce do tempo de trabalho não pago — só existe porque há trabalhadores.' : undefined} />
-        <MetricCard label={didatico ? 'Valor total produzido' : 'Valor novo C′'} value={units(r.W)} />
+        <MetricCard label={didatico ? 'Valor total produzido' : 'Valor novo C′'} value={units(r.W)} fonte="modelo do app" />
       </div>
     </div>
   )

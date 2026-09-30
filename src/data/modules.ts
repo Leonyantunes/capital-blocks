@@ -20,7 +20,8 @@
  * Ver README.md §"Módulos" e TODO.md (P2-24, concluída).
  */
 
-/** Identificador de uma aba do app. `globe3d` = variante 3D do Módulo 01. */
+/** Identificador de uma aba do app. `globe3d` = variante 3D do Módulo 01;
+ *  `settings` = página de configurações (não é módulo numerado). */
 export type TabId =
   | 'home'
   | 'globe3d'
@@ -33,6 +34,7 @@ export type TabId =
   | 'consequences'
   | 'alternatives'
   | 'sources'
+  | 'settings'
 
 /** Todas as abas, na ordem em que aparecem na navegação. */
 export const TABS: TabId[] = [
@@ -47,6 +49,7 @@ export const TABS: TabId[] = [
   'consequences',
   'alternatives',
   'sources',
+  'settings',
 ]
 
 /** Chave de tradução da etiqueta curta exibida na navegação. */
@@ -61,6 +64,7 @@ export type ModuleLabelKey =
   | 'consequencias'
   | 'alternativas'
   | 'fontes'
+  | 'configuracoes'
 
 export interface ModuleMeta {
   /** Número canônico do módulo ("01"…"10"). Vazio para `globe3d`. */
@@ -109,6 +113,14 @@ export const MODULES: Record<TabId, ModuleMeta> = {
     labelKey: 'fontes',
     shortTitle: 'Fontes & Referências',
     component: 'sources/SourcesModule.tsx',
+  },
+  /* settings não é módulo numerado: página de preferências (aberta pelo
+     botão ⚙ da Navbar; fora da fileira de chips numerados). */
+  settings: {
+    num: '',
+    labelKey: 'configuracoes',
+    shortTitle: 'Configurações',
+    component: 'SettingsModule.tsx',
   },
 }
 

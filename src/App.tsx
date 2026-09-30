@@ -21,6 +21,7 @@ const WealthModule = lazy(() => import('./components/wealth/WealthModule'))
 const ConsequencesModule = lazy(() => import('./components/consequences/ConsequencesModule'))
 const AlternativesModule = lazy(() => import('./components/alternatives/AlternativesModule'))
 const SourcesModule = lazy(() => import('./components/sources/SourcesModule'))
+const SettingsModule = lazy(() => import('./components/SettingsModule'))
 const CountryDrawer = lazy(() => import('./components/CountryDrawer'))
 
 function ModuleFallback() {
@@ -37,16 +38,26 @@ export default function App() {
   const tab = useApp((s) => s.tab)
   const presentation = useApp((s) => s.presentation)
   const lang = useApp((s) => s.lang)
+  const theme = useApp((s) => s.theme)
 
   useEffect(() => {
     document.documentElement.style.fontSize = presentation ? '19px' : '16px'
   }, [presentation])
 
+  /* tema por tokens: data-theme na raiz inverte as variáveis (index.css);
+     meta theme-color acompanha para a barra do navegador mobile */
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'light' ? '#EEF1F5' : '#0D1117')
+  }, [theme])
+
   return (
     <LazyMotion features={domAnimation} strict>
       <div className="flex min-h-full flex-col bg-zinc-950">
         <a href="#conteudo"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-money focus:px-3 focus:py-2 focus:text-xs focus:font-bold focus:text-zinc-950">
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-money focus:px-3 focus:py-2 focus:text-xs focus:font-bold focus:text-onaccent">
           Pular para o conteúdo
         </a>
         <Navbar />
@@ -74,6 +85,7 @@ export default function App() {
                 {tab === 'consequences' && <ConsequencesModule />}
                 {tab === 'alternatives' && <AlternativesModule />}
                 {tab === 'sources' && <SourcesModule />}
+                {tab === 'settings' && <SettingsModule />}
               </ErrorBoundary>
             </Suspense>
           </m.main>

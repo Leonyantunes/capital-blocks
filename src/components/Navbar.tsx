@@ -20,10 +20,12 @@ const TITLES: Record<TabId, string> = {
   consequences: `${modTitle('consequences')} — massacres, territórios e custos deslocados`,
   alternatives: `${modTitle('alternatives')} — cooperativas, orçamento democrático e garantia de emprego`,
   sources: `${modTitle('sources')} — busca, filtros, estado de verificação e links diretos`,
+  settings: 'Configurações — nível de leitura, tema, idioma, referências e apresentação',
 }
 
-/* Abas numeradas na ordem de navegação, derivadas do registro canônico. */
-const NAV_TABS = TABS.filter((id) => id !== 'globe3d')
+/* Abas numeradas na ordem de navegação, derivadas do registro canônico.
+   globe3d é a variante 3D do 01 (chip do mapa); settings abre pelo botão ⚙. */
+const NAV_TABS = TABS.filter((id) => id !== 'globe3d' && id !== 'settings')
 
 function Logo() {
   return (
@@ -64,7 +66,7 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
               <button key={m.id} onClick={() => setMode(m.id)}
                 title={m.id === 'simples' ? 'Para quem está começando' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias'}
                 className={`flex-1 rounded-md px-2 py-2 text-[11px] font-semibold transition-colors ${
-                  mode === m.id ? 'bg-money text-zinc-950' : 'text-zinc-400'
+                  mode === m.id ? 'bg-money text-onaccent' : 'text-zinc-400'
                 }`}>
                 {m.pt}
               </button>
@@ -112,7 +114,7 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
           <button key={m.id} onClick={() => setMode(m.id)}
             title={m.id === 'simples' ? 'Para quem está começando: sem fórmula' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias marxistas'}
             className={`rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors ${
-              mode === m.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
+              mode === m.id ? 'bg-money text-onaccent' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
             }`}>
             {m.pt}
           </button>
@@ -200,8 +202,8 @@ export default function Navbar() {
                   className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
                     active
                       ? show3D
-                        ? 'bg-sky-400 text-zinc-950'
-                        : 'bg-money text-zinc-950'
+                        ? 'bg-sky-400 text-onaccent'
+                        : 'bg-money text-onaccent'
                       : show3D
                         ? 'border border-sky-400/50 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20'
                         : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
@@ -221,10 +223,22 @@ export default function Navbar() {
             >
               {t(lang, 'glossario')}
             </button>
+            <button
+              onClick={() => setTab('settings')}
+              title="Configurações: nível de leitura, tema, idioma e referências"
+              aria-label={t(lang, 'configuracoes')}
+              className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                tab === 'settings'
+                  ? 'border-money/60 bg-money/10 text-money'
+                  : 'border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              ⚙
+            </button>
             <ModeControls />
           </div>
 
-          {/* ── mobile: glossário compacto + hambúrguer da gaveta lateral ── */}
+          {/* ── mobile: glossário + configurações compactos + hambúrguer da gaveta ── */}
           <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
             <button
               onClick={() => setGlossaryOpen(true)}
@@ -232,6 +246,17 @@ export default function Navbar() {
               className="rounded-lg border border-zinc-800 px-2.5 py-2 text-[11px] font-bold text-zinc-400"
             >
               A-Z
+            </button>
+            <button
+              onClick={() => setTab('settings')}
+              aria-label={t(lang, 'configuracoes')}
+              className={`rounded-lg border px-2.5 py-2 text-[11px] font-bold ${
+                tab === 'settings'
+                  ? 'border-money/60 bg-money/10 text-money'
+                  : 'border-zinc-800 text-zinc-400'
+              }`}
+            >
+              ⚙
             </button>
             <button
               onClick={() => setMenuOpen(true)}
@@ -276,7 +301,7 @@ export default function Navbar() {
                         : 'text-zinc-300 active:bg-zinc-900'
                     }`}>
                     <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
-                      active ? (show3D ? 'bg-sky-400 text-zinc-950' : 'bg-money text-zinc-950') : 'bg-zinc-800 text-zinc-400'
+                      active ? (show3D ? 'bg-sky-400 text-onaccent' : 'bg-money text-onaccent') : 'bg-zinc-800 text-zinc-400'
                     }`}>{show3D ? '3D' : m.num}</span>
                     <span className="text-[13px] font-medium leading-tight">
                       {show3D ? `🌍 ${t(lang, m.labelKey)} · toque p/ 2D` : t(lang, m.labelKey)}
@@ -292,6 +317,11 @@ export default function Navbar() {
                 onClick={() => { setGlossaryOpen(true); setMenuOpen(false) }}
                 className="w-full rounded-lg border border-zinc-800 px-3 py-2.5 text-left text-xs font-semibold text-zinc-300">
                 📖 {t(lang, 'glossario')}
+              </button>
+              <button
+                onClick={() => go('settings')}
+                className="w-full rounded-lg border border-zinc-800 px-3 py-2.5 text-left text-xs font-semibold text-zinc-300">
+                ⚙ {t(lang, 'configuracoes')}
               </button>
             </div>
           </aside>

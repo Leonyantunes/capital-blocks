@@ -113,7 +113,7 @@ export default function MmtPanel() {
           {(Object.keys(LENS_META) as Lens[]).map((l) => (
             <button key={l} onClick={() => setLens(l)}
               className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                lens === l ? 'text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                lens === l ? 'text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
               }`}
               style={lens === l ? { background: LENS_META[l].color } : undefined}>
               {LENS_META[l].label}

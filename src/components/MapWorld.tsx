@@ -1262,7 +1262,7 @@ export default function MapWorld() {
                   <span className="inline-flex overflow-hidden rounded border border-zinc-700">
                     {(['didatico', 'avancado'] as const).map((m) => (
                       <button key={m} onClick={() => setMode(m)} title={m === 'didatico' ? 'Versão simples e narrativa' : 'Versão completa, com todos os dados'}
-                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === m ? 'text-zinc-950' : 'text-zinc-500 hover:text-zinc-200'}`}
+                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === m ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
                         style={mode === m ? { background: A } : undefined}>
                         {m === 'didatico' ? 'simples' : 'completa'}
                       </button>
@@ -1325,7 +1325,7 @@ export default function MapWorld() {
             </div>
             {tourStep === STOPS.length - 1 && (
               <button onClick={() => { endTour(); useApp.getState().setTab(tour.finalTab) }}
-                className="mt-2 w-full rounded-lg px-3 py-1.5 text-[11px] font-bold text-zinc-950 hover:brightness-110"
+                className="mt-2 w-full rounded-lg px-3 py-1.5 text-[11px] font-bold text-onaccent hover:brightness-110"
                 style={{ background: A }}>
                 {tour.finalLabel}
               </button>
@@ -1383,7 +1383,7 @@ export function ConflictSelector() {
         {CONFLICTS.map((c) => (
           <button key={c.id} onClick={() => setConflict(conflict === c.id ? null : c.id)}
             className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-              conflict === c.id ? 'border-transparent text-zinc-950' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+              conflict === c.id ? 'border-transparent text-onaccent' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
             }`}
             style={conflict === c.id ? { background: c.color } : undefined}>
             {c.chip}

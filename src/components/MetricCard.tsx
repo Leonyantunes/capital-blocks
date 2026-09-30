@@ -1,4 +1,5 @@
 import Tip from './ui/Tip'
+import RefTag from './ui/RefTag'
 
 interface MetricCardProps {
   label: string
@@ -8,15 +9,19 @@ interface MetricCardProps {
   formula?: string
   /** micro-explicação exibida ao passar o mouse sobre o valor */
   tip?: string
+  /** fonte/proveniência exibida no modo referências (settings) */
+  fonte?: string
 }
 
-export default function MetricCard({ label, value, sub, accent = 'text-zinc-100', formula, tip }: MetricCardProps) {
+export default function MetricCard({ label, value, sub, accent = 'text-zinc-100', formula, tip, fonte }: MetricCardProps) {
   const valueNode = (
     <div className={`mt-1 font-mono text-xl font-semibold ${accent}`}>{value}</div>
   )
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-      <div className="text-[10px] uppercase tracking-widest text-zinc-500">{label}</div>
+      <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+        {label} <RefTag fonte={fonte} />
+      </div>
       {tip ? <Tip text={tip}><span className="inline-block cursor-help">{valueNode}</span></Tip> : valueNode}
       {sub && <div className="mt-0.5 text-[11px] leading-tight text-zinc-400">{sub}</div>}
       {formula && (

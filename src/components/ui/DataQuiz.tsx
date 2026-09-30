@@ -93,7 +93,7 @@ export default function DataQuiz() {
               seu chute: {guess === null ? '—' : fmt(guess)}
             </span>
             <button onClick={revelar} disabled={guess === null}
-              className="rounded-lg bg-money px-3 py-1.5 text-xs font-bold text-zinc-950 disabled:opacity-40">
+              className="rounded-lg bg-money px-3 py-1.5 text-xs font-bold text-onaccent disabled:opacity-40">
               revelar o real
             </button>
           </div>

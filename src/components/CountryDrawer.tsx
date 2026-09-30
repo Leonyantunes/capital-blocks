@@ -158,7 +158,7 @@ export default function CountryDrawer() {
                   {(['nominal', 'ppp'] as const).map((b) => (
                     <button key={b} onClick={() => setBasis(b)}
                       className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                        basis === b ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                        basis === b ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
                       }`}>
                       {b === 'nominal' ? 'PIB Nominal' : 'PPP'}
                     </button>

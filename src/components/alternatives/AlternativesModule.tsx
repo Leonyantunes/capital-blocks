@@ -22,7 +22,7 @@ function PayPyramid() {
         {PAY_RATIOS.map((p) => (
           <button key={p.id} onClick={() => setSel(p.id)} title={p.nota}
             className={`rounded-lg border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-              sel === p.id ? 'border-transparent text-zinc-950' : 'border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              sel === p.id ? 'border-transparent text-onaccent' : 'border-zinc-800 text-zinc-400 hover:text-zinc-200'
             }`}
             style={sel === p.id ? { background: p.color } : undefined}>
             {p.label}

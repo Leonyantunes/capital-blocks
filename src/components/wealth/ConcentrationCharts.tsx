@@ -95,7 +95,7 @@ function Segment({ b, field, total }: { b: WealthBand; field: 'adultosPct' | 'ri
     <div className="group/seg relative h-full" style={{ width: `${pct}%` }}>
       <div className="h-full" style={{ background: b.color }} />
       {showLabel && (
-        <span className="pointer-events-none absolute inset-0 flex items-start justify-center pt-1 font-mono text-[9.5px] font-bold text-zinc-950">
+        <span className="pointer-events-none absolute inset-0 flex items-start justify-center pt-1 font-mono text-[9.5px] font-bold text-onaccent">
           {b[field].toLocaleString('pt-BR')}%
         </span>
       )}

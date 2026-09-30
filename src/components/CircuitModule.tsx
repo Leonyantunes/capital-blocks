@@ -109,21 +109,21 @@ export default function CircuitModule() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {didatico ? (
               <>
-                <MetricCard label="O patrão investe" value={units(r.M)} sub="dinheiro inicial" accent="text-money" />
-                <MetricCard label="Lucro extraído" value={units(r.m)} sub="produzido por quem trabalha" accent="text-emerald-300"
+                <MetricCard label="O patrão investe" value={units(r.M)} sub="dinheiro inicial" accent="text-money" fonte="modelo do app" />
+                <MetricCard label="Lucro extraído" value={units(r.m)} sub="produzido por quem trabalha" accent="text-emerald-300" fonte="modelo do app"
                   tip="Este valor nasce APENAS no processo P — do trabalho além do que é pago." />
-                <MetricCard label="Nível de automação" value={r.k.toFixed(1)} sub="máquinas por trabalhador" accent="text-sky-300"
+                <MetricCard label="Nível de automação" value={r.k.toFixed(1)} sub="máquinas por trabalhador" accent="text-sky-300" fonte="modelo do app"
                   tip="Quanto mais máquinas relativas, menos trabalho vivo — e menos fonte de lucro." />
-                <MetricCard label="Ganho dos donos" value={pct(r.profitRate)} sub={`a cada ${units(r.M)} investidos`}
+                <MetricCard label="Ganho dos donos" value={pct(r.profitRate)} sub={`a cada ${units(r.M)} investidos`} fonte="modelo do app"
                   accent={r.profitRate < 20 ? 'text-red-300' : 'text-emerald-300'}
                   tip="Automação demais faz esse número cair — mesmo com trabalhadores exploradíssimos." />
               </>
             ) : (
               <>
-                <MetricCard label="Capital adiantado M" value={`${r.M.toFixed(0)}`} sub="c + v" formula="M = c+v" accent="text-money" />
-                <MetricCard label="Taxa de lucro g" value={`${r.profitRate.toFixed(1)}%`} sub="sobre o capital total" formula="g = m/(c+v)" accent={r.profitRate < 20 ? 'text-red-300' : 'text-emerald-300'} />
-                <MetricCard label="Composição orgânica" value={r.k.toFixed(1)} sub="c / v" formula="k = c/v" accent="text-sky-300" />
-                <MetricCard label="Taxa de mais-valia" value={`${(r.e * 100).toFixed(0)}%`} sub="grau de exploração" formula="e = m/v" accent="text-red-300" />
+                <MetricCard label="Capital adiantado M" value={`${r.M.toFixed(0)}`} sub="c + v" formula="M = c+v" accent="text-money" fonte="modelo do app" />
+                <MetricCard label="Taxa de lucro g" value={`${r.profitRate.toFixed(1)}%`} sub="sobre o capital total" formula="g = m/(c+v)" accent={r.profitRate < 20 ? 'text-red-300' : 'text-emerald-300'} fonte="modelo do app" />
+                <MetricCard label="Composição orgânica" value={r.k.toFixed(1)} sub="c / v" formula="k = c/v" accent="text-sky-300" fonte="modelo do app" />
+                <MetricCard label="Taxa de mais-valia" value={`${(r.e * 100).toFixed(0)}%`} sub="grau de exploração" formula="e = m/v" accent="text-red-300" fonte="modelo do app" />
               </>
             )}
           </div>

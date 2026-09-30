@@ -17,6 +17,11 @@
   --color-surplus: #4caf50;   /* Mais-valia m, lucro */
   --color-fict: #9c27b0;      /* Capital fictício, dívida pública */
 
+  /* Texto sobre cor de destaque (bg-money text-onaccent): escuro nos DOIS
+     temas — chip sólido de destaque pede texto escuro, então este token NÃO
+     inverte no modo claro (zinc-950, que é fundo, inverte). */
+  --color-onaccent: #0d1117;
+
   /* Remapeamento das escalas usadas pelos componentes p/ paleta oficial */
   --color-amber-200: #ffe082;
   --color-amber-300: #ffd54f;
@@ -36,6 +41,52 @@
 
 html, body, #root {
   height: 100%;
+}
+
+/* ── MODO CLARO ───────────────────────────────────────────────────────────
+   Os utilitários Tailwind v4 compilam para var(--color-*): redefinir as
+   variáveis sob [data-theme='light'] inverte a paleta inteira SEM tocar nas
+   classes dos componentes. Os mapas 2D/3D são "instrumentos" com canvas
+   escuro próprio (fills hardcoded no SVG, gradiente fixo no palco 3D):
+   continuam legíveis — como um widget escuro embutido numa página clara. */
+[data-theme='light'] {
+  /* superfícies: fundo / painéis / bordas */
+  --color-zinc-950: #eef1f5;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #d5dbe2;
+  --color-zinc-700: #b9c1cc;
+
+  /* texto: claro → escuro */
+  --color-zinc-100: #0d1117;
+  --color-zinc-200: #1f2429;
+  --color-zinc-300: #39414a;
+  --color-zinc-400: #4e5765;
+  --color-zinc-500: #5d6673;
+  --color-zinc-600: #6b7280;
+
+  /* cores conceituais: tons médios — legíveis como texto e como fundo de
+     chip com texto escuro. 400-conceitual ≡ conceitual nos dois temas. */
+  --color-money: #d97706;    /* âmbar 600 */
+  --color-machine: #0284c7;  /* sky 600 */
+  --color-labor: #dc2626;    /* red 600 */
+  --color-surplus: #16a34a;  /* green 600 */
+  --color-fict: #9333ea;     /* purple 600 */
+
+  /* remapeamento das escalas → tons escuros equivalentes */
+  --color-amber-200: #92400e;
+  --color-amber-300: #b45309;
+  --color-amber-400: #d97706;
+  --color-sky-200: #075985;
+  --color-sky-300: #0369a1;
+  --color-sky-400: #0284c7;
+  --color-red-200: #991b1b;
+  --color-red-300: #b91c1c;
+  --color-red-400: #dc2626;
+  --color-emerald-200: #166534;
+  --color-emerald-300: #15803d;
+  --color-emerald-400: #16a34a;
+  --color-fuchsia-300: #86198f;
+  --color-fuchsia-400: #a21caf;
 }
 
 body {
@@ -101,11 +152,11 @@ input[type='range'].range-machine::-webkit-slider-thumb { @apply bg-sky-400; }
 input[type='range'].range-labor::-webkit-slider-thumb { @apply bg-red-400; }
 
 .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.thin-scroll::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: var(--color-zinc-800); border-radius: 3px; }
 
-/* ---- acessibilidade: foco visível consistente ---- */
+/* ---- acessibilidade: foco visível consistente (inverte com o tema) ---- */
 :focus-visible {
-  outline: 2px solid #ffc107;
+  outline: 2px solid var(--color-money);
   outline-offset: 2px;
   border-radius: 4px;
 }

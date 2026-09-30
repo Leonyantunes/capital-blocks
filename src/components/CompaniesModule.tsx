@@ -181,7 +181,7 @@ function MarketSyncPanel({ records, onLoad }: {
             ] as [ApiProvider, string][]).map(([p, label]) => (
               <button key={p} onClick={() => persist({ provider: p })}
                 className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                  provider === p ? 'bg-money text-zinc-950' : 'border border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                  provider === p ? 'bg-money text-onaccent' : 'border border-zinc-800 text-zinc-400 hover:text-zinc-200'
                 }`}>
                 {label}
               </button>
@@ -201,7 +201,7 @@ function MarketSyncPanel({ records, onLoad }: {
               obter chave ↗
             </a>
             <button onClick={sync} disabled={syncing}
-              className="rounded-lg bg-money px-3 py-1.5 text-xs font-bold text-zinc-950 transition-opacity hover:opacity-90 disabled:opacity-40">
+              className="rounded-lg bg-money px-3 py-1.5 text-xs font-bold text-onaccent transition-opacity hover:opacity-90 disabled:opacity-40">
               {syncing ? 'sincronizando…' : 'Sincronizar agora'}
             </button>
           </div>
@@ -590,7 +590,7 @@ export default function CompaniesModule() {
           {(['global', 'brasil'] as Dataset[]).map((ds) => (
             <button key={ds} onClick={() => { setDataset(ds); setSector('todas'); setQuery('') }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                dataset === ds ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                dataset === ds ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
               }`}>
               {ds === 'global'
                 ? `Maiores do Mundo (${filteredGl.length})`

@@ -15,6 +15,7 @@ export type PriceBasis = 'nominal' | 'ppp'
  * - `avancado` → marxista-contábil: categorias, fórmulas e referências.
  */
 export type UIMode = 'simples' | 'didatico' | 'avancado'
+export type Theme = 'dark' | 'light'
 export type ConflictId = 'semis' | 'energia' | 'reprimaria' | null
 
 /** Chaves do intervalo dos sliders (espelham ControlsPanel.tsx). */
@@ -25,7 +26,7 @@ const E_MAX = 5
 
 const FRACTION_KEYS: FractionKey[] = ['produtivo', 'financeiro', 'comercial', 'ficticio', 'estatal']
 const LANGS = ['pt', 'en', 'es'] as const
-type Lang = (typeof LANGS)[number]
+export type Lang = (typeof LANGS)[number]
 
 interface AppState {
   tab: TabId
@@ -63,6 +64,14 @@ interface AppState {
   /** Modo apresentação (fonte ampliada para projeção em sala) */
   presentation: boolean
   setPresentation: (on: boolean) => void
+
+  /** Tema da UI: obsidian (padrão) ou claro — paleta por tokens em index.css */
+  theme: Theme
+  setTheme: (t: Theme) => void
+
+  /** Modo referências: exibe a fonte junto dos números exibidos */
+  showRefs: boolean
+  setShowRefs: (on: boolean) => void
 
   /** Idioma do chrome da UI (conteúdo dos módulos em PT-BR) */
   lang: Lang
@@ -107,6 +116,8 @@ interface PersistedState {
   basis: PriceBasis
   hiddenFractions: FractionKey[]
   presentation: boolean
+  theme: Theme
+  showRefs: boolean
   lang: Lang
 }
 
@@ -119,6 +130,8 @@ function sanitize(persisted: unknown): Partial<PersistedState> {
     basis: oneOf(p.basis, ['nominal', 'ppp'] as const, 'nominal'),
     hiddenFractions: fractions(p.hiddenFractions),
     presentation: bool(p.presentation, false),
+    theme: oneOf(p.theme, ['dark', 'light'] as const, 'dark'),
+    showRefs: bool(p.showRefs, false),
     lang: oneOf(p.lang, LANGS, 'pt'),
   }
 }
@@ -162,6 +175,12 @@ export const useApp = create<AppState>()(
       presentation: false,
       setPresentation: (presentation) => set({ presentation }),
 
+      theme: 'dark',
+      setTheme: (theme) => set({ theme }),
+
+      showRefs: false,
+      setShowRefs: (showRefs) => set({ showRefs }),
+
       lang: 'pt',
       setLang: (lang) => set({ lang }),
     }),
@@ -177,6 +196,8 @@ export const useApp = create<AppState>()(
         basis: s.basis,
         hiddenFractions: s.hiddenFractions,
         presentation: s.presentation,
+        theme: s.theme,
+        showRefs: s.showRefs,
         lang: s.lang,
       }),
       /* rehydrate: valida antes de aplicar no estado */

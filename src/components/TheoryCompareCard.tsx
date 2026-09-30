@@ -21,7 +21,7 @@ export default function TheoryCompareCard() {
           {THEORY_TOPICS.map((t) => (
             <button key={t.id} onClick={() => setTopicId(t.id)}
               className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                topicId === t.id ? 'bg-money text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                topicId === t.id ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
               }`}>
               {t.titulo}
             </button>
