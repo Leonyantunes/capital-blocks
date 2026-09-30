@@ -83,6 +83,14 @@ const SECTOR_TABLE: [string, SectorEstimate][] = [
   ['autoind', { margem: 0.06, folha: 0.1 }],
   ['aeroespac', { margem: 0.06, folha: 0.17 }],
   ['defesa', { margem: 0.08, folha: 0.19 }],
+  /* 'aeroind' e 'locaç' entram ANTES de 'indústri'/'transport': a varredura é
+   * sequencial e a primeira substring que casa vence — sem isso, Aeroindústria
+   * casaria 'indústri' e Locação casaria 'transport'. Valores medidos nos
+   * registros do próprio dataset (margem = lucro/receita, folha = v/receita). */
+  ['aeroind', { margem: 0.08, folha: 0.12 }], // Embraer FY2024 (dataset BR)
+  ['locaç', { margem: 0.07, folha: 0.03 }], // Localiza FY2024: locação tem folha mínima
+  ['infraestrutura de mercado', { margem: 0.36, folha: 0.05 }], // B3: aluguel da infraestrutura
+  ['bens de capital', { margem: 0.13, folha: 0.1 }], // WEG FY2024 (dataset BR)
   ['indústri', { margem: 0.09, folha: 0.16 }],
   ['telecom', { margem: 0.12, folha: 0.09 }],
   ['elétric', { margem: 0.14, folha: 0.06 }],

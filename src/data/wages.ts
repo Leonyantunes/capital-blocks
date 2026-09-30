@@ -1,4 +1,7 @@
-/** CAMADA DE CALOR SALARIAL — salário médio mensal aprox. em USD (ILO/Gallup/Statista, 2023–24).
+/** CAMADA DE CALOR SALARIAL — salário médio mensal aprox. em USD
+ *  (OIT/ILOSTAT · OWID · OCDE, 2023–24 aprox. — cadeia da fonte em
+ *  `sources.ts` id 'ilo-wage'; a referência Gallup/Statista foi RETRAÍDA:
+ *  o Gallup mede bem-estar no trabalho, não salário).
  *  Valores arredondados, ordem de grandeza didática. ISO numérico → USD/mês. */
 
 export const WAGES: Record<string, number> = {

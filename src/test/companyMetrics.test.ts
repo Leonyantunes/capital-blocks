@@ -126,10 +126,11 @@ describe('sectorEstimate — tabela setorial', () => {
   })
 
   it('resolve pela PRIMEIRA entrada que casa (substring, ordem da tabela)', () => {
-    /* a varredura é sequencial e a PRIMEIRA chave que casa vence: em
-       'Aeroindústria' o match é 'indústri' (0.09), não 'aeroespac' (0.06) —
-       'indústri' aparece antes na tabela. Ver também a nota de gaps abaixo. */
-    expect(sectorEstimate('Aeroindústria').margem).toBe(0.09)
+    /* a varredura é sequencial e a PRIMEIRA chave que casa vence: 'aeroind' e
+       'locaç' entram antes de 'indústri'/'transport' de propósito — sem isso,
+       Aeroindústria casaria 'indústri' e Locação casaria 'transport'. */
+    expect(sectorEstimate('Aeroindústria').margem).toBe(0.08) // 'aeroind', não 'indústri'
+    expect(sectorEstimate('Locação de veículos').folha).toBe(0.03) // 'locaç', não 'transport'
     expect(sectorEstimate('Varejo farmacêutico').margem).toBe(0.04) // 'varejo' (0.04) vence 'farmac' (0.15)
     expect(sectorEstimate('Bancário / Portador de Juros').margem).toBe(0.28)
   })
@@ -144,17 +145,23 @@ describe('sectorEstimate — tabela setorial', () => {
     expect(sectorEstimate('Plataformas').margem).toBe(0.15) // 'plataforma'
   })
 
-  /* GAPS CONHECIDOS (medidos, não supostos): três setores do dataset BR caem
-   * no default 0.10/0.15 e um cuarto é classificado pela chave errada. São
-   * premissas de estimations (flag estimate no registro), não dados de fonte,
-   * então ficam registrados aqui em vez de "corrigidos" às cegas.
-   * TODO(auditoria): inserir 'aeroind' e 'locadora' antes de 'indústri'/
-   * 'transport', e decidir entre 'varejo' e 'farmac' para varejo farmacêutico. */
-  it('GAPS: setores do dataset sem entrada própria caem no default', () => {
-    for (const s of ['Infraestrutura de mercado', 'Locação de veículos', 'Bens de Capital']) {
+  /* AUDITORIA RESOLVIDA (2026-09-30): os quatro setores antes em gap agora têm
+   * entrada própria, com valores MEDIDOS nos registros do próprio dataset
+   * (margem = lucro/receita; folha = v/receita). São premissas de estimativas
+   * (flag estimate no registro), não dados de fonte. Decisão editorial sobre
+   * 'varejo' × 'farmac': varejo farmacêutico é VAREJO — margem fina e folha
+   * alta (RD Saúde), não indústria farmacêutica; 'varejo' vence de propósito. */
+  it('setores do dataset BR que antes caíam no default têm entrada medida', () => {
+    const medidos: Record<string, [number, number]> = {
+      'Infraestrutura de mercado': [0.36, 0.05], // B3: margem ~36% da infraestrutura
+      'Bens de Capital': [0.13, 0.1], // WEG
+      'Aeroindústria': [0.08, 0.12], // Embraer
+      'Locação de veículos': [0.07, 0.03], // Localiza
+    }
+    for (const [s, [margem, folha]] of Object.entries(medidos)) {
       const est = sectorEstimate(s)
-      expect(est.margem).toBe(0.1)
-      expect(est.folha).toBe(0.15)
+      expect(est.margem).toBe(margem)
+      expect(est.folha).toBe(folha)
     }
   })
 

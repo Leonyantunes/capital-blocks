@@ -26,6 +26,7 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+    /* BASE_URL respeita deploy de subpath (GitHub Pages /repo/); na raiz é '/' */
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
   })
 }

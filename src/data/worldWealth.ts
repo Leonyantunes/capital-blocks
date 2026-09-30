@@ -17,12 +17,14 @@ export interface WealthItem {
   avancado: string
 }
 
+/** Agregados mundiais — ÚNICA fonte destes números (companies.ts consome aqui). */
 export const WORLD_GDP_TRI = 115 // IMF WEO, PIB nominal mundial aprox. 2025
+export const WORLD_EQUITIES_TRI = 124 // WFE, market cap global fim-2024
 
 /** Esfera de TÍTULOS (capital fictício — promessas sobre mais-valia futura) */
 export const CLAIMS: WealthItem[] = [
   {
-    key: 'equities', label: 'Ações (mercado acionário global)', tri: 124,
+    key: 'equities', label: 'Ações (mercado acionário global)', tri: WORLD_EQUITIES_TRI,
     year: 'fim-2024', source: 'WFE / SIFMA', color: '#ba68c8',
     sourceUrl: 'https://www.world-exchanges.org/',
     didatico: 'Todos os papéis de empresas listadas do planeta valem ~US$124 tri — pedidos de parte do lucro FUTURO das empresas.',

@@ -97,10 +97,14 @@ export const PAY_RATIOS = [
   { id: 'extremo', label: 'Extremo da S&P 500', ratio: 1400, color: '#f44336', nota: 'maior razão reportada (est.)' },
 ]
 
+/** Salário mínimo BR anual — ÚNICA fonte (EscalaCompare.tsx consome aqui).
+ *  R$ 1.518 × 13,3 (12 meses + 13º + 1/3 de férias). */
+export const SM_BR_ANO = 20189
+
 /** Garantia de Emprego — parâmetros BR (estimativas didáticas). */
 export const JG = {
   pibBrTri: 11.7, // PIB nominal BR 2024, R$ tri (IBGE)
   jurosAnoBi: 900, // serviço de juros ≈ R$ 900 bi (Tesouro, 2024, est.)
-  salarioMinAno: 20189, // R$ 1.518 × 13,3 (12 meses + 13º + 1/3 de férias)
+  salarioMinAno: SM_BR_ANO,
   reservaMilhoes: 30, // desempregados + subempregados (est. ampla)
 }

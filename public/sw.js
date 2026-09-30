@@ -7,7 +7,17 @@
  * • demais GET same-origin (manifest, ícone): cache-first com atualização em fundo.
  */
 const CACHE = 'cb-v3'
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg']
+/* BASE derivado da localização do PRÓPRIO sw.js (o Vite não reescreve arquivos
+ * de public/): funciona tanto na raiz do domínio quanto em deploy de subpath
+ * (GitHub Pages /repo/) — caminhos absolutos ('/', '/index.html') quebrariam
+ * o subpath apontando para a raiz do domínio. */
+const BASE = new URL('./', self.location)
+const SHELL = [
+  BASE.href,
+  new URL('index.html', BASE).href,
+  new URL('manifest.webmanifest', BASE).href,
+  new URL('icon.svg', BASE).href,
+]
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -31,22 +41,23 @@ self.addEventListener('fetch', (event) => {
 
   /* navegação: rede primeiro, cache como fallback offline */
   if (req.mode === 'navigate') {
+    const INDEX_URL = new URL('index.html', BASE).href
     event.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone()
-          caches.open(CACHE).then((c) => c.put('/index.html', copy))
+          caches.open(CACHE).then((c) => c.put(INDEX_URL, copy))
           return res
         })
         .catch(() =>
-          caches.match(req).then((hit) => hit || caches.match('/index.html')),
+          caches.match(req).then((hit) => hit || caches.match(INDEX_URL)),
         ),
     )
     return
   }
 
   const url = new URL(req.url)
-  const immutable = url.pathname.startsWith('/assets/')
+  const immutable = url.pathname.startsWith(BASE.pathname + 'assets/')
 
   if (immutable) {
     /* asset com hash: imutável → cache-first puro */

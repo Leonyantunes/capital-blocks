@@ -14,6 +14,7 @@
 import { modRef } from './modules'
 
 import { decomposeFromParts, decomposeValue, sectorEstimate } from '../lib/companyMetrics'
+import { WORLD_EQUITIES_TRI, WORLD_GDP_TRI } from './worldWealth'
 
 export type Market = 'BR' | 'GLOBAL'
 
@@ -180,6 +181,10 @@ type W = [
   nome: string, pais: string, setor: string,
   capTri: number, receitaBi: number, lucroBi: number, funcionariosMil: number, salarioMedioUsdK: number,
 ]
+/** Fonte comum a TODOS os registros globais (citação do bloco acima, tornada
+ *  explícita por registro em runtime — as razões globais ficam com fonte na
+ *  linha expandida, como as BR já têm). */
+const GLOBAL_FONTE = '10-K/20-F FY2024/25 · market cap dez/2025'
 const WORLD_RAW: W[] = [
   // ── Topo do topo ──
   ['NVIDIA', 'EUA', 'Semicondutores / IA', 4.4, 130.5, 72.9, 36, 210],
@@ -227,7 +232,7 @@ const WORLD_RAW: W[] = [
   // ── Software, semis, plataformas ──
   ['Cisco Systems', 'EUA', 'Redes / Infraestrutura de rede', 0.24, 53.8, 10.3, 90.4, 140],
   ['Adobe', 'EUA', 'Software criativo', 0.24, 21.5, 5.6, 30, 170],
-  ['Palantir Technologies', 'EUA', 'Software / Análise de dados', 0.29, 2.9, 0.46, 3.9, 230, ],
+  ['Palantir Technologies', 'EUA', 'Software / Análise de dados', 0.29, 2.9, 0.46, 3.9, 230],
   ['Intuit', 'EUA', 'Software financeiro', 0.19, 16.3, 3.0, 18, 130],
   ['ServiceNow', 'EUA', 'SaaS empresarial', 0.2, 11.0, 1.4, 22, 150],
   ['Texas Instruments', 'EUA', 'Semicondutores (analógico)', 0.19, 15.6, 4.8, 34, 120],
@@ -377,7 +382,7 @@ const WORLD_NOTES: Record<string, string> = {
   'DHL Group': 'Logística global; a espinha que move o comércio mundial',
   Enel: 'Maior utility europeia; estatal italiana e o peso da transição energética',
   Mondelez: 'Transformadora de alimentos: a marca captura a margem do pequeno produtor',
-  'Kraft Heinz': 'Prejuízo 2024 de US$ 3,4 bi: a impunidade da escassez de lé Farmer',
+  'Kraft Heinz': 'Prejuízo 2024 de US$ 3,4 bi: impairment contábil (write-down) — o preço da promessa corrigido',
 }
 
 function slug(nome: string): string {
@@ -399,6 +404,7 @@ export const COMPANIES_ALL: CompanyRecord[] = [
       mercado: 'GLOBAL', moeda: 'USD',
       receitaBi, lucroBi, funcionariosMil: emp, salarioMedioK: sal,
       capTri: capTri || undefined,
+      fonte: GLOBAL_FONTE,
       nota: WORLD_NOTES[noteKey[nome] ?? nome] ?? WORLD_NOTES[nome.split(' ')[0]] ?? WORLD_NOTES[nome],
     })),
 ].map((c) => ({ ...c, origem: c.origem ?? ('base' as const) }))
@@ -439,6 +445,7 @@ export interface WorldCompany {
   lucroBi: number
   funcionariosMil: number
   salarioMedioUsdK: number
+  fonte?: string
   nota?: string
   estimate?: boolean
   origem?: 'base' | 'api'
@@ -463,7 +470,7 @@ export function worldView(rec: CompanyRecord): WorldCompany {
     id: rec.id, nome: rec.nome, pais: rec.pais, setor: rec.setor,
     capTri: rec.capTri, receitaBi: rec.receitaBi, lucroBi: rec.lucroBi,
     funcionariosMil: rec.funcionariosMil, salarioMedioUsdK: rec.salarioMedioK,
-    nota: rec.nota, estimate: rec.estimate, origem: rec.origem,
+    fonte: rec.fonte, nota: rec.nota, estimate: rec.estimate, origem: rec.origem,
   }
 }
 
@@ -491,10 +498,11 @@ export const SECTORS = SECTORS_BR
 
 export const WORLD_COMPANIES: WorldCompany[] = COMPANIES_ALL.filter((c) => c.mercado === 'GLOBAL').map(worldView)
 
-/** Agregados das mega-caps rastreadas × agregados mundiais. */
+/** Agregados das mega-caps rastreadas × agregados mundiais (constantes vivem
+ *  em worldWealth.ts — ÚNICA fonte, para os dois módulos nunca divergirem). */
 export const WORLD_AGGREGATES = {
-  marketCapMundialTri: 124, // WFE fim-2024
-  pibMundialTri: 115, // IMF WEO 2025 aprox.
+  marketCapMundialTri: WORLD_EQUITIES_TRI, // WFE fim-2024
+  pibMundialTri: WORLD_GDP_TRI, // IMF WEO 2025 aprox.
 }
 
 export function worldSummary(list: WorldCompany[] = WORLD_COMPANIES) {

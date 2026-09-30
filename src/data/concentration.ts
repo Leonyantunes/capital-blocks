@@ -116,6 +116,9 @@ export const SALARY_PRESETS: SalaryPreset[] = [
 ]
 
 /* ── A ERA DOS BILIONÁRIOS (1987→2025) — Forbes Billionaires List, aprox. ── */
+/** Fonte do dataset (BillionaireTimeline exibe via RefTag no modo referências). */
+export const BILLIONAIRES_FONTE = 'Forbes Billionaires List · 1987–2025 (aprox.)'
+
 export interface BillionaireEntry {
   nome: string
   pais: string
