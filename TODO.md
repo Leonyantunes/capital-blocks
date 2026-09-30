@@ -28,6 +28,28 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 >
 > **Estado verificado ao fim:** `npm run build` ✅ · `npm test` 49/49 ✅ ·
 > `test:globe` 392/392 ✅ · `test:framing` 52/52 ✅.
+>
+> **2026-09-30 — Fecho de qualidade + features P1 (análise externa + execução):**
+> a auditoria encontrou divergências entre docs e código e pendências reais, todas
+> resolvidas. **Correções:** SW funcionava só na raiz do domínio (paths absolutos em
+> `main.tsx`/`public/sw.js` quebravam o deploy de subpath — agora o escopo é derivado
+> da localização do próprio sw.js, e o Vite reescreve o index.html); os 4 setores BR
+> antes em gap ganharam entradas MEDIDAS no próprio dataset (B3 0.36/0.05 · WEG
+> 0.13/0.10 · Embraer 0.08/0.12 · Localiza 0.07/0.03; decisão editorial: varejo
+> farmacêutico é varejo); header de `wages.ts` citava fonte RETRAÍDA (Gallup/Statista)
+> — agora cita a cadeia ILOSTAT; `Tip.tsx` ficou acessível por teclado de verdade
+> (tabIndex + focus-within + aria-describedby); constantes duplicadas deduplicadas
+> (`WORLD_GDP_TRI`/`WORLD_EQUITIES_TRI` em worldWealth.ts; `SM_BR_ANO` em
+> alternatives.ts); empresas globais agora carregam `fonte` por registro.
+> **Infra:** deploy.yml roda as 5 suítes ANTES do build/deploy. **Features:** página
+> de configurações (aba `settings`, botão ⚙ — centraliza nível de leitura, tema,
+> idioma, referências e apresentação); modo referências (`showRefs` + `RefTag` +
+> `fonte` no MetricCard com proveniência); modo claro (paleta `[data-theme='light']`
+> por variáveis em index.css — mapas 2D/3D mantêm canvas escuro próprio); landing
+> page estática autocontida (`public/landing.html`).
+>
+> **Estado verificado ao fim:** `npm run build` ✅ · `npm test` 83/83 ✅ ·
+> `test:globe` 392/392 ✅ · `test:framing` 52/52 ✅ · `test:tours` 0 erros ✅.
 
 ---
 
@@ -101,27 +123,42 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
 
 ## P1 · Registradas — planejar antes de executar
 
-14. **Modo referências + página de referências** — badge/fonte discreta e consistente
-    em TODOS os números exibidos (mapas, tours, cards, drawers) + página central com
-    todas as fontes de dados e informações (uso educacional/didático). **Aproveitar a
-    implementação para auditar os dados e corrigir os que estiverem errados/desatualizados.**
-15. **Página de configurações** — centralizar toggles: modo com/sem referências,
-    didático/avançado (e o futuro simplificado), idioma, modo claro/escuro, modo
-    apresentação. (Hoje espalhados na Navbar.)
-16. **Auditoria didático × avançado** — garantir diferença clara e consistente entre os
-    dois modos em todo o app (há pares de texto quase idênticos hoje).
-17. **Modo didático simplificado (3º nível)** — foco em público leigo/menor escolaridade:
-    ainda mais limpo visualmente, direto, informações fáceis de absorver; afeta TODO o app.
-18. **Modo claro** — design system por tokens já existe (fase obsidian); criar paleta
-    clara equivalente + persistência por tema.
-19. **Completar a listagem de empresas do Raio-X** — hoje 24 BR + 119 globais;
-    ampliar cobertura (empresas ausentes relevantes) e resolver o dedupe com as fontes
-    dinâmicas (ver P2-23).
-20. **Tradução completa do app para ES e EN** — hoje só o "chrome" (`i18n.ts`); todo o
-    conteúdo dos módulos/tours/dados é PT-BR. Grande esforço editorial: planejar
-    pipeline (dados dual-language em `src/data` vs camada de tradução).
-21. **Landing page profissional** — apresentação do projeto, tour de screenshots/GIFs,
-    CTA para o app.
+14. **Modo referências + página de referências** — ✅ CONCLUÍDA. A página central
+    existe (Módulo 10, com estado de verificação honesto) e a auditoria de dados foi
+    feita (5ff72cc + fecho 2026-09-30). O modo referências entrou em 2026-09-30:
+    flag `showRefs` no store + `ui/RefTag.tsx` + `fonte` no `MetricCard`
+    (proveniência "modelo do app" nos cartões de slider) + toggle nas Configurações.
+    Os painéis que já exibiam fonte inline (IndicatorsStrip, FlowCard, drawers,
+    wealth, linhas expandidas do Raio-X) seguem como estão. Falta ainda: fonte
+    por estatística nos tours (101 stats — campanha editorial própria).
+15. **Página de configurações** — ✅ CONCLUÍDA (2026-09-30): aba `settings` no
+    registro canônico (fora da fileira numerada), botão ⚙ na Navbar (desktop,
+    mobile e gaveta), página com nível de leitura, tema, idioma, modo referências
+    e modo apresentação, com descrições e estado anunciado (role="switch").
+16. **Auditoria didático × avançado** — parcial: 52 flows, consequences e
+    alternatives têm pares `did`/`adv` e o `test:tours` valida os tours. Falta
+    varredura formal módulo a módulo (há pares quase idênticos nos simuladores).
+17. **Modo didático simplificado (3º nível)** — ✅ CONCLUÍDA (133504c): `UIMode
+    'simples'` com estratégia `resolve()` (simples → didático → avançado) e
+    traduções curadas em `src/lib/simples.ts` — simplifica a LINGUAGEM sem
+    simplificar o NÚMERO.
+18. **Modo claro** — ✅ CONCLUÍDA (2026-09-30): paleta `[data-theme='light']` por
+    variáveis em `index.css` (os utilitários Tailwind v4 compilam para
+    `var(--color-*)` — inverte sem tocar nas classes); flag `theme` no store
+    (persistida + validada), `data-theme` na raiz + meta theme-color acompanham;
+    token `onaccent` (texto sobre destaque não inverte). Mapas 2D/3D mantêm canvas
+    escuro próprio nos dois temas.
+19. **Completar a listagem de empresas do Raio-X** — parcial: dedupe com fontes
+    dinâmicas resolvido (merge por ticker) e as globais agora têm `fonte` por
+    registro (2026-09-30). Falta ampliar cobertura (empresas ausentes relevantes).
+20. **Tradução completa do app para ES e EN** — parcial: o chrome (`i18n.ts`)
+    cobre a UI inteira incluindo Configurações e Módulo 10; o conteúdo dos
+    módulos/tours/dados segue PT-BR. Grande esforço editorial: planejar pipeline
+    (dados dual-language em `src/data` vs camada de tradução).
+21. **Landing page profissional** — ✅ CONCLUÍDA (2026-09-30): página estática
+    autocontida em `public/landing.html` (design system do app, hero com a
+    fórmula W=c+v+m, 10 módulos, recursos, metodologia, CTA para o app).
+    Screenshots/GIFs reais do app ainda não entram (requerem captura em device).
 
 ---
 

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Capital Blocks — visualizador interativo da anatomia do capitalismo global: 10 módulos, dados econômicos reais, sem telemetria." />
+    <meta name="theme-color" content="#0D1117" />
+    <title>Capital Blocks — A Anatomia do Capitalismo Global</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0D1117; --panel: #161B22; --border: #30363D;
+        --text: #e6edf3; --muted: #8b949e; --faint: #6e7681;
+        --money: #ffc107; --machine: #2196f3; --labor: #f44336; --surplus: #4caf50; --fict: #9c27b0;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        background: var(--bg); color: var(--text);
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased; line-height: 1.6;
+      }
+      .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+      /* ── nav ── */
+      nav {
+        position: sticky; top: 0; z-index: 10;
+        border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg) 85%, transparent);
+        backdrop-filter: blur(10px);
+      }
+      nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+      .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .04em; font-size: 14px; }
+      .blocks { display: grid; grid-template-columns: 11px 11px; gap: 3px; }
+      .blocks i { width: 11px; height: 11px; border-radius: 2px; display: block; }
+      .blocks i:nth-child(1) { background: var(--money); }
+      .blocks i:nth-child(2) { background: var(--surplus); opacity: .85; }
+      .blocks i:nth-child(3) { background: var(--machine); opacity: .85; }
+      .blocks i:nth-child(4) { background: var(--labor); opacity: .85; }
+
+      /* ── botões ── */
+      .btn {
+        display: inline-block; border-radius: 10px; padding: 12px 22px;
+        font-weight: 700; font-size: 14px; border: 1px solid transparent;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      }
+      .btn:hover { transform: translateY(-1px); }
+      .btn-money { background: var(--money); color: #0D1117; box-shadow: 0 4px 24px rgba(255,193,7,.25); }
+      .btn-ghost { border-color: var(--border); color: var(--text); }
+      .btn-ghost:hover { border-color: #4b5563; }
+
+      /* ── hero ── */
+      .hero { padding: 96px 0 72px; }
+      .hero h1 {
+        font-size: clamp(34px, 5.4vw, 58px); line-height: 1.08;
+        font-weight: 800; letter-spacing: -.02em; max-width: 760px;
+      }
+      .hero h1 em { font-style: normal; color: var(--money); }
+      .hero p.sub { margin-top: 20px; max-width: 640px; color: var(--muted); font-size: 17px; }
+      .hero .ctas { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; }
+      .hero .meta { margin-top: 28px; display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip {
+        font-family: 'JetBrains Mono', monospace; font-size: 11px;
+        border: 1px solid var(--border); border-radius: 999px;
+        padding: 4px 12px; color: var(--muted);
+      }
+      .chip b { color: var(--text); font-weight: 600; }
+
+      /* ── fórmula W = c+v+m (barras) ── */
+      .formula {
+        margin-top: 56px; border: 1px solid var(--border); border-radius: 14px;
+        background: var(--panel); padding: 22px 24px; max-width: 760px;
+      }
+      .formula .eq { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--faint); }
+      .formula .bars { display: flex; gap: 4px; height: 46px; margin-top: 12px; border-radius: 8px; overflow: hidden; }
+      .formula .bars i { display: block; height: 100%; }
+      .formula .legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+      .formula .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+
+      /* ── seções ── */
+      section { padding: 56px 0; }
+      .kicker { font-size: 11px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--money); }
+      h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: -.01em; margin-top: 6px; }
+      .lead { color: var(--muted); margin-top: 10px; max-width: 640px; }
+
+      .grid { display: grid; gap: 14px; margin-top: 32px; }
+      .grid.pilares { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .grid.modulos { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+      .grid.recursos { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+      .card {
+        border: 1px solid var(--border); border-radius: 14px;
+        background: var(--panel); padding: 20px;
+        transition: border-color .15s ease, transform .15s ease;
+      }
+      .card:hover { border-color: #4b5563; transform: translateY(-2px); }
+      .card h3 { font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
+      .card h3 .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); }
+      .card p { margin-top: 8px; font-size: 13px; color: var(--muted); }
+      .card .tag { margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: .08em; }
+
+      .pilar .dot { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; margin-bottom: 12px; }
+      .pilar:nth-child(1) .dot { background: rgba(244,67,54,.12); }
+      .pilar:nth-child(2) .dot { background: rgba(255,193,7,.12); }
+      .pilar:nth-child(3) .dot { background: rgba(156,39,176,.12); }
+      .pilar:nth-child(4) .dot { background: rgba(33,150,243,.12); }
+
+      /* ── metodologia ── */
+      .metodo { border: 1px dashed color-mix(in srgb, var(--money) 40%, transparent); border-radius: 14px; background: rgba(255,193,7,.04); padding: 24px; margin-top: 32px; }
+      .metodo ul { margin-top: 12px; padding-left: 18px; color: var(--muted); font-size: 13.5px; }
+      .metodo li { margin-top: 6px; }
+
+      /* ── footer ── */
+      footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--faint); font-size: 12.5px; }
+      footer .wrap { display: flex; flex-direction: column; gap: 8px; }
+      footer a { text-decoration: underline; text-decoration-style: dotted; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="wrap">
+        <span class="logo">
+          <span class="blocks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          CAPITAL BLOCKS
+        </span>
+        <a class="btn btn-money" href="index.html">Abrir o app</a>
+      </div>
+    </nav>
+
+    <header class="hero wrap">
+      <h1>A anatomia do <em>capitalismo global</em>, número por número.</h1>
+      <p class="sub">
+        Um visualizador interativo que traduz categorias de <em>O Capital</em> em componentes visuais
+        alimentados por dados econômicos reais: mapa-múndi com fluxos de valor, globo 3D, circuito do
+        capital animado, guerra de capitais, dívida pela lente MMT, raio-X de ~160 empresas e
+        simuladores jogáveis.
+      </p>
+      <div class="ctas">
+        <a class="btn btn-money" href="index.html">Abrir o app — grátis</a>
+        <a class="btn btn-ghost" href="#modulos">Ver os 10 módulos</a>
+      </div>
+      <div class="meta">
+        <span class="chip"><b>10</b> módulos</span>
+        <span class="chip"><b>~160</b> empresas decompostas</span>
+        <span class="chip"><b>54</b> fontes registradas</span>
+        <span class="chip">sem backend · <b>sem telemetria</b></span>
+        <span class="chip">PT-BR</span>
+      </div>
+
+      <div class="formula" aria-label="Decomposição do valor: W = c + v + m">
+        <div class="eq">Toda empresa é decomposta pela mesma fórmula:</div>
+        <div class="mono" style="margin-top: 8px; font-size: 22px; font-weight: 800">
+          W&nbsp;=&nbsp;<span style="color: var(--machine)">c</span>&nbsp;+&nbsp;<span style="color: var(--labor)">v</span>&nbsp;+&nbsp;<span style="color: var(--surplus)">m</span>
+        </div>
+        <div class="bars">
+          <i style="width: 62%; background: linear-gradient(180deg, #42a5f5, #1e88e5)"></i>
+          <i style="width: 16%; background: linear-gradient(180deg, #ef5350, #e53935)"></i>
+          <i style="width: 22%; background: linear-gradient(180deg, #66bb6a, #43a047)"></i>
+        </div>
+        <div class="legend">
+          <span><i style="background: #42a5f5"></i>c — insumos e máquinas consumidas</span>
+          <span><i style="background: #ef5350"></i>v — folha de salários</span>
+          <span><i style="background: #66bb6a"></i>m — lucro apropriado</span>
+        </div>
+      </div>
+    </header>
+
+    <section id="pilares" class="wrap">
+      <div class="kicker">Fundamentação</div>
+      <h2>Quatro pilares teóricos</h2>
+      <p class="lead">O app tem uma constituição declarada (THEORY.md); premissas neoclássicas estão banidas por diretriz.</p>
+      <div class="grid pilares">
+        <div class="card pilar">
+          <div class="dot" aria-hidden="true">📕</div>
+          <h3>Marx, <em>O Capital</em></h3>
+          <p>Valor-trabalho, W = c + v + m, tendência decrescente da taxa de lucro.</p>
+        </div>
+        <div class="card pilar">
+          <div class="dot" aria-hidden="true">📈</div>
+          <h3>Keynes / Kalecki / Minsky</h3>
+          <p>Demanda efetiva, moeda endógena, paradoxo da parcimônia, equação kaleckiana dos lucros.</p>
+        </div>
+        <div class="card pilar">
+          <div class="dot" aria-hidden="true">🏛️</div>
+          <h3>MMT</h3>
+          <p>Soberania monetária, impostos como anulação de moeda, limite real = inflação e capacidade ociosa.</p>
+        </div>
+        <div class="card pilar">
+          <div class="dot" aria-hidden="true">🌍</div>
+          <h3>Dependência (Marini, dos Santos)</h3>
+          <p>Troca desigual, superexploração, vazamento de valor do Sul para o Norte.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="modulos" class="wrap">
+      <div class="kicker">Conteúdo</div>
+      <h2>Dez módulos, um mesmo motor</h2>
+      <p class="lead">A numeração é canônica (um único registro); toda tela consome o mesmo motor analítico W = c + v + m.</p>
+      <div class="grid modulos">
+        <div class="card"><h3><span class="num">01</span>Mapa Geopolítico</h3><p>Mapa-múndi real, ~177 países clicáveis, 4 camadas de fluxo animado, guerras de blocos e painel de riqueza mundial. Alterna 2D ⇄ globo 3D.</p><div class="tag">WORLD-ATLAS · D3-GEO · THREE.JS</div></div>
+        <div class="card"><h3><span class="num">02</span>O Circuito do Capital</h3><p>M — C(L/MP) … P … C′ — M′ animado, tradutor de horas não pagas com relógio analógico e curva da tendência decrescente.</p><div class="tag">SVG ANIMADO · SIMULADOR</div></div>
+        <div class="card"><h3><span class="num">03</span>Guerra de Capitais</h3><p>War Room com linha do tempo reversa 2026→1914, linhas de suprimento das matrizes até as zonas de guerra e drawer "quem lucra".</p><div class="tag">52 FLUXOS · SIPRI · CRS</div></div>
+        <div class="card"><h3><span class="num">04</span>Morte e Ressurreição</h3><p>Lente Ortodoxa ⇄ MMT, identidade setorial (S−I) ≡ (G−T)+(X−M) e simulador kaleckiano jogável.</p><div class="tag">SIMULADOR · FMI</div></div>
+        <div class="card"><h3><span class="num">05</span>Raio-X das Empresas</h3><p>~160 empresas (BR + globais) decompostas pela mesma fórmula, formato Anuário ILAESE, com cotações opcionais via API.</p><div class="tag">24 BR + 137 GLOBAIS · BRAPI OPC.</div></div>
+        <div class="card"><h3><span class="num">06</span>Plataformização</h3><p>Simulador de salário por peça, "para onde vai o bruto" e a taxa oculta da plataforma.</p><div class="tag">SIMULADOR</div></div>
+        <div class="card"><h3><span class="num">07</span>Quem Sustenta Quê?</h3><p>Trabalho × concentração: corrida das fortunas 1987→2025, bilionários, distribuição da renda.</p><div class="tag">FORBES · UBS GWR · OXFAM</div></div>
+        <div class="card"><h3><span class="num">08</span>Consequências Sistêmicas</h3><p>Desastres corporativos com coordenadas e mortos, países afetados — o custo humano deslocado.</p><div class="tag">MAPA · 10 CASOS</div></div>
+        <div class="card"><h3><span class="num">09</span>E Para Onde Podemos Ir?</h3><p>Cooperativas, orçamento participativo, garantia de emprego — casos que já funcionam, com simulador.</p><div class="tag">CASOS REAIS · SIMULADOR</div></div>
+        <div class="card"><h3><span class="num">10</span>Fontes & Referências</h3><p>Base documental pesquisável com estado de verificação honesto por fonte: link verificado, fonte declarada ou revisão pendente.</p><div class="tag">54 FONTES · VERIFICAÇÃO</div></div>
+      </div>
+    </section>
+
+    <section id="recursos" class="wrap">
+      <div class="kicker">Recursos</div>
+      <h2>Feito para ensinar</h2>
+      <div class="grid recursos">
+        <div class="card"><h3>Três níveis de leitura</h3><p>Simples (palavras do dia a dia), Didático (conta e metáfora) e Avançado (categorias e fórmulas) — o mesmo número em qualquer nível.</p></div>
+        <div class="card"><h3>Tours guiados</h3><p>Tours temáticos no mapa 2D e no globo 3D, com paradas narradas, números pontuais e enquadramento automático das rotas.</p></div>
+        <div class="card"><h3>Globo 3D</h3><p>Three.js com matriz de pontos calculada em Web Worker, 7 temas planetários e paridade de escala com o mapa 2D.</p></div>
+        <div class="card"><h3>Modo referências</h3><p>Um interruptor mostra a fonte junto dos números exibidos — instituição, safra ou método — quando existe.</p></div>
+        <div class="card"><h3>Modo apresentação</h3><p>Fonte ampliada para projeção em sala de aula; tema claro e escuro por tokens.</p></div>
+        <div class="card"><h3>Privacidade por design</h3><p>Sem backend, sem telemetria, sem rastreamento. Nada sai do navegador — funciona offline (PWA).</p></div>
+      </div>
+
+      <div class="metodo">
+        <h3 style="font-size: 15px">Metodologia e limites — documentados como contrato</h3>
+        <ul>
+          <li>Estimativas são <b>rotuladas</b> — nunca passam por estatística oficial.</li>
+          <li>Fontes primárias com ano em todo número; safras diferentes são sinalizadas.</li>
+          <li>Fontes em disputa preservam a disputa (intervalos, não médias).</li>
+          <li>O estado de verificação de cada fonte é <b>honesto</b> — o que está pendente aparece como pendente.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <span>CC BY-NC-SA 4.0 — código e conteúdo sob a mesma licença. Protótipo educacional; não constitui recomendação de investimento.</span>
+        <span><a href="index.html">Abrir o app</a> · <a href="https://github.com/Leonyantunes/capital-blocks" rel="noreferrer">Código-fonte</a> · Leitura: FMI · UNCTAD · BIS · SIPRI · OIT · Tesouro Nacional · BCB · IBGE · UBS · Savills</span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -6,7 +6,7 @@ econômicos reais.
 
 Mapa-múndi com fluxos de valor, globo 3D, um circuito do capital animado, guerra de
 capitais com as linhas de suprimento das matrizes, o mecanismo de dívida pela lente do
-MMT, um raio-X de ~140 empresas decompostas pela mesma fórmula `W = c + v + m`, e
+MMT, um raio-X de ~160 empresas decompostas pela mesma fórmula `W = c + v + m`, e
 simuladores jogáveis (salário por peça, curva da taxa de lucro, curva kaleckiana).
 
 > 🇧🇷 Interface e conteúdo em **português do Brasil**. O "chrome" da UI tem esboço de
@@ -48,7 +48,12 @@ Premissas neoclássicas (moeda neutra, Estado-família, fundos emprestáveis, eq
 geral) estão **banidas por diretriz** — não aparecem como pressuposto em nenhuma tela.
 
 O botão **"01 Mapa"** alterna entre o mapa 2D (SVG) e o globo 3D (Three.js) do mesmo
-módulo.
+módulo. A **landing page** do projeto ([`public/landing.html`](public/landing.html))
+apresenta o app para quem chega de fora.
+
+O botão **⚙** abre a **página de configurações** (aba `?t=settings`): nível de leitura,
+tema claro/escuro, idioma, modo referências e modo apresentação — todas as preferências
+num lugar só, com descrições.
 
 ## Como rodar
 
@@ -69,14 +74,15 @@ inteiramente cliente. Tudo o que precisa saber está nos arquivos de `src/data/`
 | `npm run dev` | Servidor de desenvolvimento (Vite + HMR) |
 | `npm run build` | Typecheck (`tsc -b`) + bundle de produção em `dist/` |
 | `npm run preview` | Serve localmente o bundle de produção |
-| `npm test` | Suíte Vitest (motor conceitual, motor empresarial, store) |
+| `npm test` | Suíte Vitest (motor conceitual, motor empresarial, store, tours) |
 | `npm run test:watch` | Mesma suíte em modo watch |
 | `npm run test:globe` | Testes de propriedade do voo da câmera 3D |
 | `npm run test:framing` | Testes de enquadramento de rota (2D/3D, antimeridiano) |
+| `npm run test:tours` | Auditoria de integridade do contrato de parada dos tours |
 
-As duas últimas suítes são `.mjs` puros (sem dependência de teste) e verificam
-invariantes matemáticas do globe: destino exato, zero roll, e que a rota inteira cabe
-no frustum.
+As três últimas suítes são `.mjs` puros (sem dependência de teste) e verificam
+invariantes do globe e a integridade dos tours. O deploy no GitHub Pages roda as
+**cinco** suítes antes do build — nada quebrado é publicado.
 
 ## Stack
 
@@ -105,7 +111,7 @@ outro módulo consomem o registro).
 | 02 | **O Circuito do Capital** | `M — C(L/MP) … P … C′ — M′` animado, tradutor de *horas não pagas* com relógio analógico, curva da tendência decrescente |
 | 03 | **Guerra de Capitais** (War Room) | Linha do tempo reversa 2026→1914, 5 épocas, linhas de suprimento das matrizes até as zonas de guerra, drawer "quem lucra" |
 | 04 | **Morte e Ressurreição do Capital** | Lente Ortodoxa ⇄ MMT, identidade setorial `(S−I) ≡ (G−T)+(X−M)`, simulador kaleckiano |
-| 05 | **Raio-X das Empresas** | ~140 empresas (BR + globais) pelo mesmo motor `W = c + v + m`; formato Anuário ILAESE |
+| 05 | **Raio-X das Empresas** | ~160 empresas (24 BR + 137 globais) pelo mesmo motor `W = c + v + m`; formato Anuário ILAESE |
 | 06 | **Plataformização do Trabalho** | Simulador de salário por peça, "para onde vai o bruto", taxa oculta |
 | 07 | **Quem Sustenta Quê?** | Trabalho × concentração, bilionários, distribuição da renda |
 | 08 | **Consequências Sistêmicas** | Desastres corporativos com coordenadas e mortos, países afetados |
@@ -121,7 +127,7 @@ TSMC), **Riqueza Mundial sob Raio-X** (títulos × base real contra o PIB mundia
 ```
 src/
   data/          # 20 datasets tipados — a "fonte" do conteúdo
-    modules.ts   #   registro canônico de numeração/títulos
+    modules.ts   #   registro canônico de numeração/títulos (inclui a aba settings)
     sources.ts   #   registro documental (fonte, safra, verificação)
     flows.ts     #   fluxos geopolíticos (o maior dataset, 736 linhas)
   lib/
@@ -130,16 +136,17 @@ src/
     marketApi/           # cotações opcionais (BRAPI / Alpha Vantage)
   store/useApp.ts # Zustand: preferências globais + persistência
   components/     # um diretório por módulo
+    SettingsModule.tsx   # página de configurações (aba settings)
   test/           # suíte Vitest
 ```
 
 Decisões que valem destaque:
 
 - **Store enxuto e persistido.** Um único store Zustand. `mode`, `k`, `e`, `basis`,
-  `lang` e `presentation` sobrevivem ao reload; o estado vindo do rehydrate é
-  **validado** (enums fixados em default, sliders fixados no intervalo, JSON corrompido
-  não derruba o app). `tab`/`countryId` **não** persistem: a aba vem de `?t=` na URL,
-  que tem prioridade sobre o estado salvo.
+  `lang`, `theme`, `showRefs` e `presentation` sobrevivem ao reload; o estado vindo do
+  rehydrate é **validado** (enums fixados em default, sliders fixados no intervalo,
+  JSON corrompido não derruba o app). `tab`/`countryId` **não** persistem: a aba vem de
+  `?t=` na URL, que tem prioridade sobre o estado salvo.
 - **Code-splitting por módulo.** Cada aba é um `lazy()` separado; Home e shell ficam no
   chunk inicial. Three.js só é baixado se você abrir o mapa 3D.
 - **Três vendors separados** (`motion`, `geo`, `three`) via `manualChunks`.
@@ -162,6 +169,10 @@ Alternador global no cabeçalho, padrão **Didático**. Vale para todo o app.
 ## Design System
 
 Tema escuro por padrão, definido por tokens em [`src/index.css`](src/index.css).
+O **modo claro** é a mesma paleta invertida por variáveis sob `[data-theme='light']`
+(os utilitários Tailwind v4 compilam para `var(--color-*)`): os componentes não
+mudam uma linha. Os mapas 2D/3D são "instrumentos" com canvas escuro próprio e
+mantêm o fundo escuro nos dois temas.
 
 | Token | Valor | Uso |
 | :--- | :--- | :--- |
@@ -172,6 +183,7 @@ Tema escuro por padrão, definido por tokens em [`src/index.css`](src/index.css)
 | `labor` | `#F44336` | capital variável `v`, trabalho vivo |
 | `surplus` | `#4CAF50` | mais-valia `m`, lucro |
 | `fict` | `#9C27B0` | capital fictício, dívida |
+| `onaccent` | `#0D1117` | texto sobre cor de destaque (não inverte no modo claro) |
 
 Tipografia: Inter (UI) + JetBrains Mono (toda grandeza econômica).
 

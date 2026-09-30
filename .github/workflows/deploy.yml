@@ -2,6 +2,7 @@ name: Deploy — GitHub Pages
 
 # O repositório é público e tem Pages no plano gratuito: o deploy roda a cada
 # push em `main` e publica em https://<user>.github.io/capital-blocks/
+# As 5 suítes de teste rodam ANTES do build — nada quebra o deploy publicado.
 on:
   push:
     branches: [main]
@@ -17,7 +18,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Suíte Vitest (motor conceitual, empresarial, store, tours)
+        run: npm test
+      - name: Propriedades do voo da câmera 3D
+        run: npm run test:globe
+      - name: Enquadramento de rota (2D/3D, antimeridiano)
+        run: npm run test:framing
+      - name: Auditoria de integridade dos tours
+        run: npm run test:tours
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +48,8 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          # Pages de projeto serve em /<repo>/ — o SW e os assets se adaptam via base
+          # Pages de projeto serve em /<repo>/ — assets via base; o SW deriva o
+          # escopo da própria localização (public/ não é reescrito pelo Vite)
           VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
