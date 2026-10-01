@@ -42,7 +42,7 @@ export default function ProfitCurve() {
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold text-zinc-200">
-          {mode === 'didatico' ? (
+          {mode !== 'avancado' ? (
             <>Quanto maior a automação, menor o lucro sobre o total investido</>
           ) : (
             <>Tendência da taxa de lucro <span className="font-mono text-zinc-500">g = m/(c+v)</span></>
@@ -69,7 +69,7 @@ export default function ProfitCurve() {
         ))}
         <text x={(W - PAD.r + PAD.l) / 2} y={H - 4} textAnchor="middle" fontSize="10"
           className="fill-zinc-400">
-          {mode === 'didatico' ? 'nível de automação →' : 'composição orgânica k = c/v →'}
+          {mode !== 'avancado' ? 'nível de automação →' : 'composição orgânica k = c/v →'}
         </text>
 
         {/* família */}

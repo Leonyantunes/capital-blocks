@@ -225,7 +225,7 @@ function MarketSyncPanel({ records, onLoad }: {
 /* ───────────────────── células GLOBAL ───────────────────── */
 
 const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const eOk = Number.isFinite(r.d.e) && r.d.e > 0
   return (
     <>
@@ -323,7 +323,7 @@ const GlCardM = memo(function GlCardM({ r }: { r: GlRow }) {
 /* ───────────────────── células BRASIL ───────────────────── */
 
 const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const prodOk = r.funcionariosMil > 0
   return (
     <>
@@ -721,7 +721,7 @@ export default function CompaniesModule() {
 }
 
 function ExpandedGlRow({ r }: { r: GlRow }) {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const segments = [
     { key: 'c', label: 'Insumos + máquinas consumidas (c)', value: r.d.c, color: '#2196f3' },
     { key: 'v', label: 'Folha de salários (v)', value: r.d.v, color: '#f44336' },

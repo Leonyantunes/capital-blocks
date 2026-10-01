@@ -5,11 +5,15 @@
  * variar por modo, senão o dataset fica inconsistente). Este hook devolve uma
  * camada de apresentação que troca só o que a pessoa LÊ, mantendo número,
  * cor e chave intactos.
+ *
+ * Os demais componentes derivam `didatico = mode !== 'avancado'` direto do
+ * store: em modo simples o conteúdo cai no ramo didático (o mais próximo do
+ * cotidiano), sem um terceiro par nos dados (ver `lib/simples.ts`).
  */
 import { useMemo } from 'react'
 import { useApp } from '../store/useApp'
 import { FRACTION_META, type FractionKey } from '../data/countries'
-import { termoSimples, resolve, isSimples } from './simples'
+import { termoSimples, isSimples } from './simples'
 
 export interface FractionView {
   key: FractionKey
@@ -36,29 +40,4 @@ export function useFractions(): FractionView[] {
       }
     })
   }, [mode])
-}
-
-/** Rótulo de uma fração isolada, no modo atual. */
-export function useFractionLabel(): (k: FractionKey) => string {
-  const mode = useApp((s) => s.mode)
-  return (k) => {
-    const base = FRACTION_META[k]
-    return isSimples(mode) ? termoSimples(base.label) : base.label
-  }
-}
-
-/**
- * Escolhe o texto de um par didático/avançado conforme o modo.
- * Em modo simples cai no didático (o mais próximo do cotidiano), mas usa
- * `simples` quando o dado já tiver esse campo.
- */
-export function useText(): (textos: { simples?: string; did?: string; adv?: string }) => string {
-  const mode = useApp((s) => s.mode)
-  return (textos) => resolve(textos, mode)
-}
-
-/** `true` quando o modo atual esconde fórmula/termo técnico. */
-export function useOcultaFormula(): boolean {
-  const mode = useApp((s) => s.mode)
-  return isSimples(mode)
 }

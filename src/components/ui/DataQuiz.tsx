@@ -53,7 +53,7 @@ export default function DataQuiz() {
   const [idx, setIdx] = useState(0)
   const [guess, setGuess] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const q = QS[idx]
 
   const fmt = (n: number) => q.formato ? q.formato(n) : `${n.toLocaleString('pt-BR')} ${q.unidade}`

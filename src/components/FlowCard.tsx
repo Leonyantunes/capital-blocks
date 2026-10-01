@@ -5,7 +5,7 @@ import { useApp } from '../store/useApp'
 
 /** Card flutuante do fluxo selecionado no mapa 2D — mesma estética dos painéis do mapa. */
 export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onClose: () => void }) {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   const code = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {

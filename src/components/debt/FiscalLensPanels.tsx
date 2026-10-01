@@ -91,7 +91,7 @@ export function OrthodoxPanel() {
 /** Painel MMT — operacionalização moeda × dívida + caso Brasil (soberania parcial). */
 export function SovereignPanel() {
   const mode = useApp((s) => s.mode)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
   return (
     <m.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className="flex flex-col gap-3">

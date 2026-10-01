@@ -46,7 +46,7 @@ function EpisodeStrip({ selected, onSelect }: { selected: Episode; onSelect: (e:
 function MechanismCard({ mec, color, index }: { mec: Episode['mecanismos'][number]; color: string; index: number }) {
   const [open, setOpen] = useState(index === 0)
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   return (
     <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/60">
       <button onClick={() => setOpen((o) => !o)}
@@ -78,7 +78,7 @@ export default function ConsequencesModule() {
   const lang = useApp((s) => s.lang)
   const [era, setEra] = useState<Era>('historica')
   const [selId, setSelId] = useState(EPISODES[0].id)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   const ep = EPISODES.find((e) => e.id === selId) ?? EPISODES[0]
   const eraEps = EPISODES.filter((e) => e.era === era)

@@ -16,7 +16,7 @@ export default function GlossaryDrawer() {
   const { glossaryOpen, setGlossaryOpen, mode } = useApp()
   const [query, setQuery] = useState('')
   const trapRef = useFocusTrap(glossaryOpen, () => setGlossaryOpen(false))
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
 
   const list = GLOSSARY.filter((g) =>
     !query || `${g.termo} ${g.formal} ${g.didatico} ${g.avancado}`.toLowerCase().includes(query.toLowerCase()),

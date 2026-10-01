@@ -10,7 +10,7 @@ const IMPERIAL_BLOCS = new Set(['usa', 'eu', 'gbr', 'jpn'])
 export default function AffectedMap() {
   const [selectedIso, setSelectedIso] = useState<string | null>('180')
   const [catFilter, setCatFilter] = useState<AffectedCat | 'todas'>('todas')
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   const byIso = useMemo(() => Object.fromEntries(AFFECTED.map((a) => [a.iso, a])), [])
   const selected = selectedIso ? byIso[selectedIso] ?? null : null
@@ -180,7 +180,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 /** Ranking — países com mais intervenções documentadas. */
 export function InterventionRanking() {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const list = AFFECTED.filter((a) => a.intervencoes && a.intervencoes > 0)
     .sort((a, b) => (b.intervencoes ?? 0) - (a.intervencoes ?? 0))
     .slice(0, 12)
@@ -216,7 +216,7 @@ export function InterventionRanking() {
 
 /** Painel Françafrique / franco CFA. */
 export function CfaPanel() {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const cfaList = AFFECTED.filter((a) => a.cat === 'cfa')
   const totalPib = cfaList.reduce((s, a) => s + a.pibTri, 0)
   return (

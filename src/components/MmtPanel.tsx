@@ -95,7 +95,7 @@ function SectoralBalances() {
 export default function MmtPanel() {
   const [lens, setLens] = useState<Lens>('mmt')
   const mode = useApp((s) => s.mode)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
 
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-machine/30 bg-machine/5 p-4">

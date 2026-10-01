@@ -10,7 +10,7 @@ import { useApp } from '../../store/useApp'
 
 /** Teoria — a guerra como necessidade estrutural do capital (dual-mode). */
 function TheoryCards() {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const cards = [
     {
       color: '#ef5350',
@@ -154,7 +154,7 @@ export default function WarModule() {
           Guerra de Capitais & Conflitos Imperialistas
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {mode === 'didatico'
+          {mode !== 'avancado'
             ? 'Guerra não é acidente nem “loucura humana”: na maior parte dos casos, alguém LUCRA com ela — antes, durante e depois. Siga o dinheiro: quem fabrica, quem financia, quem reconstrói. Viaje de 2026 até 1914 e veja o padrão se repetir.'
             : 'A guerra como continuação da concorrência inter-capitalista por outros meios: destruição de c, socialização fiscal dos custos, privatização das margens. Cinco épocas, mesmo mecanismo estrutural.'}
         </p>

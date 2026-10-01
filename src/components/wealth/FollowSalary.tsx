@@ -32,7 +32,7 @@ export default function FollowSalary() {
   const [presetId, setPresetId] = useState(SALARY_PRESETS[1].id)
   const preset = SALARY_PRESETS.find((p) => p.id === presetId)!
   const sobra = Math.max(100 - preset.streams.reduce((s, x) => s + x.pct, 0), 0)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   const workerX = 218
   const destX = 596

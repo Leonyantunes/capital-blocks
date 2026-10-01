@@ -11,7 +11,7 @@ import { modRef } from '../../data/modules'
 export default function BillionaireTimeline() {
   const [idx, setIdx] = useState(BILLIONAIRES.length - 1)
   const [playing, setPlaying] = useState(false)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   useEffect(() => {
     if (!playing) return

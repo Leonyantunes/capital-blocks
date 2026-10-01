@@ -8,7 +8,7 @@ import { useApp } from '../store/useApp'
  */
 export default function TheoryCompareCard() {
   const [topicId, setTopicId] = useState(THEORY_TOPICS[0].id)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const topic = THEORY_TOPICS.find((t) => t.id === topicId)!
   const ortoBody = didatico ? topic.ortodoxa.tese : `${topic.ortodoxa.tese} ${topic.ortodoxa.contra}`
   const hetBody = didatico ? topic.heterodoxa.tese : `${topic.heterodoxa.tese} · Ref.: ${topic.heterodoxa.autores}`

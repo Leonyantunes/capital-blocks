@@ -17,7 +17,7 @@ import { useApp } from '../../store/useApp'
  */
 export default function WealthModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">

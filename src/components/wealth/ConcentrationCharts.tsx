@@ -24,7 +24,7 @@ function top1Path() {
 
 /** Gráfico Top 1% EUA (1913→2024) com eras anotadas. */
 export function TopOneChart() {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const trough = point(1975, 22)
   const now = point(2024, 36)
   return (
@@ -108,7 +108,7 @@ function Segment({ b, field, total }: { b: WealthBand; field: 'adultosPct' | 'ri
 
 /** Espelho população × riqueza (UBS GWR 2024) — dual-mode. */
 export function MirrorBars() {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const totalA = WEALTH_BANDS.reduce((s, b) => s + b.adultosPct, 0)
   const totalR = WEALTH_BANDS.reduce((s, b) => s + b.riquezaPct, 0)
 
@@ -158,7 +158,7 @@ export function ConcentrationStats() {
   return (
     <div className="grid gap-3 md:grid-cols-3">
       {CONCENTRATION_STATS.map((st) => (
-        <Tip key={st.label} className="w-full" text={mode === 'didatico' ? st.tipDidatico : st.tipAvancado}>
+        <Tip key={st.label} className="w-full" text={mode !== 'avancado' ? st.tipDidatico : st.tipAvancado}>
           <article className="h-full w-full cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-colors hover:border-zinc-600">
             <div className="font-mono text-2xl font-extrabold text-money">{st.value}</div>
             <div className="mt-1 text-xs font-semibold leading-snug text-zinc-200">{st.label}</div>

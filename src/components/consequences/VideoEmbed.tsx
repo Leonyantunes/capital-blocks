@@ -8,7 +8,7 @@ import { useApp } from '../../store/useApp'
  */
 export default function VideoEmbed({ videoId, titulo }: { videoId: string; titulo: string }) {
   const [playing, setPlaying] = useState(false)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   if (playing) {
     return (

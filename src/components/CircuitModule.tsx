@@ -26,7 +26,7 @@ function UnpaidWorkCard() {
           <UnpaidClock minutesUnpaid={minutes} size={170} />
           <div>
             <h3 className="text-sm font-semibold text-zinc-100">
-              {mode === 'didatico' ? 'Seu dia de trabalho em 8 horas' : 'Tradutor: trabalho não pago na jornada'}
+              {mode !== 'avancado' ? 'Seu dia de trabalho em 8 horas' : 'Tradutor: trabalho não pago na jornada'}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
               Em uma jornada de 8 horas, você trabalha{' '}
@@ -40,7 +40,7 @@ function UnpaidWorkCard() {
               paga o seu salário.
             </p>
             <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-              {mode === 'didatico'
+              {mode !== 'avancado'
                 ? 'A parte verde é o tempo em que você produz lucro de graça. Suba a intensidade de exploração e veja o verde engolir o seu dia.'
                 : `Horas Não Pagas = 8 · m/(m+v) = 8 · ${r.e.toFixed(2)}/${(r.e + 1).toFixed(2)} = ${fmtHours(minutes / 60)} — equivalente material da taxa de mais-valia.`}
             </p>
@@ -57,7 +57,7 @@ function UnpaidWorkCard() {
             <div className="bg-red-400 transition-all duration-300" style={{ width: `${(paid / 480) * 100}%` }} />
             <div className="bg-emerald-400 transition-all duration-300" style={{ width: `${(minutes / 480) * 100}%` }} />
           </div>
-          <Tip text={mode === 'didatico'
+          <Tip text={mode !== 'avancado'
             ? 'Arraste o slider "Intensidade de Exploração" acima para mudar este relógio.'
             : 'Derivado diretamente de e = m/v no circuito acima.'}>
             <div className="mt-2 inline-block cursor-help rounded bg-zinc-800/80 px-2 py-1 font-mono text-[10px] text-zinc-400">
@@ -73,7 +73,7 @@ function UnpaidWorkCard() {
 export default function CircuitModule() {
   const { k, e, mode, lang } = useApp()
   const r = computeCircuit(k, e)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">

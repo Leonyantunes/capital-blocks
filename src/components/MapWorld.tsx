@@ -5,6 +5,7 @@ import {
 } from '../lib/world'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../data/tours'
+import { NIVEIS } from '../lib/simples'
 import { t } from '../i18n'
 import FlowCard from './FlowCard'
 import { BR_STATES, BR_STATE_FLOWS, INTERNAL_FLOWS, STATE_CAT_META, BRAZIL_VIEW } from '../data/brazil'
@@ -1227,7 +1228,7 @@ export default function MapWorld() {
       {/* card do desastre selecionado */}
       {selDisaster && (() => {
         const d = DISASTERS.find((x) => x.id === selDisaster)!
-        const didatico = useApp.getState().mode === 'didatico'
+        const didatico = useApp.getState().mode !== 'avancado'
         return (
           <div className="absolute bottom-12 left-2.5 z-20 max-w-[300px] rounded-xl border border-red-500/60 bg-zinc-900/95 p-3.5 shadow-2xl max-md:bottom-[4.5rem]">
             <div className="flex items-start justify-between gap-2">
@@ -1260,11 +1261,11 @@ export default function MapWorld() {
                 <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
                   <span>{s.chapter} · passo {tourStep + 1}/{STOPS.length}</span>
                   <span className="inline-flex overflow-hidden rounded border border-zinc-700">
-                    {(['didatico', 'avancado'] as const).map((m) => (
-                      <button key={m} onClick={() => setMode(m)} title={m === 'didatico' ? 'Versão simples e narrativa' : 'Versão completa, com todos os dados'}
-                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === m ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
-                        style={mode === m ? { background: A } : undefined}>
-                        {m === 'didatico' ? 'simples' : 'completa'}
+                    {NIVEIS.map((n) => (
+                      <button key={n.id} onClick={() => setMode(n.id)} title={n.descricao}
+                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === n.id ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
+                        style={mode === n.id ? { background: A } : undefined}>
+                        {n.rotulo.toLowerCase()}
                       </button>
                     ))}
                   </span>
@@ -1287,7 +1288,7 @@ export default function MapWorld() {
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">✕</button>
               </div>
             </div>
-            {mode === 'didatico' ? (
+            {mode !== 'avancado' ? (
               <>
                 <p className="mt-2 text-xs leading-relaxed text-zinc-200">{s.did}</p>
                 <div className="mt-2.5 grid grid-cols-3 gap-1.5 max-md:grid-cols-3">
@@ -1393,7 +1394,7 @@ export function ConflictSelector() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: active.color + '55', background: active.color + '0d' }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{mode === 'didatico' ? active.didatico : active.avancado}</p>
+          <p className="mt-1 text-zinc-300">{mode !== 'avancado' ? active.didatico : active.avancado}</p>
         </div>
       )}
     </div>

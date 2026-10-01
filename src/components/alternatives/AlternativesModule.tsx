@@ -60,7 +60,7 @@ function JobGuaranteeSim() {
   const [participantes, setParticipantes] = useState(12) // milhões
   const [salario, setSalario] = useState(1518)
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const custoBi = (participantes * 1e6 * salario * 13.3) / 1e9
   const pctPib = (custoBi / (JG.pibBrTri * 1000)) * 100
   const vsJuros = (custoBi / JG.jurosAnoBi) * 100
@@ -124,7 +124,7 @@ function JobGuaranteeSim() {
 /** MÓDULO 09 — E PARA ONDE PODEMOS IR? */
 export default function AlternativesModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">

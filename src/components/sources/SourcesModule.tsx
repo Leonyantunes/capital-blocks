@@ -49,7 +49,7 @@ const idx = (l: Lang) => (l === 'pt' ? 0 : l === 'en' ? 1 : 2)
 /** MÓDULO 10 — FONTES & REFERÊNCIAS: a base documental do app. */
 export default function SourcesModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const [query, setQuery] = useState('')
   const [categoria, setCategoria] = useState('todas')
   const [tipo, setTipo] = useState('todos')

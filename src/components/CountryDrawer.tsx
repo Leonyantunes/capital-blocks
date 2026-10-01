@@ -11,7 +11,7 @@ import { useApp } from '../store/useApp'
 /** PILAR 4 — bloco TMD: três canais de vazamento + tubo animado Sul → Norte. */
 function TmdBlock({ countryName }: { countryName: string }) {
   const mode = useApp((s) => s.mode)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
   return (
     <section className="rounded-xl border border-labor/40 bg-labor/5 p-3">
       <h3 className="text-[11px] font-semibold uppercase tracking-widest text-red-300">

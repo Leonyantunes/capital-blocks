@@ -13,7 +13,7 @@ import { modRef } from '../data/modules'
  */
 export default function WorldWealthPanel() {
   const mode = useApp((s) => s.mode)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
   const claims = claimsTotal()
   const claimsYears = claims / WORLD_GDP_TRI
   const wealthYears = PRIVATE_NET_WEALTH_TRI / WORLD_GDP_TRI

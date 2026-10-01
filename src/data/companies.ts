@@ -171,6 +171,110 @@ const BR: CompanyRecord[] = [
     ticker: undefined, receitaBi: 14, lucroBi: 0.5, funcionariosMil: 8, salarioMedioK: 220,
     estimate: true, fonte: 'estimativa (companhia fechada)', nota: `Milhões de entregadores PARCEIROS ficam fora da folha — ver ${modRef('platform')}`,
   },
+
+  /* ── Ampliação 2026-09: varejo, serviços, saúde, construção, energia,
+     saneamento, logística e as histórias de fraude (Americanas/Movida).
+     Mesmo contrato: DFs FY2024 aproximadas + salário = estimativa setor.  */
+  {
+    id: 'br-renner', nome: 'Lojas Renner', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL',
+    ticker: 'LREN3', receitaBi: 12.4, lucroBi: 0.9, funcionariosMil: 40, salarioMedioK: 40,
+    dividendosBi: 0.4, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-assai', nome: 'Assaí Atacadista', pais: 'Brasil', setor: 'Varejo atacarejo', mercado: 'BR', moeda: 'BRL',
+    ticker: 'ASAI3', receitaBi: 73.5, lucroBi: 1.0, funcionariosMil: 42, salarioMedioK: 35,
+    dividendosBi: 0.6, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Margem fina sobre volume gigante: o atacarejo opera no limite da folha',
+  },
+  {
+    id: 'br-carrefour', nome: 'Carrefour Brasil', pais: 'Brasil', setor: 'Varejo atacarejo', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CRFB3', receitaBi: 120.7, lucroBi: 1.2, funcionariosMil: 100, salarioMedioK: 30,
+    dividendosBi: 0.5, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-americanas', nome: 'Americanas', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL',
+    ticker: 'AMER3', receitaBi: 19.7, lucroBi: -1.2, funcionariosMil: 38, salarioMedioK: 40,
+    estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Fraude contábil de ~R$ 25 bi (2023): a dívida escondida virou judicial recovery — o caso que virou livro',
+  },
+  {
+    id: 'br-totvs', nome: 'TOTVS', pais: 'Brasil', setor: 'Software', mercado: 'BR', moeda: 'BRL',
+    ticker: 'TOTS3', receitaBi: 4.4, lucroBi: 0.7, funcionariosMil: 11.5, salarioMedioK: 180,
+    dividendosBi: 0.6, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-pagseguro', nome: 'PagBank (PagSeguro)', pais: 'Brasil', setor: 'Pagamentos', mercado: 'BR', moeda: 'BRL',
+    ticker: 'PAGS34', receitaBi: 18.2, lucroBi: 2.7, funcionariosMil: 7.5, salarioMedioK: 220,
+    dividendosBi: 0.3, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-stone', nome: 'StoneCo', pais: 'Brasil', setor: 'Pagamentos', mercado: 'BR', moeda: 'BRL',
+    ticker: 'STOC34', receitaBi: 12.6, lucroBi: 0.5, funcionariosMil: 5.5, salarioMedioK: 200,
+    estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'GAAP deprimido por provisões de crédito — a expansão custa capital',
+  },
+  {
+    id: 'br-rededor', nome: 'Rede D\u2019Or São Luiz', pais: 'Brasil', setor: 'Saúde', mercado: 'BR', moeda: 'BRL',
+    ticker: 'RDOR3', receitaBi: 34.7, lucroBi: 2.5, funcionariosMil: 70, salarioMedioK: 55,
+    dividendosBi: 0.7, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Maior rede privada de hospitais do país',
+  },
+  {
+    id: 'br-hapvida', nome: 'Hapvida', pais: 'Brasil', setor: 'Saúde', mercado: 'BR', moeda: 'BRL',
+    ticker: 'HAPV3', receitaBi: 20.5, lucroBi: 0.4, funcionariosMil: 45, salarioMedioK: 35,
+    estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-cyrela', nome: 'Cyrela', pais: 'Brasil', setor: 'Construção Civil', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CYRE3', receitaBi: 10.9, lucroBi: 0.9, funcionariosMil: 9.5, salarioMedioK: 90,
+    dividendosBi: 0.4, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-mrv', nome: 'MRV&Co', pais: 'Brasil', setor: 'Construção Civil', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MRVE3', receitaBi: 9.4, lucroBi: 0.35, funcionariosMil: 14, salarioMedioK: 60,
+    estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-engie', nome: 'Engie Brasil', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'EGIE3', receitaBi: 19.5, lucroBi: 3.2, funcionariosMil: 4.5, salarioMedioK: 250,
+    dividendosBi: 2.0, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Maior geradora privada: renda hidrelétrica com folha mínima',
+  },
+  {
+    id: 'br-equatorial', nome: 'Equatorial', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'EQTL3', receitaBi: 42.4, lucroBi: 2.4, funcionariosMil: 16, salarioMedioK: 90,
+    dividendosBi: 1.4, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-sabesp', nome: 'Sabesp', pais: 'Brasil', setor: 'Saneamento', mercado: 'BR', moeda: 'BRL',
+    ticker: 'SBSP3', receitaBi: 16.4, lucroBi: 3.2, funcionariosMil: 8, salarioMedioK: 110,
+    dividendosBi: 1.6, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Desestatização 2024: lucro inflado por efeitos fiscais de uma vez',
+  },
+  {
+    id: 'br-tim', nome: 'TIM S.A.', pais: 'Brasil', setor: 'Telecomunicações', mercado: 'BR', moeda: 'BRL',
+    ticker: 'TIMS3', receitaBi: 25.5, lucroBi: 2.9, funcionariosMil: 6.5, salarioMedioK: 180,
+    dividendosBi: 1.8, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-ccr', nome: 'CCR', pais: 'Brasil', setor: 'Logística', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CCRO3', receitaBi: 12.7, lucroBi: 2.3, funcionariosMil: 7, salarioMedioK: 130,
+    dividendosBi: 1.3, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Pedágio: renda sobre a infraestrutura de rodovias e aeroportos',
+  },
+  {
+    id: 'br-rumo', nome: 'Rumo', pais: 'Brasil', setor: 'Logística', mercado: 'BR', moeda: 'BRL',
+    ticker: 'RAIL3', receitaBi: 9.0, lucroBi: 1.8, funcionariosMil: 8, salarioMedioK: 100,
+    dividendosBi: 0.9, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-movida', nome: 'Movida', pais: 'Brasil', setor: 'Locação de veículos', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MOVV3', receitaBi: 6.4, lucroBi: 0.8, funcionariosMil: 9, salarioMedioK: 70,
+    dividendosBi: 0.2, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Escândalo contábil 2023 (~R$ 5 bi): reformulada, segue na bolsa — até gigante queima capital',
+  },
+  {
+    id: 'br-alpargatas', nome: 'Alpargatas (Havaianas)', pais: 'Brasil', setor: 'Calçados', mercado: 'BR', moeda: 'BRL',
+    ticker: 'ALPA3', receitaBi: 8.5, lucroBi: 1.6, funcionariosMil: 13, salarioMedioK: 70,
+    dividendosBi: 0.9, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+  },
+  {
+    id: 'br-mbrf', nome: 'MBRF Global Foods', pais: 'Brasil', setor: 'Alimentos e Bebidas', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MBRF3', receitaBi: 108, lucroBi: 2.0, funcionariosMil: 100, salarioMedioK: 50,
+    dividendosBi: 1.0, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Marfrig + BRF: a fusão da proteína animal',
+  },
 ]
 
 /* ═══════════════ GLOBAL — mega-corporações (FY2024/25, US$) ═══════════════
@@ -314,6 +418,8 @@ const WORLD_RAW: W[] = [
   // ── Periferia do Sul Global ──
   ['Reliance Industries', 'Índia', 'Conglomerado / Energia', 0.2, 110.0, 8.4, 389, 20],
   ['Saudi Arabian Mining (Maaden)', 'Arábia Saudita', 'Mineração estatal', 0.04, 9.5, 0.6, 8, 45],
+  ['Nubank', 'Brasil', 'Bancário digital', 0.06, 9.5, 1.1, 9, 30],
+  ['América Móvil', 'México', 'Telecom', 0.055, 44.0, 5.3, 155, 25],
   // ── Defesa europeia/asiática, indústria pesada, mineração, química e logística ──
   ['Thales', 'França', 'Defesa · militar-industrial', 0.062, 23.4, 1.6, 83, 100],
   ['Leonardo S.p.A.', 'Itália', 'Defesa · militar-industrial', 0.033, 23.4, 1.3, 67, 95],
@@ -333,6 +439,18 @@ const WORLD_RAW: W[] = [
   ['Heineken', 'Países Baixos (UE)', 'Cervejaria', 0.044, 32.7, 2.2, 85, 75],
   ['Mondelez International', 'EUA', 'Alimentos globalizados', 0.078, 39.7, 3.5, 91, 80],
   ['The Kraft Heinz Company', 'EUA', 'Alimentos globalizados', 0.030, 24.9, -3.4, 35, 75],
+  // ── Ampliação 2026-09: consumo global, autos EUA, mídia, finanças e farmácia ──
+  ['Unilever', 'Reino Unido', 'Consumo básico', 0.16, 65.0, 7.0, 128, 55],
+  ['AB InBev', 'Bélgica', 'Bebidas', 0.13, 59.8, 6.0, 150, 50],
+  ['General Motors', 'EUA', 'Autoindústria', 0.065, 187.4, 6.0, 163, 85],
+  ['Ford Motor', 'EUA', 'Autoindústria', 0.05, 185.0, 5.9, 175, 80],
+  ['Verizon', 'EUA', 'Telecom', 0.18, 134.8, 17.5, 100, 120],
+  ['Comcast', 'EUA', 'Mídia / Streaming', 0.16, 123.7, 16.2, 186, 95],
+  ['Walt Disney', 'EUA', 'Mídia / Cultura', 0.18, 91.4, 5.0, 225, 75],
+  ['BlackRock', 'EUA', 'Gestora de ativos', 0.16, 20.4, 6.4, 19.8, 250],
+  ['Bayer', 'Alemanha', 'Farmacêutica / Agroquímica', 0.03, 51.5, -2.9, 93, 95],
+  ['Moderna', 'EUA', 'Biotecnologia (vacinas)', 0.008, 3.2, -3.6, 5.8, 180],
+  ['Applied Materials', 'EUA', 'Semicondutores (equipamentos)', 0.14, 27.2, 7.2, 35, 160],
 ]
 
 /** Notas pedagógicas por nome (mantém o array de dados compacto). */
@@ -383,6 +501,20 @@ const WORLD_NOTES: Record<string, string> = {
   Enel: 'Maior utility europeia; estatal italiana e o peso da transição energética',
   Mondelez: 'Transformadora de alimentos: a marca captura a margem do pequeno produtor',
   'Kraft Heinz': 'Prejuízo 2024 de US$ 3,4 bi: impairment contábil (write-down) — o preço da promessa corrigido',
+  // ── Notas pedagógicas da ampliação de 2026-09 ──
+  Nubank: '114 milhões de clientes com ~9 mil funcionários: a produtividade da plataforma · NYSE',
+  'América Móvil': 'A maior telecom da América Latina: o Sul conectado (Carlos Slim)',
+  Unilever: 'Maior consumo básico globalizado: a marca sobre a margem do produto',
+  'AB InBev': 'A colosso belga-brasileira: matriz da Ambev (3G Capital)',
+  'General Motors': 'A maior montadora dos EUA: lucro recuperado; o EV ainda queima capital',
+  'Ford Motor': 'A prova de massa original (Ford T): hoje o lucro vem do crédito (Ford Credit)',
+  Verizon: 'Renda de aluguel sobre a infraestrutura de telecom',
+  Comcast: 'Cabos + streaming: a infraestrutura da cultura',
+  Disney: 'O acervo cultural como ativo: parques, streaming e licenciamento',
+  BlackRock: 'US$ 11,5 tri sob gestão: o maior dono de promessas (capital fictício) do planeta',
+  Bayer: 'Litígios do glifosato (Monsanto herdada): a dívida judicial como custo permanente',
+  Moderna: 'Pós-pandemia: a demanda do COVID evaporou — até gigante queima capital',
+  'Applied Materials': 'Vende as pás da guerra dos chips: depósito e litografia de ponta',
 }
 
 function slug(nome: string): string {

@@ -10,6 +10,7 @@ import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../../data/tours'
 import { distFromK } from '../../data/tour'
+import { NIVEIS } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
 
@@ -53,7 +54,7 @@ function GlobeConflictChips() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: `${active.color}55`, background: `${active.color}0d` }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{mode === 'didatico' ? active.didatico : active.avancado}</p>
+          <p className="mt-1 text-zinc-300">{mode !== 'avancado' ? active.didatico : active.avancado}</p>
         </div>
       )}
     </div>
@@ -91,7 +92,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 /** Card do fluxo selecionado — mesma estética do globo (sem drawer lateral). */
 function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const st = TYPE_STYLE[flow.type]
   const codeOf = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {
@@ -879,11 +880,11 @@ export default function GlobeModule() {
                   <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
                     <span>{s.chapter} · passo {tourStep + 1}/{STOPS.length}</span>
                     <span className="inline-flex overflow-hidden rounded border border-zinc-700">
-                      {(['didatico', 'avancado'] as const).map((m) => (
-                        <button key={m} onClick={() => setMode(m)} title={m === 'didatico' ? 'Simples' : 'Completa'}
-                          className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === m ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
-                          style={mode === m ? { background: A } : undefined}>
-                          {m === 'didatico' ? 'simples' : 'completa'}
+                      {NIVEIS.map((n) => (
+                        <button key={n.id} onClick={() => setMode(n.id)} title={n.descricao}
+                          className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === n.id ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
+                          style={mode === n.id ? { background: A } : undefined}>
+                          {n.rotulo.toLowerCase()}
                         </button>
                       ))}
                     </span>
@@ -902,7 +903,7 @@ export default function GlobeModule() {
                   <button onClick={endTour} aria-label="Encerrar tour" className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">✕</button>
                 </div>
               </div>
-              {mode === 'didatico' ? (
+              {mode !== 'avancado' ? (
                 <>
                   <p className="mt-2 text-xs leading-relaxed text-zinc-200">{s.did}</p>
                   <div className="mt-2.5 grid grid-cols-3 gap-1.5">

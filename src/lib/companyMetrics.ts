@@ -103,6 +103,23 @@ const SECTOR_TABLE: [string, SectorEstimate][] = [
   ['papel', { margem: 0.14, folha: 0.1 }],
   ['constru', { margem: 0.06, folha: 0.18 }],
   ['imobiliár', { margem: 0.25, folha: 0.1 }],
+  /* Setores do universo de API + ampliação 2026-09. Chaves específicas antes
+   * das genéricas; 'agro' entra NO FIM de propósito — 'Farmacêutica /
+   * Agroquímica' (Bayer) tem que casar 'farmac' (antes na tabela), não 'agro'. */
+  ['rede de cartões', { margem: 0.5, folha: 0.15 }], // Visa/MC: aluguel da rede
+  ['folha de pagamento', { margem: 0.24, folha: 0.25 }], // ADP-like: serviços de folha
+  ['gestora', { margem: 0.3, folha: 0.24 }], // asset managers (BlackRock)
+  ['private', { margem: 0.25, folha: 0.2 }], // private equity
+  ['índice', { margem: 0.4, folha: 0.2 }], // índices/ratings (SPGI/MSCI)
+  ['mídia', { margem: 0.12, folha: 0.14 }],
+  ['streaming', { margem: 0.13, folha: 0.16 }],
+  ['biotecnolog', { margem: 0.08, folha: 0.18 }],
+  ['saneament', { margem: 0.15, folha: 0.08 }],
+  ['educaç', { margem: 0.08, folha: 0.25 }],
+  ['turis', { margem: 0.08, folha: 0.15 }],
+  ['autopeç', { margem: 0.06, folha: 0.1 }],
+  ['calçad', { margem: 0.09, folha: 0.13 }],
+  ['agro', { margem: 0.09, folha: 0.1 }],
   ['financeiro', { margem: 0.25, folha: 0.22 }],
 ]
 

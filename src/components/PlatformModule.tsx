@@ -54,7 +54,7 @@ export default function PlatformModule() {
     return (v: number) => setP((s) => ({ ...s, [key]: v }))
   }
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
 
   const bruto = p.corridas * p.valorCorrida
   const comissao = bruto * (p.comissaoPct / 100)

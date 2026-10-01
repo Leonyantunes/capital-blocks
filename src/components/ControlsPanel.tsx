@@ -6,7 +6,7 @@ import { useApp } from '../store/useApp'
 export default function ControlsPanel() {
   const { k, e, setK, setE, mode } = useApp()
   const r = computeCircuit(k, e)
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">

@@ -407,7 +407,19 @@ export default function Globe3DCanvas(props: Props) {
 
     /* rótulos HTML dos blocos principais */
     const labelDefs = BLOCS.filter((b) => b.tier !== 'secondary')
-    const labelEls: { id: string; el: HTMLDivElement; vec: THREE.Vector3; color: string; code: string }[] = []
+    /* último valor escrito no DOM por rótulo — evita reescrever estilo
+       quando nada mudou (o globo parado não deve tocar no DOM) */
+    const labelEls: {
+      id: string
+      el: HTMLDivElement
+      vec: THREE.Vector3
+      color: string
+      code: string
+      lx?: number
+      ly?: number
+      lop?: string
+      lpe?: string
+    }[] = []
     for (const b of labelDefs) {
       const el = document.createElement('div')
       el.className = 'globe3d-label'
@@ -1024,14 +1036,19 @@ export default function Globe3DCanvas(props: Props) {
     renderer.domElement.setAttribute('role', 'img')
     renderer.domElement.setAttribute('aria-label', 'Globo 3D interativo com fluxos de capital')
 
-    /* ── resize ───────────────────────────────────────────── */
+    /* ── resize ─────────────────────────────────────────────
+       As dimensões ficam em cache e são lidas no ResizeObserver, não no
+       loop: `container.clientWidth` a cada frame força reflow do layout,
+       que invalida o trabalho de estilo do navegador inteiro. */
+    let vw = container.clientWidth || 1
+    let vh = container.clientHeight || 1
     const resize = () => {
-      const w = container.clientWidth || 1
-      const h = container.clientHeight || 1
-      renderer.setSize(w, h, false)
+      vw = container.clientWidth || 1
+      vh = container.clientHeight || 1
+      renderer.setSize(vw, vh, false)
       renderer.domElement.style.width = '100%'
       renderer.domElement.style.height = '100%'
-      camera.aspect = w / h
+      camera.aspect = vw / vh
       camera.updateProjectionMatrix()
     }
     resize()
@@ -1060,7 +1077,6 @@ export default function Globe3DCanvas(props: Props) {
     }
     document.addEventListener('visibilitychange', onVis)
 
-    const camDir = new THREE.Vector3()
     const WORLD_UP = new THREE.Vector3(0, 1, 0)
     const _qSpin = new THREE.Quaternion()
     const layerSignature = (vl: Record<FlowType, boolean>) =>
@@ -1231,10 +1247,33 @@ export default function Globe3DCanvas(props: Props) {
 
       /* satélites removidos por decisão de produto (ruído visual) */
 
-      /* reavalia seleção quando muda (inclui modo detalhado por zoom + spot do tour) */
+      /* reavalia seleção quando muda (inclui modo detalhado por zoom + spot do tour)
+         A assinatura é montada por concatenação simples — sem join/toFixed de
+         arrays, que alocavam strings a cada frame mesmo sem mudança real. */
       const camDist = camera.position.length()
-      const spotSig = live.current.spot ? `${live.current.spot.color}|${live.current.spot.isos.join(',')}` : ''
-      const key = `${live.current.selectedFlowId}|${live.current.highlightFlowIds.join(',')}|${layerSignature(live.current.visibleLayers)}|${camDist.toFixed(2)}|${o.showArcs}|${o.showArrows}|${o.layer}|${spotSig}`
+      const lc = live.current
+      const spotKey = lc.spot ? lc.spot.color + '|' + lc.spot.isos.join(',') : ''
+      const layerKey = layerSignature(lc.visibleLayers)
+      /* a distância entra com 2 casas: entre elas o enquadramento não muda.
+         `|0` converte para inteiro sem alocar string. */
+      const distKey = (camDist * 100) | 0
+      /* os ids precisam entrar INTEIROS na assinatura: dois conjuntos de
+         mesmo tamanho (ex.: 2 ids A,B → 1 id C) têm que ser distinguidos,
+         senão a seleção não reavalia. */
+      const key =
+        lc.selectedFlowId +
+        '|' +
+        lc.highlightFlowIds.join(',') +
+        '|' +
+        layerKey +
+        '|' +
+        distKey +
+        '|' +
+        (o.showArcs ? 1 : 0) +
+        (o.showArrows ? 1 : 0) +
+        (o.layer ? 1 : 0) +
+        '|' +
+        spotKey
       if (key !== selCache) {
         selCache = key
         applySelection()
@@ -1261,21 +1300,40 @@ export default function Globe3DCanvas(props: Props) {
       if (!flight) controls.update() /* no voo, a câmera é 100% roteirizada */
       renderer.render(scene, camera)
 
-      /* rótulos */
+      /* rótulos — só escreve no DOM o que MUDOU.
+         Antes, cada frame escrevia transform+opacity+pointerEvents nos 19
+         rótulos: ~57 escritas de estilo por frame, mesmo com o globo parado.
+         O navegador recalcula estilo/layout para cada uma. Agora só as que
+         realmente mudaram de posição ou visibilidade são tocadas. */
       if (o.showLabels) {
-        const w = container.clientWidth
-        const h = container.clientHeight
-        camDir.copy(camera.position).normalize()
+        const camDirW = _v3
+        camDirW.copy(camera.position).normalize()
         for (const l of labelEls) {
           _v1.copy(l.vec).applyMatrix4(globe.matrixWorld)
-          const facing = _v4.copy(_v1).normalize().dot(camDir)
+          const facing = _v4.copy(_v1).normalize().dot(camDirW)
           _v2.copy(_v1).project(camera)
           const behind = _v2.z > 1 || facing < 0.18
-          const x = (_v2.x * 0.5 + 0.5) * w
-          const y = (-_v2.y * 0.5 + 0.5) * h
-          l.el.style.transform = `translate(-50%,-140%) translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`
-          l.el.style.opacity = behind ? '0' : facing > 0.55 ? '1' : '0.35'
-          l.el.style.pointerEvents = behind ? 'none' : 'auto'
+          const x = (_v2.x * 0.5 + 0.5) * vw
+          const y = (-_v2.y * 0.5 + 0.5) * vh
+          /* arredonda em passos de 0,5px: o olho não percebe e evita
+             reescrever o DOM em micro-variações de subpixel */
+          const qx = Math.round(x * 2) / 2
+          const qy = Math.round(y * 2) / 2
+          const op = behind ? '0' : facing > 0.55 ? '1' : '0.35'
+          const pe = behind ? 'none' : 'auto'
+          if (l.lx !== qx || l.ly !== qy) {
+            l.lx = qx
+            l.ly = qy
+            l.el.style.transform = `translate(-50%,-140%) translate(${qx}px,${qy}px)`
+          }
+          if (l.lop !== op) {
+            l.lop = op
+            l.el.style.opacity = op
+          }
+          if (l.lpe !== pe) {
+            l.lpe = pe
+            l.el.style.pointerEvents = pe
+          }
         }
       }
     }

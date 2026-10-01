@@ -64,7 +64,7 @@ function Toggle({
 
 export default function SettingsModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) === 'didatico'
+  const didatico = useApp((s) => s.mode) !== 'avancado'
   const mode = useApp((s) => s.mode)
   const setMode = useApp((s) => s.setMode)
   const theme = useApp((s) => s.theme)

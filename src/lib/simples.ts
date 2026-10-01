@@ -73,9 +73,10 @@ export function resolve<T extends Record<string, string | undefined>>(
   modo: UIMode,
 ): string {
   if (textos.simples) return textos.simples
-  if (modo === 'simples' && textos.did) return textos.did
-  if (textos.did) return textos.did
-  return textos.adv ?? ''
+  /* avançado pede o avançado (cai no didático só se não houver); os outros
+     dois modos caem no didático (o mais próximo do cotidiano) */
+  if (modo === 'avancado') return textos.adv ?? textos.did ?? ''
+  return textos.did ?? textos.adv ?? ''
 }
 
 /** Igual a `resolve`, mas devolve o didático como piso (para tooltips longos). */
@@ -100,6 +101,10 @@ const SIMPLES: Record<string, string> = {
   'capital constante': 'Máquinas e matéria-prima',
   'capital variável': 'Salários dos trabalhadores',
   'mais-valia': 'Trabalho de graça',
+  'extração de mais-valia': 'trabalho de graça',
+  'capital-dinheiro': 'dinheiro investido',
+  'valor expandido': 'valor que cresceu',
+  'realização': 'venda',
   'taxa de exploração': 'Quanto se ganha sem trabalhar',
   'tendência decrescente': 'Os lucros vão caindo com o tempo',
   'modo de produção': 'A forma como a sociedade trabalha',
@@ -130,32 +135,4 @@ const SIMPLES: Record<string, string> = {
  */
 export function termoSimples(termo: string): string {
   return SIMPLES[termo.toLowerCase().trim()] ?? termo
-}
-
-/* ── Dicas curtas para os números ────────────────────────────────────────
- * No modo simples, todo número mostrado ganha uma explicação de uma linha
- * do que ele significa, sem jargão. */
-
-const EXPLICACOES: Record<string, string> = {
-  gdp: 'quanto o país produz por ano',
-  plbr: 'a moeda daqui',
-  razao: 'a comparação entre eles',
-  variacao: 'a mudança em relação ao ano anterior',
-  media: 'a quantidade que divide o total',
-  porHabitante: 'dividido pelo número de pessoas',
-  acumulado: 'somando todos os anos juntos',
-}
-
-export function explica(termo: string): string {
-  return EXPLICACOES[termo.toLowerCase().trim()] ?? termo
-}
-
-/**
- * Envolve um número com a unidade de leitura, para o modo simples.
- * Ex.: pct(56.8) → '56,8% — quase 6 em cada 10'
- */
-export function leituraSimples(valor: string, fracaoDe10?: number): string {
-  if (typeof fracaoDe10 !== 'number') return valor
-  const n = Math.round(fracaoDe10)
-  return `${valor} — ${n} em cada 10`
 }

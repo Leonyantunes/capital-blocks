@@ -56,7 +56,7 @@ function BudgetDashboard() {
 export default function DebtModule() {
   const { mode, lang } = useApp()
   const [lens, setLens] = useState<FiscalLens>('mmt')
-  const didatico = mode === 'didatico'
+  const didatico = mode !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">
