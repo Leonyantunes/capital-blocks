@@ -24,7 +24,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22 (não 20): o jsdom 30 usa `webidl.util.markAsUncloneable`, que só
+          # existe a partir do Node 22. Com Node 20 a suíte morria em
+          # "Test Files no tests" — mesmo sintoma que aparece local quando o
+          # vitest roda logo após o build.
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Suíte Vitest (motor conceitual, empresarial, store, tours)
@@ -43,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run build
