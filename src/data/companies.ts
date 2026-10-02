@@ -275,6 +275,108 @@ const BR: CompanyRecord[] = [
     ticker: 'MBRF3', receitaBi: 108, lucroBi: 2.0, funcionariosMil: 100, salarioMedioK: 50,
     dividendosBi: 1.0, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Marfrig + BRF: a fusão da proteína animal',
   },
+
+  /* ── Expansão 2026-10: energia, seguros, indústria, agro, saúde e serviços ── */
+  {
+    id: 'br-vibra', nome: 'Vibra Energia', pais: 'Brasil', setor: 'Energia / Distribuição', mercado: 'BR', moeda: 'BRL',
+    ticker: 'VBBR3', receitaBi: 181.4, lucroBi: 4.2, funcionariosMil: 5.2, salarioMedioK: 190,
+    dividendosBi: 2.2, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)', nota: 'Maior distribuidora de combustíveis do Brasil; antiga BR Distribuidora',
+  },
+  {
+    id: 'br-cpfl', nome: 'CPFL Energia', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CPFE3', receitaBi: 39.2, lucroBi: 5.0, funcionariosMil: 12.5, salarioMedioK: 125,
+    dividendosBi: 4.0, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-neoenergia', nome: 'Neoenergia', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'NEOE3', receitaBi: 44.0, lucroBi: 4.7, funcionariosMil: 15.5, salarioMedioK: 120,
+    dividendosBi: 2.0, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-cemig', nome: 'Cemig', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CMIG4', receitaBi: 37.0, lucroBi: 7.0, funcionariosMil: 5.0, salarioMedioK: 180,
+    dividendosBi: 4.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-copel', nome: 'Copel', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CPLE6', receitaBi: 22.0, lucroBi: 3.2, funcionariosMil: 5.6, salarioMedioK: 165,
+    dividendosBi: 2.0, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-braskem', nome: 'Braskem', pais: 'Brasil', setor: 'Petroquímica', mercado: 'BR', moeda: 'BRL',
+    ticker: 'BRKM5', receitaBi: 77.4, lucroBi: -5.6, funcionariosMil: 8.0, salarioMedioK: 220,
+    estimate: true, fonte: 'Relatório anual FY2024 (aprox.)', nota: 'Ciclo petroquímico e passivos de Alagoas pressionaram o resultado',
+  },
+  {
+    id: 'br-usiminas', nome: 'Usiminas', pais: 'Brasil', setor: 'Siderurgia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'USIM5', receitaBi: 26.1, lucroBi: 0.6, funcionariosMil: 14.0, salarioMedioK: 115,
+    dividendosBi: 0.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-csn-mineracao', nome: 'CSN Mineração', pais: 'Brasil', setor: 'Extrativa Mineral', mercado: 'BR', moeda: 'BRL',
+    ticker: 'CMIN3', receitaBi: 14.0, lucroBi: 2.8, funcionariosMil: 8.5, salarioMedioK: 130,
+    dividendosBi: 2.1, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-minerva', nome: 'Minerva Foods', pais: 'Brasil', setor: 'Alimentos e Bebidas', mercado: 'BR', moeda: 'BRL',
+    ticker: 'BEEF3', receitaBi: 30.0, lucroBi: 0.9, funcionariosMil: 24.0, salarioMedioK: 48,
+    dividendosBi: 0.3, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-slc', nome: 'SLC Agrícola', pais: 'Brasil', setor: 'Agronegócio', mercado: 'BR', moeda: 'BRL',
+    ticker: 'SLCE3', receitaBi: 7.7, lucroBi: 1.0, funcionariosMil: 6.0, salarioMedioK: 65,
+    dividendosBi: 0.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-porto', nome: 'Porto', pais: 'Brasil', setor: 'Seguros / Serviços financeiros', mercado: 'BR', moeda: 'BRL',
+    ticker: 'PSSA3', receitaBi: 37.0, lucroBi: 2.7, funcionariosMil: 13.0, salarioMedioK: 110,
+    dividendosBi: 1.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-marco', nome: 'Marcopolo', pais: 'Brasil', setor: 'Bens de Capital / Ônibus', mercado: 'BR', moeda: 'BRL',
+    ticker: 'POMO4', receitaBi: 8.7, lucroBi: 1.0, funcionariosMil: 15.0, salarioMedioK: 72,
+    dividendosBi: 0.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-iochpe', nome: 'Iochpe-Maxion', pais: 'Brasil', setor: 'Autopeças', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MYPK3', receitaBi: 16.0, lucroBi: 0.5, funcionariosMil: 17.0, salarioMedioK: 70,
+    dividendosBi: 0.2, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-fleury', nome: 'Grupo Fleury', pais: 'Brasil', setor: 'Saúde / Diagnóstico', mercado: 'BR', moeda: 'BRL',
+    ticker: 'FLRY3', receitaBi: 7.2, lucroBi: 0.8, funcionariosMil: 15.0, salarioMedioK: 62,
+    dividendosBi: 0.5, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-hypera', nome: 'Hypera Pharma', pais: 'Brasil', setor: 'Farmacêutica', mercado: 'BR', moeda: 'BRL',
+    ticker: 'HYPE3', receitaBi: 8.4, lucroBi: 1.8, funcionariosMil: 11.0, salarioMedioK: 95,
+    dividendosBi: 0.8, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-smartfit', nome: 'Smart Fit', pais: 'Brasil', setor: 'Serviços / Academias', mercado: 'BR', moeda: 'BRL',
+    ticker: 'SMFT3', receitaBi: 6.5, lucroBi: 1.0, funcionariosMil: 16.0, salarioMedioK: 45,
+    dividendosBi: 0.2, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-grupo-mateus', nome: 'Grupo Mateus', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL',
+    ticker: 'GMAT3', receitaBi: 36.0, lucroBi: 1.4, funcionariosMil: 44.0, salarioMedioK: 32,
+    dividendosBi: 0.6, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-vivara', nome: 'Vivara', pais: 'Brasil', setor: 'Varejo / Joalheria', mercado: 'BR', moeda: 'BRL',
+    ticker: 'VIVA3', receitaBi: 3.3, lucroBi: 0.5, funcionariosMil: 6.0, salarioMedioK: 42,
+    dividendosBi: 0.2, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
+  {
+    id: 'br-multiplan', nome: 'Multiplan', pais: 'Brasil', setor: 'Shoppings / Renda imobiliária', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MULT3', receitaBi: 2.3, lucroBi: 1.1, funcionariosMil: 2.0, salarioMedioK: 120,
+    dividendosBi: 0.8, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)', nota: 'Receita de locação e participação em shopping centers',
+  },
+  {
+    id: 'br-iguatemi', nome: 'Iguatemi', pais: 'Brasil', setor: 'Shoppings / Renda imobiliária', mercado: 'BR', moeda: 'BRL',
+    ticker: 'IGTI11', receitaBi: 1.6, lucroBi: 0.6, funcionariosMil: 2.2, salarioMedioK: 115,
+    dividendosBi: 0.4, estimate: true, fonte: 'Relatório anual FY2024 (aprox.)',
+  },
 ]
 
 /* ═══════════════ GLOBAL — mega-corporações (FY2024/25, US$) ═══════════════
@@ -297,8 +399,7 @@ const WORLD_RAW: W[] = [
   ['Alphabet', 'EUA', 'Plataformas / Ads', 3.5, 350.0, 100.1, 183, 190],
   ['Amazon', 'EUA', 'E-commerce / Cloud', 2.45, 638.0, 59.2, 1556, 55],
   ['Broadcom', 'EUA', 'Semicondutores', 1.7, 51.6, 5.9, 37, 170],
-  ['Saudi Aramco', 'Arábia Saudita', 'Petróleo / Energia', 1.59, 480, 106.1, 73, 70],
-  ['Meta Platforms', 'EUA', 'Plataformas / Social', 1.55, 164.5, 62.4, 74, 220],
+  ['Saudi Aramco', 'Arábia Saudita', 'Petróleo / Energia', 1.59, 480, 106.1, 73, 70],  ['Meta Platforms', 'EUA', 'Plataformas / Social', 1.55, 164.5, 62.4, 74, 220],
   ['TSMC', 'Taiwan', 'Semicondutores (foundry)', 1.5, 90.0, 37.0, 77, 80],
   ['Tesla', 'EUA', 'Automotivo / EV', 1.42, 97.7, 7.1, 125, 65],
   ['Berkshire Hathaway', 'EUA', 'Conglomerado / Seguros', 1.0, 371.4, 89.0, 392, 85],
@@ -451,6 +552,33 @@ const WORLD_RAW: W[] = [
   ['Bayer', 'Alemanha', 'Farmacêutica / Agroquímica', 0.03, 51.5, -2.9, 93, 95],
   ['Moderna', 'EUA', 'Biotecnologia (vacinas)', 0.008, 3.2, -3.6, 5.8, 180],
   ['Applied Materials', 'EUA', 'Semicondutores (equipamentos)', 0.14, 27.2, 7.2, 35, 160],
+
+  // ── Expansão 2026-10: finanças, Ásia, Europa, Índia, LatAm e defesa ──
+  ['Bank of America', 'EUA', 'Bancário global', 0.34, 101.9, 27.1, 213, 105],
+  ['Wells Fargo', 'EUA', 'Bancário global', 0.23, 82.3, 19.7, 217, 95],
+  ['Goldman Sachs', 'EUA', 'Banco de investimento', 0.20, 53.5, 14.3, 46.5, 240],
+  ['Morgan Stanley', 'EUA', 'Banco de investimento', 0.21, 61.8, 13.4, 80, 180],
+  ['Citigroup', 'EUA', 'Bancário global', 0.16, 81.1, 12.7, 229, 100],
+  ['China Construction Bank', 'China', 'Bancário estatal', 0.25, 100.0, 46.0, 376, 40],
+  ['Agricultural Bank of China', 'China', 'Bancário estatal', 0.22, 97.0, 39.0, 451, 35],
+  ['Bank of China', 'China', 'Bancário estatal', 0.19, 90.0, 33.0, 306, 40],
+  ['China Mobile', 'China', 'Telecom', 0.20, 140.0, 19.0, 451, 35],
+  ['SK Hynix', 'Coreia do Sul', 'Semicondutores (memória)', 0.15, 48.0, 14.0, 41, 85],
+  ['MediaTek', 'Taiwan', 'Semicondutores (móvel)', 0.06, 16.0, 3.4, 19, 100],
+  ['Arm Holdings', 'Reino Unido', 'Semicondutores / IP', 0.14, 4.0, 0.7, 8, 180],
+  ['Schneider Electric', 'França', 'Energia / Automação industrial', 0.14, 42.0, 4.3, 160, 85],
+  ['Deutsche Telekom', 'Alemanha', 'Telecom', 0.17, 126.0, 12.0, 200, 80],
+  ['Allianz', 'Alemanha', 'Seguros / Gestão de ativos', 0.15, 183.0, 10.0, 156, 90],
+  ['UBS Group', 'Suíça', 'Bancário / Gestão de patrimônio', 0.11, 49.0, 5.1, 108, 130],
+  ['Equinor', 'Noruega', 'Petróleo / Energia', 0.08, 104.0, 8.6, 25, 120],
+  ['Infosys', 'Índia', 'TI / Terceirização global', 0.08, 19.3, 3.2, 324, 25],
+  ['ICICI Bank', 'Índia', 'Bancário', 0.11, 32.0, 5.4, 141, 30],
+  ['State Bank of India', 'Índia', 'Bancário estatal', 0.09, 57.0, 8.0, 236, 20],
+  ['Bharti Airtel', 'Índia', 'Telecom', 0.11, 20.0, 2.4, 20, 30],
+  ['FEMSA', 'México', 'Varejo / Bebidas / Logística', 0.07, 42.0, 1.9, 392, 18],
+  ['L3Harris Technologies', 'EUA', 'Defesa · militar-industrial', 0.04, 21.3, 1.5, 47, 100],
+  ['Rolls-Royce Holdings', 'Reino Unido', 'Aeroespacial / Defesa', 0.08, 22.4, 3.0, 42, 75],
+  ['Hanwha Aerospace', 'Coreia do Sul', 'Defesa · militar-industrial', 0.05, 8.0, 0.7, 8, 70],
 ]
 
 /** Notas pedagógicas por nome (mantém o array de dados compacto). */
@@ -597,8 +725,7 @@ export function brView(rec: CompanyRecord): Company {
   }
 }
 
-export function worldView(rec: CompanyRecord): WorldCompany {
-  return {
+export function worldView(rec: CompanyRecord): WorldCompany {  return {
     id: rec.id, nome: rec.nome, pais: rec.pais, setor: rec.setor,
     capTri: rec.capTri, receitaBi: rec.receitaBi, lucroBi: rec.lucroBi,
     funcionariosMil: rec.funcionariosMil, salarioMedioUsdK: rec.salarioMedioK,
