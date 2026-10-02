@@ -8,6 +8,23 @@ Regra de ouro das P0: **nenhuma regressão visual aceitável** — otimizar sem 
 Critério de sucesso: 60fps sustentados no mapa base e ≥45fps durante tour/zoom em celular
 mid-range (perfis DevTools mobile + device real), com aparência idêntica lado a lado.
 
+> **Auditoria 2026-10-02 — estado de fechamento:** `npm run build` ✅ · `npm test`
+> 97/97 executados ✅ (1 suíte/1 teste deliberadamente skipped) · `test:globe` 392/392 ✅ ·
+> `test:framing` 52/52 ✅ · `test:tours` 0 erros/0 avisos ✅. Entraram mais três melhorias
+> sem reduzir a qualidade: pan/pinch/trackpad do mapa 2D agora coalescem eventos em no máximo
+> 1 commit React por frame; o globo 3D recupera DPR/nitidez automaticamente com histerese após
+> quedas temporárias de FPS; partículas 3D deixam de desenhar/atualizar quando os arcos estão
+> desligados e fluxos invisíveis deixam de recalcular Bézier. O manifesto PWA também passou a
+> usar URLs relativas e foi validado num build com `VITE_BASE=/capital-blocks/`.
+>
+> **Para considerar a versão final:** (1) perfil + comparação visual em Android mid-range real;
+> (2) revisar as 7 fontes ainda marcadas `revisao-pendente`; (3) anexar fonte por estatística às
+> 101 estatísticas dos tours; (4) zerar o aviso editorial de 6 paradas sem ação/dica e revisar os
+> 16 textos avançados sinalizados como curtos; (5) decidir se EN/ES completo faz parte do escopo
+> da v1 — hoje só o chrome está traduzido; (6) ampliar a cobertura de empresas se isso for requisito
+> editorial da v1; (7) capturar screenshots/GIFs reais para a landing. O globo pode sair do selo
+> BETA depois da validação visual/performance em aparelho real.
+
 > **Status (2026-09-12):** P0 concluída (commit 7cc5f7a 2D · e59d585 3D+worker) e P2
 > concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico
 > aos baselines, FPS do globo 68 → 87 no HUD (software rendering; ganho maior esperado

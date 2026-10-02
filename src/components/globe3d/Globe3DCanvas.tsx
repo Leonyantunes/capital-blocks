@@ -143,7 +143,8 @@ export default function Globe3DCanvas(props: Props) {
       container.appendChild(fb)
       return
     }
-    let dprCap = isMobile ? 1.5 : 1.75
+    const maxDprCap = isMobile ? 1.5 : 1.75
+    let dprCap = maxDprCap
     const applyPixelRatio = () => {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap))
       const w = container.clientWidth || 1
@@ -777,6 +778,10 @@ export default function Globe3DCanvas(props: Props) {
       markerGroup.visible = o.showMarkers
       labelsBox.style.display = o.showLabels ? 'block' : 'none'
       arcGroup.visible = o.showArcs
+      /* movers live outside arcGroup so they can share one Points draw call.
+         Keep their visibility in sync explicitly: hidden arcs should mean zero
+         particle draw/update cost as well as zero line draw cost. */
+      if (moverPoints) moverPoints.visible = o.showArcs
       /* camada temática: mortes usam marcadores próprios */
       disasterGroup.visible = o.layer === 'deaths'
     }
@@ -831,7 +836,7 @@ export default function Globe3DCanvas(props: Props) {
 
       /* brilho pulsante nas pontas do fluxo selecionado */
       const sel = selectedFlowId ? arcById[selectedFlowId] : undefined
-      if (sel && sel.op > 0) {
+      if (live.current.opts.showArcs && sel && sel.op > 0) {
         const st = TYPE_STYLE[sel.type]
         selGlowA.visible = true
         selGlowB.visible = true
@@ -1066,6 +1071,9 @@ export default function Globe3DCanvas(props: Props) {
     let selCache = ''
     let emaFps = 60
     let qTimer = 0
+    let qualityAge = 0
+    let lowFpsSamples = 0
+    let highFpsSamples = 0
     let lastBorderOp = -1
     const io = new IntersectionObserver((en) => {
       visible = en[0]?.isIntersecting ?? true
@@ -1106,10 +1114,31 @@ export default function Globe3DCanvas(props: Props) {
 
       /* DPR adaptativo: segura 60fps em GPU fraca sem tocar nos toggles */
       qTimer += dt
+      qualityAge += dt
       if (qTimer > 2.5) {
         qTimer = 0
-        if (emaFps < 27 && dprCap > 1) {
+        /* Ignora o warm-up (compilação de shaders/build inicial) e exige
+           tendência sustentada. Também recupera nitidez aos poucos quando a
+           GPU tem folga, evitando ficar presa em DPR baixo após um pico curto. */
+        if (qualityAge > 6 && emaFps < 42) {
+          lowFpsSamples++
+          highFpsSamples = 0
+        } else if (qualityAge > 6 && emaFps > 57) {
+          highFpsSamples++
+          lowFpsSamples = 0
+        } else {
+          lowFpsSamples = 0
+          highFpsSamples = 0
+        }
+        if (lowFpsSamples >= 2 && dprCap > 1) {
           dprCap = Math.max(1, dprCap - 0.25)
+          lowFpsSamples = 0
+          highFpsSamples = 0
+          applyPixelRatio()
+        } else if (highFpsSamples >= 4 && dprCap < maxDprCap) {
+          dprCap = Math.min(maxDprCap, dprCap + 0.25)
+          lowFpsSamples = 0
+          highFpsSamples = 0
           applyPixelRatio()
         }
       }
@@ -1226,13 +1255,17 @@ export default function Globe3DCanvas(props: Props) {
       }
 
       /* partículas ao longo das curvas */
-      if (moverPoints && movers.length) {
+      if (moverPoints?.visible && movers.length) {
         const pos = moverPoints.geometry.getAttribute('position') as THREE.BufferAttribute
         const arr = pos.array as Float32Array
         const sp = (reducedMotion ? 0.15 : 1) * o.arcSpeed
+        let changed = false
         for (let i = 0; i < movers.length; i++) {
           const m = movers[i]
           const a = arcs[m.arc]
+          /* invisível por camada/zoom/seleção: não há razão para avaliar a
+             Bézier nem enviar a posição de novo à GPU. */
+          if (a.op === 0) continue
           /* arco em destaque corre até 3× mais rápido */
           const boost = live.current.selectedFlowId === a.id ? 3 : 1
           m.t += (dt * sp * 0.22 * boost) / Math.max(0.4, a.len)
@@ -1241,8 +1274,9 @@ export default function Globe3DCanvas(props: Props) {
           arr[i * 3] = p.x
           arr[i * 3 + 1] = p.y
           arr[i * 3 + 2] = p.z
+          changed = true
         }
-        pos.needsUpdate = true
+        if (changed) pos.needsUpdate = true
       }
 
       /* satélites removidos por decisão de produto (ruído visual) */

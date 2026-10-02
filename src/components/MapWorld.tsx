@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MAP_W, MAP_H, COUNTRY_FEATURES, GRATICULE_D, SPHERE_D,
   ISO_TO_BLOC, BRICS_ISO, BLOCS, BLOC_MEMBERS, arcPath, quadPoint, project, projection, flowIsos,
@@ -163,6 +163,31 @@ export default function MapWorld() {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const [view, setView] = useState(INIT.view)
+  /*
+   * Coalesce pan/pinch/trackpad updates to at most one React commit per frame.
+   * High-rate pointer/trackpad devices can emit well above 60 events/s; rendering
+   * every event wastes CPU without producing an extra visible frame.
+   */
+  const viewRef = useRef(view)
+  const queuedViewRef = useRef<typeof view | null>(null)
+  const viewRafRef = useRef<number | null>(null)
+  useEffect(() => { viewRef.current = view }, [view])
+  const queueViewUpdate = useCallback((update: (v: typeof view) => typeof view) => {
+    const base = queuedViewRef.current ?? viewRef.current
+    const next = update(base)
+    queuedViewRef.current = next
+    viewRef.current = next
+    if (viewRafRef.current !== null) return
+    viewRafRef.current = requestAnimationFrame(() => {
+      viewRafRef.current = null
+      const pending = queuedViewRef.current
+      queuedViewRef.current = null
+      if (pending) setView(pending)
+    })
+  }, [])
+  useEffect(() => () => {
+    if (viewRafRef.current !== null) cancelAnimationFrame(viewRafRef.current)
+  }, [])
   /**
    * k QUANTIZADO (degraus de 0,25×): as camadas SVG pesadas são memoizadas por
    * kq — durante o PAN (x/y variando, k constante) nada é reconciliado; no
@@ -430,7 +455,7 @@ export default function MapWorld() {
       const rect = el.getBoundingClientRect()
       const vx = ((e.clientX - rect.left) / rect.width) * MAP_W
       const vy = ((e.clientY - rect.top) / rect.height) * MAP_H
-      setView((v) => {
+      queueViewUpdate((v) => {
         const nk = Math.min(10, Math.max(1, v.k * Math.exp(-e.deltaY * 0.0016)))
         const wx = (vx - v.x) / v.k
         const wy = (vy - v.y) / v.k
@@ -439,7 +464,7 @@ export default function MapWorld() {
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [])
+  }, [queueViewUpdate])
 
   const zoomAroundCenter = (factor: number) =>
     setView((v) => {
@@ -463,13 +488,15 @@ export default function MapWorld() {
     setFlowTip(null)
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointersRef.current.size === 1) {
-      dragRef.current = { sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y }
+      const v = queuedViewRef.current ?? viewRef.current
+      dragRef.current = { sx: e.clientX, sy: e.clientY, ox: v.x, oy: v.y }
       movedRef.current = false
       setDragging(true)
     } else if (pointersRef.current.size === 2) {
       dragRef.current = null // dois dedos = pinch, não pan
       const [p1, p2] = [...pointersRef.current.values()]
-      pinchRef.current = { dist: Math.hypot(p2.x - p1.x, p2.y - p1.y), k: view.k }
+      const v = queuedViewRef.current ?? viewRef.current
+      pinchRef.current = { dist: Math.hypot(p2.x - p1.x, p2.y - p1.y), k: v.k }
     }
   }
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -486,7 +513,7 @@ export default function MapWorld() {
       const my = ((p1.y + p2.y) / 2 - rect.top) / rect.height * MAP_H
       const base = pinchRef.current
       movedRef.current = true
-      setView((v) => {
+      queueViewUpdate((v) => {
         const nk = Math.min(10, Math.max(1, base.k * (dist / base.dist)))
         const wx = (mx - v.x) / v.k
         const wy = (my - v.y) / v.k
@@ -502,7 +529,7 @@ export default function MapWorld() {
     const dx = ((e.clientX - d.sx) / rect.width) * MAP_W
     const dy = ((e.clientY - d.sy) / rect.height) * MAP_H
     if (Math.abs(dx) + Math.abs(dy) > 3) movedRef.current = true
-    setView((v) => ({ ...v, x: d.ox + dx, y: d.oy + dy }))
+    queueViewUpdate((v) => ({ ...v, x: d.ox + dx, y: d.oy + dy }))
   }
   /** solta um ponteiro; se sobrar um, retoma o pan a partir dele */
   const releasePointer = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -510,7 +537,8 @@ export default function MapWorld() {
     if (pointersRef.current.size < 2) pinchRef.current = null
     if (pointersRef.current.size === 1) {
       const [p] = [...pointersRef.current.values()]
-      dragRef.current = { sx: p.x, sy: p.y, ox: view.x, oy: view.y }
+      const v = queuedViewRef.current ?? viewRef.current
+      dragRef.current = { sx: p.x, sy: p.y, ox: v.x, oy: v.y }
       movedRef.current = false
     } else if (pointersRef.current.size === 0) {
       endDrag()
