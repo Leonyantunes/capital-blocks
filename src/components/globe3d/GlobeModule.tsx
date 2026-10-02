@@ -10,9 +10,10 @@ import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../../data/tours'
 import { distFromK } from '../../data/tour'
-import { NIVEIS } from '../../lib/simples'
+import { NIVEIS, textoPorModo } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
+import SourceLinks from '../ui/SourceLinks'
 
 /** Chips de conflito locais (mesmos do mapa 2D, sem puxar o chunk do MapWorld). */
 const GLOBE_CONFLICTS: { id: 'semis' | 'energia' | 'reprimaria'; chip: string; title: string; didatico: string; avancado: string; color: string }[] = [
@@ -54,7 +55,7 @@ function GlobeConflictChips() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: `${active.color}55`, background: `${active.color}0d` }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{mode !== 'avancado' ? active.didatico : active.avancado}</p>
+          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado)}</p>
         </div>
       )}
     </div>
@@ -92,7 +93,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 /** Card do fluxo selecionado — mesma estética do globo (sem drawer lateral). */
 function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const st = TYPE_STYLE[flow.type]
   const codeOf = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {
@@ -137,7 +138,7 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
         <div className="text-[9px] uppercase tracking-widest text-zinc-500">escala anual do fluxo</div>
         <div className="font-mono text-xl font-extrabold" style={{ color: st.color }}>{flow.totalAnual}</div>
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{didatico ? flow.did : flow.adv}</p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, flow.did, flow.adv)}</p>
       <div className="mt-2.5 space-y-1.5">
         {flow.itens.map((it) => (
           <div key={it.rotulo} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2">
@@ -905,12 +906,13 @@ export default function GlobeModule() {
               </div>
               {mode !== 'avancado' ? (
                 <>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-200">{s.did}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, s.did, s.adv, s.simples)}</p>
                   <div className="mt-2.5 grid grid-cols-3 gap-1.5">
                     {s.didStats.map((d) => (
                       <div key={d.k} className="rounded-lg border px-2 py-1.5 text-center" style={{ borderColor: `${A}44`, background: `${A}0d` }}>
                         <div className="font-mono text-sm font-extrabold leading-tight" style={{ color: A }}>{d.v}</div>
-                        <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{d.k}</div>
+                        <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{textoPorModo(mode, d.k, d.k)}</div>
+                        <SourceLinks sourceIds={d.sourceIds} />
                       </div>
                     ))}
                   </div>

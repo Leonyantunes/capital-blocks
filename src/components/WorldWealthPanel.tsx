@@ -6,6 +6,7 @@ import {
 } from '../data/worldWealth'
 import { worldSummary, WORLD_AGGREGATES, WORLD_COMPANIES } from '../data/companies'
 import { modRef } from '../data/modules'
+import { textoPorModo } from '../lib/simples'
 
 /**
  * RIQUEZA MUNDIAL SOB RAIO-X — quanto do patrimônio do planeta é
@@ -50,7 +51,7 @@ export default function WorldWealthPanel() {
             <ul className="min-w-[220px] flex-1 space-y-2">
               {CLAIMS.map((c) => (
                 <li key={c.key}>
-                  <Tip text={didatico ? c.didatico : c.avancado}>
+                  <Tip text={textoPorModo(mode, c.didatico, c.avancado)}>
                     <div className="flex cursor-help items-center justify-between gap-2 rounded-md border border-zinc-800 px-2 py-1.5 hover:border-zinc-600">
                       <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-zinc-300">
                         <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: c.color }} />

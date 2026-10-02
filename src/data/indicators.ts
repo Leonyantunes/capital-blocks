@@ -1,6 +1,6 @@
 /**
  * INDICADORES GLOBAIS PESQUISADOS — cada entrada exige: valor, unidade, ano,
- * fonte primária e textos dual-mode (didático + avançado).
+ * fonte primária e textos compatíveis com os três níveis de leitura.
  * Ver DATA-GUIDELINES.md na raiz para as diretrizes de inclusão.
  */
 

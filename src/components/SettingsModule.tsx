@@ -1,6 +1,6 @@
 import { useApp, type Lang, type Theme, type UIMode } from '../store/useApp'
 import { mt, t } from '../i18n'
-import { NIVEIS } from '../lib/simples'
+import { NIVEIS, textoPorModo } from '../lib/simples'
 import ModeBadge from './ui/ModeBadge'
 
 /**
@@ -64,7 +64,6 @@ function Toggle({
 
 export default function SettingsModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
   const mode = useApp((s) => s.mode)
   const setMode = useApp((s) => s.setMode)
   const theme = useApp((s) => s.theme)
@@ -89,9 +88,12 @@ export default function SettingsModule() {
           {mt(lang, 'settings').title}
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? 'Ajuste o app do seu jeito: nível de leitura, tema, idioma e o que aparece na tela. Tudo fica salvo no seu navegador — na próxima visita, o app abre do mesmo jeito.'
-            : 'Centralização das preferências: nível de leitura, tema por tokens, idioma do chrome, modo de referências e modo apresentação. Estado persistido (localStorage) com validação de rehydrate.'}
+          {textoPorModo(
+            mode,
+            'Ajuste o app do seu jeito: nível de leitura, tema, idioma e o que aparece na tela. Tudo fica salvo no seu navegador — na próxima visita, o app abre do mesmo jeito.',
+            'Centralização das preferências: nível de leitura, tema por tokens, idioma do chrome, modo de referências e modo apresentação. Estado persistido (localStorage) com validação de rehydrate.',
+            'Escolha textos mais simples, mude o tema e o idioma e decida se quer ver as fontes junto dos números. Suas escolhas ficam salvas neste navegador.',
+          )}
         </p>
       </header>
 

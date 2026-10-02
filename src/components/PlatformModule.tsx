@@ -4,6 +4,7 @@ import Tip from './ui/Tip'
 import ModeBadge from './ui/ModeBadge'
 import { mt } from '../i18n'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 interface Params {
   corridas: number
@@ -54,7 +55,8 @@ export default function PlatformModule() {
     return (v: number) => setP((s) => ({ ...s, [key]: v }))
   }
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   const bruto = p.corridas * p.valorCorrida
   const comissao = bruto * (p.comissaoPct / 100)
@@ -81,9 +83,12 @@ export default function PlatformModule() {
         </div>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">{mt(lang, 'platform').title}</h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? 'No app, você é "seu patrão". Mas quem paga o carro, a gasolina e o celular? Você. Quem fica com uma parte garantida de cada corrida? O aplicativo. Simule sua jornada:'
-            : 'Reintrodução do salário por peça via plataformas: externalização do capital constante sobre o trabalhador e apropriação de mais-valia sem relação formal de emprego.'}
+          {textoPorModo(
+            mode,
+            'No app, você é "seu patrão". Mas quem paga o carro, a gasolina e o celular? Você. Quem fica com uma parte garantida de cada corrida? O aplicativo. Simule sua jornada:',
+            'Reintrodução do salário por peça via plataformas: externalização do capital constante sobre o trabalhador e apropriação de mais-valia sem relação formal de emprego.',
+            'Quem trabalha por aplicativo paga combustível, manutenção e celular, enquanto a plataforma recebe uma parte de cada corrida. Mude os valores e veja quanto sobra no fim do dia.',
+          )}
         </p>
       </header>
 
@@ -140,12 +145,15 @@ export default function PlatformModule() {
               <MetricBox label="Salário mínimo/hora (CLT)" value={`R$ ${minimoHora.toFixed(2)}`} accent="text-zinc-300"
                 tip="Referência: R$ 1.518/mês ÷ 220 h." />
               <MetricBox
-                label={didatico ? 'Exploração oculta' : 'Taxa oculta (bruto/líquido −1)'}
+                label={textoPorModo(mode, 'Exploração oculta', 'Taxa oculta (bruto/líquido −1)', 'Parte que não fica com o trabalhador')}
                 value={Number.isFinite(taxaOculta) ? `${taxaOculta.toFixed(0)}%` : '∞'}
                 accent={taxaOculta >= 400 ? 'text-fuchsia-300' : 'text-money'}
-                tip={didatico
-                  ? 'De tudo que seu trabalho movimenta, esta é a fatia que NÃO chega em você: comissão + custos que deveriam ser da empresa.'
-                  : '(M′ − líquido)/líquido: apropriação total relativa à renda efetiva do trabalhador.'}
+                tip={textoPorModo(
+                  mode,
+                  'De tudo que seu trabalho movimenta, esta é a fatia que NÃO chega em você: comissão + custos que deveriam ser da empresa.',
+                  '(M′ − líquido)/líquido: apropriação total relativa à renda efetiva do trabalhador.',
+                  'Compara o dinheiro movimentado com o que realmente sobra depois da comissão e dos custos do trabalho.',
+                )}
               />
             </div>
           </div>

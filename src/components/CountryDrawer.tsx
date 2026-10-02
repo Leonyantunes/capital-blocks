@@ -6,6 +6,7 @@ import { fmtTri } from '../data/countries'
 import { TMD_CHANNELS } from '../data/theory'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useFractions } from '../lib/useModo'
+import { textoPorModo } from '../lib/simples'
 import { useApp } from '../store/useApp'
 
 /** PILAR 4 — bloco TMD: três canais de vazamento + tubo animado Sul → Norte. */
@@ -40,7 +41,7 @@ function TmdBlock({ countryName }: { countryName: string }) {
 
       <div className="mt-2 space-y-1.5">
         {TMD_CHANNELS.map((ch, i) => (
-          <Tip key={ch.tipo} text={didatico ? ch.textoDidatico : ch.textoAvancado}>
+          <Tip key={ch.tipo} text={textoPorModo(mode, ch.textoDidatico, ch.textoAvancado)}>
             <div className="cursor-help rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 transition-colors hover:border-zinc-600">
               <div className="flex items-center gap-1.5 text-[11px] font-bold"
                 style={{ color: ['#f44336', '#ba68c8', '#ffc107'][i] }}>
@@ -48,7 +49,7 @@ function TmdBlock({ countryName }: { countryName: string }) {
                 {ch.tipo}
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">
-                {didatico ? ch.textoDidatico : ch.textoAvancado}
+                {textoPorModo(mode, ch.textoDidatico, ch.textoAvancado)}
               </p>
             </div>
           </Tip>

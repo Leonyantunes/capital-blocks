@@ -3,6 +3,7 @@ import { AnimatePresence, m } from 'framer-motion'
 import { COUNTRY_FEATURES, MAP_W, MAP_H, GRATICULE_D, SPHERE_D, ISO_TO_BLOC, BLOCS } from '../../lib/world'
 import { AFFECTED, CAT_META, type AffectedCat, type AffectedCountry } from '../../data/affected'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 const IMPERIAL_BLOCS = new Set(['usa', 'eu', 'gbr', 'jpn'])
 
@@ -10,7 +11,8 @@ const IMPERIAL_BLOCS = new Set(['usa', 'eu', 'gbr', 'jpn'])
 export default function AffectedMap() {
   const [selectedIso, setSelectedIso] = useState<string | null>('180')
   const [catFilter, setCatFilter] = useState<AffectedCat | 'todas'>('todas')
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   const byIso = useMemo(() => Object.fromEntries(AFFECTED.map((a) => [a.iso, a])), [])
   const selected = selectedIso ? byIso[selectedIso] ?? null : null
@@ -137,7 +139,7 @@ export default function AffectedMap() {
                 </div>
 
                 <p className="mt-2.5 text-xs leading-relaxed text-zinc-200">
-                  {didatico ? selected.did : selected.adv}
+                  {textoPorModo(mode, selected.did, selected.adv)}
                 </p>
 
                 {/* dados atuais */}
@@ -180,7 +182,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 /** Ranking — países com mais intervenções documentadas. */
 export function InterventionRanking() {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
   const list = AFFECTED.filter((a) => a.intervencoes && a.intervencoes > 0)
     .sort((a, b) => (b.intervencoes ?? 0) - (a.intervencoes ?? 0))
     .slice(0, 12)
@@ -216,7 +219,8 @@ export function InterventionRanking() {
 
 /** Painel Françafrique / franco CFA. */
 export function CfaPanel() {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
   const cfaList = AFFECTED.filter((a) => a.cat === 'cfa')
   const totalPib = cfaList.reduce((s, a) => s + a.pibTri, 0)
   return (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SALARY_PRESETS } from '../../data/concentration'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 const W = 900
 const H = 470
@@ -32,11 +33,22 @@ export default function FollowSalary() {
   const [presetId, setPresetId] = useState(SALARY_PRESETS[1].id)
   const preset = SALARY_PRESETS.find((p) => p.id === presetId)!
   const sobra = Math.max(100 - preset.streams.reduce((s, x) => s + x.pct, 0), 0)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   const workerX = 218
   const destX = 596
   const pctOf = (dest: DestNode['key']) => preset.streams.find((s) => s.dest === dest)?.pct ?? 0
+  const destCopy = (d: DestNode) => {
+    if (mode !== 'simples') return { label: d.label, sub: d.sub }
+    switch (d.key) {
+      case 'renda': return { label: 'Moradia', sub: 'aluguel e financiamento da casa' }
+      case 'corporacoes': return { label: 'Lojas e empresas', sub: 'compras de produtos e serviços' }
+      case 'bancos': return { label: 'Bancos', sub: 'juros de empréstimos e financiamentos' }
+      case 'estado': return { label: 'Governo', sub: 'impostos e outras cobranças' }
+    }
+    return { label: d.label, sub: d.sub }
+  }
 
   return (
     <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
@@ -75,26 +87,35 @@ export default function FollowSalary() {
         {/* ── ACIONISTAS ── */}
         <g>
           <rect x={destX} y={16} width={264} height={48} rx={9} fill="#1a1220" stroke="#ce93d8" strokeOpacity="0.8" />
-          <text x={destX + 12} y={35} fontSize="11.5" fontWeight="700" fill="#ce93d8">ACIONISTAS</text>
-          <text x={destX + 12} y={50} fontSize="9" className="fill-zinc-500">dividendos · buybacks · valorização</text>
-          <title>Mais-valia: produzida pelo trabalho, apropriada diretamente por quem possui.</title>
+          <text x={destX + 12} y={35} fontSize="11.5" fontWeight="700" fill="#ce93d8">
+            {textoPorModo(mode, 'ACIONISTAS', 'ACIONISTAS', 'DONOS E ACIONISTAS')}
+          </text>
+          <text x={destX + 12} y={50} fontSize="9" className="fill-zinc-500">
+            {textoPorModo(mode, 'dividendos · buybacks · valorização', 'dividendos · buybacks · valorização', 'lucros distribuídos e valorização das ações')}
+          </text>
+          <title>{textoPorModo(mode, 'Parte do valor produzido é apropriada por quem possui a empresa.', 'Mais-valia produzida pelo trabalho e apropriada pelos proprietários do capital.', 'Parte do valor produzido pode ficar com os donos e acionistas.')}</title>
         </g>
 
         {/* ── fluxo +m ── */}
         <path d={`M 218 54 Q 407 30 596 40`} fill="none" stroke="#ce93d8" strokeWidth="2.6"
           strokeDasharray="7 5" className="flow-line" markerEnd="url(#salArrM)">
-          <title>Mais-valia: o trabalho não pago vai direto para quem possui — sem passar pelo bolso do trabalhador.</title>
+          <title>{textoPorModo(mode, 'O trabalho não pago vai para quem possui a empresa.', 'Mais-valia: o trabalho não pago vai direto para quem possui, sem passar pelo rendimento do trabalhador.', 'Esta linha mostra a parte do valor que o modelo coloca diretamente com os donos.')}</title>
         </path>
         <text x={407} y={22} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#ce93d8"
           className="font-mono" style={HALO}>
-          {didatico ? '+ trabalho não pago — nunca volta' : '+m (trabalho não pago) — nunca volta'}
+          {textoPorModo(mode, '+ trabalho não pago — nunca volta', '+m (trabalho não pago) — nunca volta', '+ valor que fica com os donos')}
         </text>
 
         {/* ── EMPRESA ── */}
         <g>
           <rect x={40} y={30} width={178} height={64} rx={10} fill="#161b22" stroke="#4caf50" strokeOpacity="0.6" />
           <text x={129} y={52} textAnchor="middle" fontSize="12" fontWeight="700" className="fill-emerald-300">EMPRESA</text>
-          {didatico ? (
+          {mode === 'simples' ? (
+            <>
+              <text x={129} y={68} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">vende o que foi produzido</text>
+              <text x={129} y={82} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">e paga os salários</text>
+            </>
+          ) : didatico ? (
             <>
               <text x={129} y={68} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">vende o produto pelo preço cheio…</text>
               <text x={129} y={82} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">…e paga só o salário</text>
@@ -105,22 +126,27 @@ export default function FollowSalary() {
               <text x={129} y={82} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">devolve só v ao trabalho</text>
             </>
           )}
-          <title>A empresa vende o produto pelo valor cheio que o trabalho criou — e paga apenas a parte do salário.</title>
+          <title>{textoPorModo(mode, 'A empresa vende o produto e paga salários; o restante é dividido entre outros destinos.', 'A empresa realiza o valor da mercadoria e devolve ao trabalho apenas a parcela salarial.', 'A empresa vende o que produziu, paga salários e distribui o restante entre outros destinos.')}</title>
         </g>
 
         {/* salário */}
         <path d={`M 129 94 L 129 156`} fill="none" stroke="#f44336" strokeWidth="2.5" markerEnd="url(#salArrV)">
-          <title>Salário: a única fração do valor produzido que chega ao trabalhador.</title>
+          <title>{textoPorModo(mode, 'Salário recebido pelo trabalhador.', 'Salário: parcela do valor que retorna ao trabalhador como rendimento.', 'Dinheiro recebido pelo trabalhador como salário.')}</title>
         </path>
         <text x={139} y={130} fontSize="10" className="fill-red-300 font-mono" style={HALO}>
-          {didatico ? 'salário' : '−v (salário)'}
+          {textoPorModo(mode, 'salário', '−v (salário)', 'salário')}
         </text>
 
         {/* ── TRABALHADOR ── */}
         <g>
           <rect x={40} y={162} width={178} height={112} rx={12} fill="#161b22" stroke="#f44336" strokeWidth="2" />
           <text x={129} y={188} textAnchor="middle" fontSize="13" fontWeight="800" className="fill-zinc-100">TRABALHADOR(A)</text>
-          {didatico ? (
+          {mode === 'simples' ? (
+            <>
+              <text x={129} y={206} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">participa da produção</text>
+              <text x={129} y={222} textAnchor="middle" fontSize="9.5" className="fill-red-300">recebe o salário</text>
+            </>
+          ) : didatico ? (
             <>
               <text x={129} y={206} textAnchor="middle" fontSize="9.5" className="fill-zinc-400">produz TODA a riqueza</text>
               <text x={129} y={222} textAnchor="middle" fontSize="9.5" className="fill-red-300">recebe só o salário</text>
@@ -135,20 +161,21 @@ export default function FollowSalary() {
             sobra: {sobra}% (poupança)
           </text>
           <text x={129} y={258} textAnchor="middle" fontSize="8.5" className="fill-zinc-500">
-            {didatico ? 'o resto vai p/ quem está acima ↑' : 'o resto sustenta o sistema ↑'}
+            {textoPorModo(mode, 'o resto vai p/ quem está acima ↑', 'o resto sustenta o sistema ↑', 'o restante vai para os destinos à direita ↑')}
           </text>
-          <title>O trabalhador produz o valor inteiro; o salário é só uma fração. O que sobra vaza para as frações de capital à direita.</title>
+          <title>{textoPorModo(mode, 'O salário recebido é repartido entre gastos e possível poupança.', 'O salário é uma fração do valor produzido e volta à circulação por diferentes pagamentos.', 'O salário é dividido entre vários gastos; se houver sobra, ela pode ser guardada.')}</title>
         </g>
 
         {sobra >= 15 && (
           <text x={129} y={292} textAnchor="middle" fontSize="9" className="fill-sky-300">
-            {didatico ? 'renda alta → dá até para guardar e investir' : 'renda alta → a sobra vira capital (r > g)'}
+            {textoPorModo(mode, 'renda alta → dá até para guardar e investir', 'renda alta → a sobra vira capital (r > g)', 'com renda maior, pode sobrar dinheiro para guardar ou investir')}
           </text>
         )}
 
         {/* ── fluxos (sem rótulos no meio — pct nas caixas) ── */}
         {preset.streams.map((st, i) => {
           const dest = DESTS.find((d) => d.key === st.dest)!
+          const copy = destCopy(dest)
           const bend = (i % 2 === 0 ? 1 : -1) * (18 + i * 12)
           const mx = (workerX + destX) / 2
           const my = (210 + dest.y) / 2
@@ -157,7 +184,7 @@ export default function FollowSalary() {
           return (
             <path key={st.rotulo} d={d} fill="none" stroke={dest.color} strokeWidth={w}
               strokeDasharray="6 5" opacity="0.85" markerEnd={`url(#salArr-${st.dest})`}>
-              <title>{`${st.rotulo}: ${st.pct}% do salário → ${dest.label} (${dest.sub})`}</title>
+              <title>{`${st.rotulo}: ${st.pct}% do salário → ${copy.label} (${copy.sub})`}</title>
             </path>
           )
         })}
@@ -180,22 +207,27 @@ export default function FollowSalary() {
         {/* ── nós destino (com percentual embutido) ── */}
         {DESTS.map((d) => {
           const pct = pctOf(d.key)
+          const copy = destCopy(d)
           return (
             <g key={d.key}>
               <rect x={destX} y={d.y - 28} width={264} height={56} rx={9} fill="#161b22" stroke={d.color} strokeOpacity="0.65" />
-              <text x={destX + 12} y={d.y - 8} fontSize="11.5" fontWeight="700" fill={d.color}>{d.label}</text>
-              <text x={destX + 12} y={d.y + 6} fontSize="9" className="fill-zinc-500">{d.sub}</text>
+              <text x={destX + 12} y={d.y - 8} fontSize="11.5" fontWeight="700" fill={d.color}>{copy.label}</text>
+              <text x={destX + 12} y={d.y + 6} fontSize="9" className="fill-zinc-500">{copy.sub}</text>
               <text x={destX + 12} y={d.y + 20} fontSize="9.5" fontWeight="700" fill={d.color} className="font-mono">
                 {pct}% do salário vai para cá
               </text>
-              <title>{`${d.label}: ${pct}% do salário — ${d.sub}`}</title>
+              <title>{`${copy.label}: ${pct}% do salário — ${copy.sub}`}</title>
             </g>
           )
         })}
       </svg>
 
       <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-950/70 p-3 text-xs leading-relaxed text-zinc-300">
-        {didatico ? (
+        {mode === 'simples' ? (
+          <>
+            Este é um exemplo de orçamento doméstico. O salário é dividido entre moradia, compras, juros, impostos e outros gastos; quanto sobra depende da renda e das despesas de cada família. Os percentuais aqui são ilustrativos e aparecem nas caixas do desenho.
+          </>
+        ) : didatico ? (
           <>
             Repare no desenho:{' '}
             <strong className="text-red-300">o trabalhador produz o valor inteiro — e quase nada retorna para ele.</strong>{' '}

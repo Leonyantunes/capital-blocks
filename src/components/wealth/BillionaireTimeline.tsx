@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import { BILLIONAIRES, REF_GDPS } from '../../data/concentration'
 import { useApp } from '../../store/useApp'
 import { modRef } from '../../data/modules'
+import { textoPorModo } from '../../lib/simples'
 
 /**
  * PILAR CONCENTRAÇÃO — corrida das fortunas 1987→2025 (Forbes, aprox.).
@@ -11,7 +12,8 @@ import { modRef } from '../../data/modules'
 export default function BillionaireTimeline() {
   const [idx, setIdx] = useState(BILLIONAIRES.length - 1)
   const [playing, setPlaying] = useState(false)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   useEffect(() => {
     if (!playing) return
@@ -137,14 +139,21 @@ export default function BillionaireTimeline() {
               <text x={SW - 8} y={SH - 3} textAnchor="end" fontSize="8" className="fill-zinc-600">2025</text>
             </svg>
             <p className="mt-1 text-[10.5px] leading-snug text-zinc-500">
-              {didatico
-                ? 'De 140 para mais de 3 mil bilionários em uma geração — a lista cresceu 20× enquanto salários reais mal saíram do lugar.'
-                : 'Expansão da classe rentista global: financeirização + valorização de ativos (equities/real estate) + abertura de mercados periféricos à captura de excedente.'}
+              {textoPorModo(
+                mode,
+                'De 140 para mais de 3 mil bilionários em uma geração — a lista cresceu 20× enquanto salários reais mal saíram do lugar.',
+                'Expansão da classe rentista global: financeirização + valorização de ativos (equities/real estate) + abertura de mercados periféricos à captura de excedente.',
+                'A lista mundial passou de cerca de 140 bilionários para mais de 3 mil. Use a linha do tempo para ver como o número e as maiores fortunas mudaram.',
+              )}
             </p>
           </div>
 
           <div className="rounded-lg border border-dashed border-money/40 bg-money/5 p-3 text-[11px] leading-relaxed text-zinc-300">
-            {didatico ? (
+            {mode === 'simples' ? (
+              <>
+                <strong className="text-money">Compare com o {modRef('companies')}:</strong> o funcionário médio da Walmart ganha cerca de US$ 32 mil por ano. Uma fortuna de centenas de bilhões de dólares equivale a milhares de anos desse salário.
+              </>
+            ) : didatico ? (
               <>
                 <strong className="text-money">Compare com o {modRef('companies')}:</strong> o funcionário médio da Walmart
                 ganha ~US$ 32 mil <em>por ano</em>. Em 2025, a fortuna do topo equivale a{' '}

@@ -7,31 +7,41 @@ import Tip from '../ui/Tip'
 import ModeBadge from '../ui/ModeBadge'
 import { mt } from '../../i18n'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
-/** Teoria — a guerra como necessidade estrutural do capital (dual-mode). */
+/** Teoria — guerra e capital em três níveis de leitura. */
 function TheoryCards() {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const cards = [
     {
       color: '#ef5350',
-      t: didatico ? 'A guerra "limpa o tabuleiro"' : 'Destruição de c & sobreacumulação',
-      d: didatico
-        ? 'Quando as fábricas produzem mais do que dá para vender lucrativamente, o capital fica estagnado. A guerra DESTRÓI fábricas, pontes e cidades inteiras — e reconstruir tudo reabre um mercado gigante e rentável. O lucro global respira.'
-        : 'Destruição física do capital constante resolve a sobreacumulação: a reconstrução abre novos campos de investimento e eleva temporariamente g = m/(c+v) global. Padrão 1929→1939→1945; Ucrânia como laboratório contemporâneo.',
+      t: textoPorModo(mode, 'A guerra "limpa o tabuleiro"', 'Destruição de c & sobreacumulação', 'Guerras também mudam a economia'),
+      d: textoPorModo(
+        mode,
+        'Quando as fábricas produzem mais do que dá para vender lucrativamente, o capital fica estagnado. A guerra DESTRÓI fábricas, pontes e cidades inteiras — e reconstruir tudo reabre um mercado gigante e rentável. O lucro global respira.',
+        'Destruição física do capital constante resolve a sobreacumulação: a reconstrução abre novos campos de investimento e eleva temporariamente g = m/(c+v) global. Padrão 1929→1939→1945; Ucrânia como laboratório contemporâneo.',
+        'Conflitos destroem infraestrutura e mudam gastos públicos, produção e comércio. A reconstrução depois cria novas encomendas e investimentos; o efeito econômico varia conforme o país e o conflito.',
+      ),
     },
     {
       color: '#ffc107',
-      t: didatico ? 'O negócio mais seguro do mundo' : 'Complexo militar-industrial: captura do Estado',
-      d: didatico
-        ? 'Quem vende armas tem o MELHOR cliente possível: o Estado. Não há concorrência de verdade, não há crise que corte o pedido — o orçamento público vira lucro privado garantido, pago com impostos e dívida.'
-        : 'Demanda estatal inelástica + contratos cost-plus eliminam risco de realização; porta giratória Pentágono↔conselhos consolida fração rentista. SIPRI Top-100: US$632 bi/ano em receita de armamento.',
+      t: textoPorModo(mode, 'O negócio mais seguro do mundo', 'Complexo militar-industrial: captura do Estado', 'Governos compram grande parte das armas'),
+      d: textoPorModo(
+        mode,
+        'Quem vende armas tem o MELHOR cliente possível: o Estado. Não há concorrência de verdade, não há crise que corte o pedido — o orçamento público vira lucro privado garantido, pago com impostos e dívida.',
+        'Demanda estatal inelástica + contratos cost-plus eliminam risco de realização; porta giratória Pentágono↔conselhos consolida fração rentista. SIPRI Top-100: US$632 bi/ano em receita de armamento.',
+        'Empresas de defesa vendem principalmente para governos. Quando o orçamento militar cresce, aumentam as encomendas; contratos públicos podem reduzir parte do risco comercial dessas empresas.',
+      ),
     },
     {
       color: '#ba68c8',
-      t: didatico ? 'Briga pelo bolo mundial' : 'Partilha imperialista: recursos, rotas e moeda',
-      d: didatico
-        ? 'Por trás de cada guerra grande há uma disputa por coisas concretas: petróleo, minerais raros, chips, rotas comerciais e qual moeda manda no comércio mundial. Impérios crescem até esbarrar uns nos outros — e aí a conversa acaba em tiros.'
-        : 'Lenin (Imperialismo, estágio superior): exportação de capitais exige proteção territorial; a repartição do mundo é renegociada pela força quando a correlação econômica muda. Hegemonia monetária (petrodólar × desdolarização) é o troféu final.',
+      t: textoPorModo(mode, 'Briga pelo bolo mundial', 'Partilha imperialista: recursos, rotas e moeda', 'Conflitos podem envolver recursos e rotas'),
+      d: textoPorModo(
+        mode,
+        'Por trás de cada guerra grande há uma disputa por coisas concretas: petróleo, minerais raros, chips, rotas comerciais e qual moeda manda no comércio mundial. Impérios crescem até esbarrar uns nos outros — e aí a conversa acaba em tiros.',
+        'Lenin (Imperialismo, estágio superior): exportação de capitais exige proteção territorial; a repartição do mundo é renegociada pela força quando a correlação econômica muda. Hegemonia monetária (petrodólar × desdolarização) é o troféu final.',
+        'Alguns conflitos também envolvem controle de petróleo, minerais, tecnologia, rotas comerciais e influência entre países. Esses fatores não explicam sozinhos todas as guerras, mas ajudam a entender seus efeitos econômicos.',
+      ),
     },
   ]
   return (
@@ -53,6 +63,7 @@ function EpochTimeline({ epochIndex, setEpochIndex }: {
   epochIndex: number
   setEpochIndex: (i: number) => void
 }) {
+  const mode = useApp((s) => s.mode)
   const ep = WAR_EPOCHS[epochIndex]
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
@@ -89,10 +100,12 @@ function EpochTimeline({ epochIndex, setEpochIndex }: {
         ))}
       </div>
 
-      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{ep.introDidatico}</p>
-      <p className="mt-1.5 rounded-lg bg-zinc-950/70 p-2 font-mono text-[10.5px] leading-relaxed text-zinc-500">
-        [avançado] {ep.introAvancado}
-      </p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, ep.introDidatico, ep.introAvancado)}</p>
+      {mode === 'avancado' && (
+        <p className="mt-1.5 rounded-lg bg-zinc-950/70 p-2 font-mono text-[10.5px] leading-relaxed text-zinc-500">
+          [avançado] {ep.introAvancado}
+        </p>
+      )}
     </div>
   )
 }
@@ -154,9 +167,12 @@ export default function WarModule() {
           Guerra de Capitais & Conflitos Imperialistas
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {mode !== 'avancado'
-            ? 'Guerra não é acidente nem “loucura humana”: na maior parte dos casos, alguém LUCRA com ela — antes, durante e depois. Siga o dinheiro: quem fabrica, quem financia, quem reconstrói. Viaje de 2026 até 1914 e veja o padrão se repetir.'
-            : 'A guerra como continuação da concorrência inter-capitalista por outros meios: destruição de c, socialização fiscal dos custos, privatização das margens. Cinco épocas, mesmo mecanismo estrutural.'}
+          {textoPorModo(
+            mode,
+            'Guerra não é acidente nem “loucura humana”: na maior parte dos casos, alguém LUCRA com ela — antes, durante e depois. Siga o dinheiro: quem fabrica, quem financia, quem reconstrói. Viaje de 2026 até 1914 e veja o padrão se repetir.',
+            'A guerra como continuação da concorrência inter-capitalista por outros meios: destruição de c, socialização fiscal dos custos, privatização das margens. Cinco épocas, mesmo mecanismo estrutural.',
+            'Conflitos mudam gastos dos governos, preços de energia, comércio e produção. Use a linha do tempo para comparar quem vende, quem compra e como as rotas econômicas mudam em cada época.',
+          )}
         </p>
       </header>
 

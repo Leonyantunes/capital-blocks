@@ -4,6 +4,7 @@ import Tip from '../ui/Tip'
 import { WAR_CONFLICTS } from '../../data/wars'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 function SurgeChart({ s }: {
   s: { baseLabel: string; baseVal: number; nowLabel: string; nowVal: number }
@@ -85,7 +86,7 @@ export default function ConflictDrawer({
                 </h3>
                 <p className="mt-1.5 rounded-lg border p-3 text-xs leading-relaxed text-zinc-200"
                   style={{ borderColor: '#f4433655', background: '#f443360d' }}>
-                  {didatico ? c.mecanismoDidatico : c.mecanismoAvancado}
+                  {textoPorModo(mode, c.mecanismoDidatico, c.mecanismoAvancado)}
                 </p>
               </section>
 
@@ -122,7 +123,7 @@ export default function ConflictDrawer({
                         )}
                       </div>
                       <p className="mt-1.5 text-xs leading-relaxed text-zinc-300">
-                        {didatico ? emp.ganhoDidatico : emp.ganhoAvancado}
+                        {textoPorModo(mode, emp.ganhoDidatico, emp.ganhoAvancado)}
                       </p>
                       {emp.surge && (
                         <div className="mt-2">
@@ -141,10 +142,10 @@ export default function ConflictDrawer({
                 </h3>
                 <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 gap-y-2 rounded-xl border border-dashed border-fuchsia-400/40 bg-fuchsia-400/5 p-3 text-[11px]">
                   {[
-                    { t: 'Impostos + dívida pública', d: didatico ? 'O dinheiro sai do bolso dos trabalhadores (impostos sobre consumo/salário) e de títulos comprados por bancos.' : 'Fiscalização regressiva + endividamento: o serviço da dívida amplia o repasse ao capital portador de juros.' },
-                    { t: 'Orçamento de defesa', d: didatico ? 'O Congresso/Parlamento aprova verbas bilionárias "de emergência" para a guerra.' : 'Apropriações suplementares contornam escrutínio orçamentário ordinário.' },
-                    { t: 'Contratos sem risco', d: didatico ? 'Empresas recebem encomendas com preço garantido e lucro embutido (cost-plus).' : 'Cost-plus / IDIQ: socialização do risco, privatização da margem.' },
-                    { t: 'Dividendos & ações', d: didatico ? 'Os acionistas recebem dividendos e as ações sobem — enquanto os estoques de munição viram fogo de artilharia.' : 'Buybacks/dividendos financiam valorização acionária; backlog converte destruição em receita projetada.' },
+                    { t: 'Impostos + dívida pública', d: textoPorModo(mode, 'O dinheiro sai do bolso dos trabalhadores (impostos sobre consumo/salário) e de títulos comprados por bancos.', 'Fiscalização regressiva + endividamento: o serviço da dívida amplia o repasse ao capital portador de juros.', 'Governos financiam gastos com impostos e emissão de dívida, dependendo das regras de cada país.') },
+                    { t: 'Orçamento de defesa', d: textoPorModo(mode, 'O Congresso/Parlamento aprova verbas bilionárias "de emergência" para a guerra.', 'Apropriações suplementares contornam escrutínio orçamentário ordinário.', 'Parlamentos e governos aprovam verbas para defesa e, em guerras, também podem abrir gastos extras.') },
+                    { t: 'Contratos públicos', d: textoPorModo(mode, 'Empresas recebem encomendas com preço garantido e lucro embutido (cost-plus).', 'Cost-plus / IDIQ: socialização do risco, privatização da margem.', 'Empresas de defesa recebem contratos do governo para entregar armas, peças e serviços.') },
+                    { t: 'Dividendos & ações', d: textoPorModo(mode, 'Os acionistas recebem dividendos e as ações sobem — enquanto os estoques de munição viram fogo de artilharia.', 'Buybacks/dividendos financiam valorização acionária; backlog converte destruição em receita projetada.', 'Quando receitas e expectativas mudam, dividendos e preços das ações dessas empresas também podem mudar.') },
                   ].map((step, i, arr) => (
                     <Fragment key={step.t}>
                       <div className="flex h-full items-center">

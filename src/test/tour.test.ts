@@ -11,6 +11,8 @@ import { describe, it, expect } from 'vitest'
 import { TOURES, getTour, stopIsos, stopColor } from '../data/tours'
 import { TOUR_STOPS, distFromK } from '../data/tour'
 import { FLOWS } from '../data/flows'
+import { sourceById } from '../data/sources'
+import { TOUR_SOURCE_USAGE } from '../data/sourceUsage'
 
 /* ── navegação por índices (espelha a lógica de MapWorld.tsx) ──────────── */
 const next = (s: number | null, total: number) => (s === null ? 0 : Math.min(s + 1, total - 1))
@@ -169,6 +171,37 @@ describe('estatísticas das paradas (didStats)', () => {
         }
       }
     }
+  })
+
+  it('toda estatística aponta para pelo menos uma fonte canônica válida', () => {
+    for (const t of TOURES) {
+      for (const s of t.stops) {
+        for (const st of s.didStats ?? []) {
+          expect(
+            st.sourceIds?.length,
+            `${t.id}/${s.id}/${st.k}: estatística sem fonte canônica`,
+          ).toBeGreaterThan(0)
+          for (const id of st.sourceIds) {
+            expect(
+              sourceById(id),
+              `${t.id}/${s.id}/${st.k}: sourceId inexistente '${id}'`,
+            ).toBeDefined()
+          }
+        }
+      }
+    }
+  })
+
+  it('o índice reverso de fontes permanece sincronizado sem pesar a página de Fontes', () => {
+    const usos: Record<string, number> = {}
+    for (const t of TOURES) {
+      for (const s of t.stops) {
+        for (const st of s.didStats ?? []) {
+          for (const id of st.sourceIds) usos[id] = (usos[id] ?? 0) + 1
+        }
+      }
+    }
+    expect(TOUR_SOURCE_USAGE).toEqual(usos)
   })
 
   it('nenhuma estatística é um número puro sem contexto no rótulo', () => {

@@ -2,7 +2,7 @@
  * MÓDULO 08 — CONSEQUÊNCIAS SISTÊMICAS: AS MORTES DO CAPITALISMO
  * Base: série em 8 episódios de Filipe Boni (YouTube) + literatura de
  * Davis, Williams, Rodney, Nixon, Patnaik, Hickel, Hochschild, Bevins,
- * Klein, Kadri, Malm, Harvey. Definições dual-mode (THEORY.md).
+ * Klein, Kadri, Malm, Harvey. Definições em três níveis de leitura (THEORY.md).
  */
 
 export type Era = 'historica' | 'atual'

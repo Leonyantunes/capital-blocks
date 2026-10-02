@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { SOURCES, SOURCE_CATEGORIES, SOURCE_KINDS, sourcesSummary } from '../../data/sources'
+import { TOUR_SOURCE_USAGE } from '../../data/sourceUsage'
 import { mt, type Lang } from '../../i18n'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 import ModeBadge from '../ui/ModeBadge'
 import Tip from '../ui/Tip'
 
@@ -49,11 +51,20 @@ const idx = (l: Lang) => (l === 'pt' ? 0 : l === 'en' ? 1 : 2)
 /** MÓDULO 10 — FONTES & REFERÊNCIAS: a base documental do app. */
 export default function SourcesModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const [query, setQuery] = useState('')
   const [categoria, setCategoria] = useState('todas')
   const [tipo, setTipo] = useState('todos')
   const [somenteLinks, setSomenteLinks] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash.startsWith('#fonte-')) return
+    const id = decodeURIComponent(window.location.hash.slice(1))
+    const timer = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 60)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   const resumo = useMemo(() => sourcesSummary(), [])
   const categorias = useMemo(
@@ -97,9 +108,16 @@ export default function SourcesModule() {
           {mt(lang, 'sources').title}
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? 'De onde sai cada número importante do app? Aqui está a lista das fontes: FMI, Banco Mundial, ONU, OIT, SIPRI, Tesouro, IBGE, relatórios de empresas, pesquisas acadêmicas e os métodos do próprio app. O selo “revisão pendente” é honestidade, não defeito: ele marca o que ainda precisa de checagem antes de virar citação escolar.'
-            : 'Base documental auditável: instituições, safras, cobertura por dataset, estado de verificação e links diretos quando existem. “Revisão pendente” indica lacuna de URL, safra desatualizada ou inconsistência conhecida.'}
+          {textoPorModo(
+            mode,
+            resumo.revisaoPendente > 0
+              ? 'De onde sai cada número importante do app? Aqui está a lista das fontes. O selo “revisão pendente” marca o que ainda precisa de checagem antes de virar citação escolar.'
+              : 'De onde sai cada número importante do app? Aqui está a lista das fontes. Nesta auditoria, nenhuma entrada ficou com revisão pendente; estimativas e ressalvas continuam marcadas separadamente.',
+            'Base documental auditável: instituições, safras, cobertura por dataset, estado de verificação e links diretos. Estimativas permanecem explicitamente sinalizadas mesmo quando a metodologia e as fontes de calibração já foram auditadas.',
+            resumo.revisaoPendente > 0
+              ? 'Aqui você vê de onde vêm os números. Se aparecer “revisão pendente”, aquele dado ainda precisa ser conferido antes de usar num trabalho.'
+              : 'Aqui você vê de onde vêm os números. As fontes foram conferidas; quando um número é só uma estimativa, o app avisa.',
+          )}
         </p>
       </header>
 
@@ -175,7 +193,8 @@ export default function SourcesModule() {
           return (
             <article
               key={s.id}
-              className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/60 p-4"
+              id={`fonte-${s.id}`}
+              className="scroll-mt-20 flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/60 p-4"
             >
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-zinc-300">
@@ -202,7 +221,7 @@ export default function SourcesModule() {
                 <div className="mt-0.5 text-[11px] font-medium text-zinc-400">{s.instituicao}</div>
               )}
               <p className="mt-2 text-xs leading-relaxed text-zinc-300">
-                {didatico ? s.resumoDidatico : s.resumoAvancado}
+                {textoPorModo(mode, s.resumoDidatico, s.resumoAvancado)}
               </p>
 
               <div className="mt-2.5 rounded-lg bg-zinc-950/60 p-2.5">
@@ -234,12 +253,17 @@ export default function SourcesModule() {
 
               {s.observacao && (
                 <p className="mt-2 border-t border-zinc-800/70 pt-2 text-[10.5px] leading-snug text-amber-200/90">
-                  Pendência: {s.observacao}
+                  {s.verificacao === 'revisao-pendente' ? 'Pendência' : 'Nota de auditoria'}: {s.observacao}
                 </p>
               )}
 
               <div className="mt-auto pt-2 font-mono text-[9px] uppercase tracking-wider text-zinc-600">
                 usado em: {s.usadoEm.join(' · ')}
+                {(TOUR_SOURCE_USAGE[s.id] ?? 0) > 0 && (
+                  <span className="ml-1 text-sky-400/80">
+                    · {TOUR_SOURCE_USAGE[s.id]} vínculo(s) em estatísticas dos tours
+                  </span>
+                )}
               </div>
             </article>
           )

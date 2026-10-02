@@ -2,6 +2,7 @@ import { AnimatePresence, m } from 'framer-motion'
 import Tip from '../ui/Tip'
 import { MMT_BR, SOVEREIGN_STEPS } from '../../data/theory'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 export type FiscalLens = 'ortodoxa' | 'mmt'
 
@@ -100,7 +101,7 @@ export function SovereignPanel() {
         {SOVEREIGN_STEPS.map((st) => (
           <article key={st.t} className="rounded-xl border border-emerald-400/40 bg-emerald-400/5 p-3">
             <h4 className="text-xs font-bold text-emerald-300">{st.t}</h4>
-            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">{didatico ? st.didatico : st.avancado}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">{textoPorModo(mode, st.didatico, st.avancado)}</p>
           </article>
         ))}
       </div>
@@ -117,7 +118,7 @@ export function SovereignPanel() {
           <MiniStat label="Dívida interna em reais" value={`≈${MMT_BR.dividaInternaReaisPct}%`} sub="da dívida pública federal" tip="Quase toda a dívida brasileira é interna e denominada em reais: o país paga em moeda que EMITE." />
           <MiniStat label="Estrangeiros nos títulos" value={`<${MMT_BR.estrangeirosPctMax}%`} sub="baixa exposição externa hoje" tip="Ao contrário dos anos 80, a dívida atual não depende de rolagem em dólar." />
           <MiniStat label="Soberania" value="Parcial" sub={MMT_BR.soberania} tip="Moeda própria e flutuante — mas economia aberta dependente de divisas para importar insumos críticos." />
-          <MiniStat label="Restrição REAL" value="Recursos" sub={didatico ? 'inflação + capacidade produtiva + câmbio' : MMT_BR.restricaoReal} tip="O limite do gasto público brasileiro é inflação e gargalo cambial — não escassez de reais." />
+          <MiniStat label="Restrição REAL" value="Recursos" sub={textoPorModo(mode, 'inflação + capacidade produtiva + câmbio', MMT_BR.restricaoReal, 'preços + capacidade de produzir + dólares')} tip="O limite do gasto público brasileiro é inflação e gargalo cambial — não escassez de reais." />
         </div>
         <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
           {didatico

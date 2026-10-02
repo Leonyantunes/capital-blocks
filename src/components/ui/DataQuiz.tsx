@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { m } from 'framer-motion'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 interface Q {
   pergunta: string
+  perguntaSimples?: string
   unidade: string
   min: number
   max: number
@@ -12,39 +14,50 @@ interface Q {
   formato?: (n: number) => string
   fonte: string
   did: string
+  simples?: string
 }
 
 const QS: Q[] = [
   {
     pergunta: 'Quantos % da riqueza mundial pertence ao Top 1%?',
+    perguntaSimples: 'Quanto da riqueza mundial pertence ao 1% mais rico?',
     unidade: '% da riqueza', min: 0, max: 100, step: 1, real: 47.5,
     fonte: 'UBS Global Wealth Report 2024',
     did: 'Quase metade de tudo — e a fatia cresce a cada ano desde 1980.',
+    simples: 'Quase metade da riqueza está com o 1% mais rico. O gráfico seguinte mostra como essa divisão mudou ao longo do tempo.',
   },
   {
     pergunta: 'Quantos US$ bilhões/ano de lucro de multinacionais são deslocados para paraísos fiscais?',
+    perguntaSimples: 'Quanto lucro de multinacionais é registrado por ano em paraísos fiscais?',
     unidade: 'US$ bi/ano', min: 0, max: 2000, step: 10, real: 1000,
     fonte: 'Tørsløv–Wier–Zucman (Missing Profits)',
     did: '≈ 1 trilhão por ano — 36 a 40% de TODOS os lucros multinacionais do planeta.',
+    simples: 'A estimativa é de cerca de US$ 1 trilhão por ano. A fonte calcula quanto lucro é registrado em países com tributação muito baixa.',
   },
   {
     pergunta: 'Quantas pessoas morrem por ano de causas ligadas ao TRABALHO (acidentes + doenças)?',
+    perguntaSimples: 'Quantas pessoas morrem por ano por acidentes e doenças ligados ao trabalho?',
     unidade: 'milhões/ano', min: 0, max: 5, step: 0.05, real: 2.9,
     formato: (n) => `${n.toFixed(2)} mi`,
     fonte: 'ILO, 2023',
     did: 'Quase 3 milhões por ano — mais que guerras. E é tratado como custo operacional.',
+    simples: 'A OIT estima quase 3 milhões de mortes por ano por acidentes e doenças ligados ao trabalho.',
   },
   {
     pergunta: 'Quantos bilhões de horas de trabalho de cuidado NÃO PAGO são realizadas por dia no mundo?',
+    perguntaSimples: 'Quantas horas de cuidado não pago são feitas por dia no mundo?',
     unidade: 'bilhões de horas/dia', min: 0, max: 30, step: 0.5, real: 16.4,
     fonte: 'ILO, 2018 (~9% do PIB mundial, 80% por mulheres)',
     did: 'A economia invisível que sustenta a visível — e não aparece em nenhum PIB.',
+    simples: 'São bilhões de horas por dia cuidando de crianças, idosos, casas e famílias sem pagamento direto.',
   },
   {
     pergunta: 'Quantos milhões de pessoas vivem hoje em ESCRAVIDÃO CONTEMPORÂNEA?',
+    perguntaSimples: 'Quantas pessoas vivem em situações classificadas como escravidão moderna?',
     unidade: 'milhões', min: 0, max: 100, step: 1, real: 50,
     fonte: 'ILO / Walk Free, 2021',
     did: '50 milhões — mais do que em qualquer ponto da história da escravidão atlântica.',
+    simples: 'A estimativa é de 50 milhões de pessoas em trabalho forçado ou casamento forçado.',
   },
 ]
 
@@ -53,7 +66,7 @@ export default function DataQuiz() {
   const [idx, setIdx] = useState(0)
   const [guess, setGuess] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const q = QS[idx]
 
   const fmt = (n: number) => q.formato ? q.formato(n) : `${n.toLocaleString('pt-BR')} ${q.unidade}`
@@ -77,12 +90,17 @@ export default function DataQuiz() {
         </div>
       </div>
       <p className="mt-1 text-[11px] text-zinc-500">
-        {didatico
-          ? 'Estudos mostram que a gente lembra melhor quando erra o chute primeiro. Arraste, arrisque e descubra a realidade:'
-          : 'Elicitação de estimativa prévia → ancoragem corrigida: técnica padrão de retenção em data-journalism.'}
+        {textoPorModo(
+          mode,
+          'Estudos mostram que a gente lembra melhor quando erra o chute primeiro. Arraste, arrisque e descubra a realidade:',
+          'Elicitação de estimativa prévia → ancoragem corrigida: técnica padrão de retenção em data-journalism.',
+          'Primeiro dê um palpite. Depois compare com o dado e veja quão perto você chegou.',
+        )}
       </p>
 
-      <p className="mt-3 text-sm font-semibold text-zinc-100">{q.pergunta}</p>
+      <p className="mt-3 text-sm font-semibold text-zinc-100">
+        {mode === 'simples' ? (q.perguntaSimples ?? q.pergunta) : q.pergunta}
+      </p>
 
       {!revealed ? (
         <div className="mt-2">
@@ -108,11 +126,18 @@ export default function DataQuiz() {
                 <>
                   seu chute: <span className="font-mono font-bold text-zinc-200">{fmt(guess)}</span> ·
                   distância: <span className="font-mono font-bold text-zinc-200">{(distancia * 100).toFixed(0)}%</span>{' '}
-                  {distancia < 0.15 ? '— perto demais, você já conhecia?' : distancia < 0.6 ? '— dentro do comum: o sistema conta histórias para esconder esses números.' : '— longe? Normal: é exatamente isso que a narrativa dominante quer.'}
+                  {textoPorModo(
+                    mode,
+                    distancia < 0.15 ? '— perto demais, você já conhecia?' : distancia < 0.6 ? '— dentro do comum: o sistema conta histórias para esconder esses números.' : '— longe? Normal: é exatamente isso que a narrativa dominante quer.',
+                    distancia < 0.15 ? '— estimativa muito próxima.' : distancia < 0.6 ? '— diferença moderada.' : '— diferença grande entre palpite e dado.',
+                    distancia < 0.15 ? '— seu palpite ficou bem perto.' : distancia < 0.6 ? '— seu palpite ficou a alguma distância.' : '— seu palpite ficou longe do dado.',
+                  )}
                 </>
               )}
             </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-300">{q.did}</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-300">
+              {textoPorModo(mode, q.did, q.did, q.simples)}
+            </p>
             <div className="mt-1 font-mono text-[9px] uppercase tracking-wider text-zinc-600">fonte: {q.fonte}</div>
           </div>
           <button onClick={proxima}

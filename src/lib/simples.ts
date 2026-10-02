@@ -1,23 +1,23 @@
 /**
  * MODO SIMPLES — 3º nível de leitura (fundamental / início do ensino médio).
  *
- * O app já tem dois níveis: `didatico` (padrão) e `avancado` (marxista-
- * contábil). Este módulo adiciona o mais simples, para quem ainda não tem o
- * vocabulário econômico nem a fórmula.
+ * O app tem três níveis: `simples`, `didatico` (padrão) e `avancado`.
+ * Este módulo concentra a resolução editorial entre eles e as substituições
+ * conservadoras usadas quando ainda não existe copy simples explícita.
  *
  * COMO FUNCIONA, E POR QUE ASSIM
  * ──────────────────────────────
- * Os módulos do app guardam textos em pares: `did` (didático) e `adv`
- * (avançado). Não existe um terceiro par nos dados, e escrever um `simples`
- * para ~1.500 textos seria uma campanha editorial gigante que envelheceria
- * mal. Então a estratégia é:
+ * Muitos datasets históricos ainda guardam textos em pares: `did` (didático)
+ * e `adv` (avançado). As áreas mais importantes também têm `simples`
+ * explícito; onde ele ainda não existe, o fallback passa por uma tradução
+ * conservadora. Então a estratégia é:
  *
- *   1. `resolve()` escolhe o melhor texto disponível (simples → didático →
- *      avançado como fallback), para que a função seja total e nunca
- *      devolva `undefined`.
- *   2. Um conjunto pequeno e curado de traduções de verdade, "do jeito que se
- *      fala" para os textos mais carregados (nome das frações, do mapa, dos
- *     cartões de indicador), onde a simplificação faz mais diferença.
+ *   1. `resolve()` respeita o nível escolhido. No modo simples, um texto
+ *      explicitamente curado vence; quando ele não existe, o didático passa
+ *      por `simplificarTexto()` sem alterar números.
+ *   2. Um glossário curado troca vocabulário técnico por explicações do dia a
+ *      dia em QUALQUER texto didático usado como fallback. Isso dá cobertura
+ *      transversal aos módulos e tours sem duplicar centenas de strings.
  *   3. `NIVEIS` alimenta o badge e o alerta de contexto, para que o app
  *      explique em que modo a pessoa está.
  *
@@ -72,11 +72,12 @@ export function resolve<T extends Record<string, string | undefined>>(
   textos: T,
   modo: UIMode,
 ): string {
-  if (textos.simples) return textos.simples
-  /* avançado pede o avançado (cai no didático só se não houver); os outros
-     dois modos caem no didático (o mais próximo do cotidiano) */
-  if (modo === 'avancado') return textos.adv ?? textos.did ?? ''
-  return textos.did ?? textos.adv ?? ''
+  if (modo === 'simples') {
+    const base = textos.simples ?? textos.did ?? textos.adv ?? ''
+    return textos.simples ?? simplificarTexto(base)
+  }
+  if (modo === 'avancado') return textos.adv ?? textos.did ?? textos.simples ?? ''
+  return textos.did ?? textos.simples ?? textos.adv ?? ''
 }
 
 /** Igual a `resolve`, mas devolve o didático como piso (para tooltips longos). */
@@ -126,6 +127,54 @@ const SIMPLES: Record<string, string> = {
   'trabalho não pago': 'Horas que você trabalha e não recebe',
   'plataformização': 'Trabalhar por aplicativo, sem chefe e sem proteção',
   'superexploração': 'Trabalhar de mais e ganhar de menos',
+}
+
+/* Substituições em frases completas. Mantêm dígitos, moedas, percentuais,
+   datas e unidades intactos: o modo simples muda linguagem, nunca dado. */
+const FRASES_SIMPLES: [RegExp, string][] = [
+  [/\bmais-valia\b/gi, 'valor criado pelo trabalho e não pago em salário'],
+  [/\bexcedente\b/gi, 'valor que sobra depois dos custos'],
+  [/\bacumula[cç][aã]o\b/gi, 'concentração de riqueza'],
+  [/\bsuperexplora[cç][aã]o\b/gi, 'trabalho muito mal pago'],
+  [/\btroca desigual\b/gi, 'troca em que um lado fica com mais valor'],
+  [/\bhierarquia monet[aá]ria\b/gi, 'diferença de poder entre moedas'],
+  [/\bcapital constante\b/gi, 'máquinas e materiais'],
+  [/\bcapital vari[aá]vel\b/gi, 'salários'],
+  [/\bcapital produtivo\b/gi, 'empresas que produzem bens e serviços'],
+  [/\bcapital financeiro\b/gi, 'bancos, crédito e investimentos'],
+  [/\bcapital fict[ií]cio\b/gi, 'ativos financeiros baseados em ganhos futuros'],
+  [/\bcomposi[cç][aã]o org[aâ]nica\b/gi, 'relação entre máquinas e trabalho'],
+  [/\bfinanceiriza[cç][aã]o\b/gi, 'importância das finanças'],
+  [/\bprimariza[cç][aã]o\b/gi, 'dependência maior de produtos primários'],
+  [/\breprimariza[cç][aã]o\b/gi, 'volta da dependência de produtos primários'],
+  [/\bdesindustrializa[cç][aã]o\b/gi, 'perda de peso da indústria'],
+  [/\brentismo\b/gi, 'ganho com juros, aluguéis e ativos'],
+  [/\bchokepoint\b/gi, 'ponto de passagem estratégico'],
+  [/\bclearing\b/gi, 'sistema de compensação de pagamentos'],
+  [/\bdefault\b/gi, 'calote ou suspensão de pagamento'],
+  [/\bfoundry\b/gi, 'fábrica especializada em chips'],
+  [/\bexport controls\b/gi, 'restrições de exportação'],
+  [/\bnearshoring\b/gi, 'produção transferida para um país vizinho'],
+  [/\boffshore\b/gi, 'dinheiro ou empresa registrado fora do país'],
+  [/\bexternaliza[cç][aã]o\b/gi, 'custo empurrado para outras pessoas ou lugares'],
+  [/\bproletariado\b/gi, 'trabalhadores assalariados'],
+  [/\bburguesia\b/gi, 'donos de grandes empresas e patrimônios'],
+]
+
+/**
+ * Simplifica frases didáticas para fundamental/início do ensino médio.
+ * É deliberadamente conservador: só troca expressões conhecidas e preserva
+ * números, símbolos e unidades exatamente como vieram do dataset.
+ */
+export function simplificarTexto(texto: string): string {
+  let out = texto
+  for (const [padrao, troca] of FRASES_SIMPLES) out = out.replace(padrao, troca)
+  return out
+}
+
+/** Atalho explícito para componentes que têm pares did/adv. */
+export function textoPorModo(modo: UIMode, did?: string, adv?: string, simples?: string): string {
+  return resolve({ simples, did, adv }, modo)
 }
 
 /**

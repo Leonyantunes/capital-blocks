@@ -5,9 +5,10 @@ import {
 } from '../lib/world'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../data/flows'
 import { TOURES, getTour, stopColor, stopIsos } from '../data/tours'
-import { NIVEIS } from '../lib/simples'
+import { NIVEIS, textoPorModo } from '../lib/simples'
 import { t } from '../i18n'
 import FlowCard from './FlowCard'
+import SourceLinks from './ui/SourceLinks'
 import { BR_STATES, BR_STATE_FLOWS, INTERNAL_FLOWS, STATE_CAT_META, BRAZIL_VIEW } from '../data/brazil'
 import { WAGES, wageColor, wageBucketLabel, WAGE_BUCKETS } from '../data/wages'
 import { DISASTERS } from '../data/disasters'
@@ -1256,7 +1257,6 @@ export default function MapWorld() {
       {/* card do desastre selecionado */}
       {selDisaster && (() => {
         const d = DISASTERS.find((x) => x.id === selDisaster)!
-        const didatico = useApp.getState().mode !== 'avancado'
         return (
           <div className="absolute bottom-12 left-2.5 z-20 max-w-[300px] rounded-xl border border-red-500/60 bg-zinc-900/95 p-3.5 shadow-2xl max-md:bottom-[4.5rem]">
             <div className="flex items-start justify-between gap-2">
@@ -1268,7 +1268,7 @@ export default function MapWorld() {
             </div>
             <div className="mt-1.5 font-mono text-sm font-extrabold text-red-400">{d.mortos}</div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-300">
-              {didatico ? d.did : d.adv}
+              {textoPorModo(mode, d.did, d.adv)}
             </p>
           </div>
         )
@@ -1318,12 +1318,13 @@ export default function MapWorld() {
             </div>
             {mode !== 'avancado' ? (
               <>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-200">{s.did}</p>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, s.did, s.adv, s.simples)}</p>
                 <div className="mt-2.5 grid grid-cols-3 gap-1.5 max-md:grid-cols-3">
                   {s.didStats.map((d) => (
                     <div key={d.k} className="rounded-lg border px-2 py-1.5 text-center" style={{ borderColor: `${A}44`, background: `${A}0d` }}>
                       <div className="font-mono text-sm font-extrabold leading-tight" style={{ color: A }}>{d.v}</div>
-                      <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{d.k}</div>
+                      <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{textoPorModo(mode, d.k, d.k)}</div>
+                      <SourceLinks sourceIds={d.sourceIds} />
                     </div>
                   ))}
                 </div>
@@ -1422,7 +1423,7 @@ export function ConflictSelector() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: active.color + '55', background: active.color + '0d' }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{mode !== 'avancado' ? active.didatico : active.avancado}</p>
+          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado)}</p>
         </div>
       )}
     </div>

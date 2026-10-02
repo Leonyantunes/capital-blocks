@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import Tip from './ui/Tip'
 import { useApp } from '../store/useApp'
 import { modRef } from '../data/modules'
+import { textoPorModo } from '../lib/simples'
 
 type Lens = 'marx' | 'mmt' | 'both'
 
@@ -141,28 +142,32 @@ export default function MmtPanel() {
         <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-2 sm:grid-cols-2">
           {[
             {
-              t: didatico ? 'Quem imprime a moeda não quebra nela' : 'Sovereign issuer ≠ household',
-              d: didatico
-                ? 'O Brasil só deve em real, e o BCB é quem cria reais. Por isso o Japão convive com dívida de 230–250% do PIB há décadas sem calote — diferente da Grécia, que devia em euro (moeda que não controla).'
-                : 'Emissor de moeda fiduciária soberana paga sempre seus títulos resgatáveis na própria unidade; default involuntário é categoria inaplicável (ver Japão 2024: ~230-250% PIB, yields ancorados por BoJ).',
+              t: textoPorModo(mode, 'Quem imprime a moeda não quebra nela', 'Sovereign issuer ≠ household', 'Um país que cria sua própria moeda funciona diferente de uma família'),
+              d: textoPorModo(mode,
+                'O Brasil só deve em real, e o BCB é quem cria reais. Por isso o Japão convive com dívida de 230–250% do PIB há décadas sem calote — diferente da Grécia, que devia em euro (moeda que não controla).',
+                'Emissor de moeda fiduciária soberana paga sempre seus títulos resgatáveis na própria unidade; default involuntário é categoria inaplicável (ver Japão 2024: ~230-250% PIB, yields ancorados por BoJ).',
+                'Na visão da MMT, um governo que emite a moeda em que deve tem limites diferentes de uma família. O problema principal passa a ser inflação, produção disponível e moeda estrangeira, e não simplesmente “ficar sem dinheiro”.'),
             },
             {
-              t: didatico ? 'Impostos não pagam as contas do Estado' : 'Taxes don’t fund spending',
-              d: didatico
-                ? 'Na ordem operacional, o Estado gasta primeiro (cria moeda) e cobra depois. Os impostos servem para dar valor à moeda, redistribuir e conter excessos — não para "juntar dinheiro".'
-                : 'Sequência operacional: gasto credora reservas; tributação debita reservas criando demanda pela moeda e liberando espaço de capacidade produtiva — não financia no sentido técnico.',
+              t: textoPorModo(mode, 'Impostos não pagam as contas do Estado', 'Taxes don’t fund spending', 'Na MMT, impostos têm funções além de arrecadar'),
+              d: textoPorModo(mode,
+                'Na ordem operacional, o Estado gasta primeiro (cria moeda) e cobra depois. Os impostos servem para dar valor à moeda, redistribuir e conter excessos — não para "juntar dinheiro".',
+                'Sequência operacional: gasto credora reservas; tributação debita reservas criando demanda pela moeda e liberando espaço de capacidade produtiva — não financia no sentido técnico.',
+                'A MMT destaca que impostos também reduzem poder de compra, ajudam a sustentar a demanda pela moeda e podem redistribuir renda. Essa é uma interpretação específica do funcionamento monetário.'),
             },
             {
-              t: didatico ? 'Déficit público = poupança privada' : 'Sectoral balances identity',
-              d: didatico
-                ? 'Toda vez que o governo gasta mais do que arrecada, ALGUÉM do outro lado recebe esse excedente: empresas, famílias ou o resto do mundo. É matemática das contas nacionais — veja no simulador abaixo.'
-                : '(S−I) ≡ (G−T)+(X−M): déficit fiscal é contraface do superávit privado/externo. Austeridade busca reduzir G−T sem perguntar qual setor absorverá o ajuste.',
+              t: textoPorModo(mode, 'Déficit público = poupança privada', 'Sectoral balances identity', 'O saldo de um setor aparece no saldo de outro'),
+              d: textoPorModo(mode,
+                'Toda vez que o governo gasta mais do que arrecada, ALGUÉM do outro lado recebe esse excedente: empresas, famílias ou o resto do mundo. É matemática das contas nacionais — veja no simulador abaixo.',
+                '(S−I) ≡ (G−T)+(X−M): déficit fiscal é contraface do superávit privado/externo. Austeridade busca reduzir G−T sem perguntar qual setor absorverá o ajuste.',
+                'Nas contas nacionais, receitas e gastos dos setores se conectam. Se um setor termina com saldo positivo, outro precisa aparecer com o saldo correspondente.'),
             },
             {
-              t: didatico ? 'O limite verdadeiro é a inflação' : 'Real resource constraint',
-              d: didatico
-                ? 'A pergunta certa não é "temos dinheiro?" mas "temos fábricas, trabalhadores e materiais?". Gastar além disso empurra os preços para cima — esse é o freio real, não a dívida.'
-                : 'Constraint = capacidade produtiva oculta e trajetória de preços; instrumentos: tributação seletiva, crédito dirigido, controles de mark-up. Debate aberto: coordenação fiscal-monetária vs independência formal do BCB.',
+              t: textoPorModo(mode, 'O limite verdadeiro é a inflação', 'Real resource constraint', 'Produção e preços também limitam o gasto'),
+              d: textoPorModo(mode,
+                'A pergunta certa não é "temos dinheiro?" mas "temos fábricas, trabalhadores e materiais?". Gastar além disso empurra os preços para cima — esse é o freio real, não a dívida.',
+                'Constraint = capacidade produtiva oculta e trajetória de preços; instrumentos: tributação seletiva, crédito dirigido, controles de mark-up. Debate aberto: coordenação fiscal-monetária vs independência formal do BCB.',
+                'Mesmo que o governo consiga emitir moeda, não consegue criar trabalhadores, máquinas ou alimentos instantaneamente. Gastar acima da capacidade de produção pode aumentar preços.'),
             },
           ].map((c) => (
             <article key={c.t} className="rounded-lg border border-sky-400/40 bg-sky-400/5 p-3">

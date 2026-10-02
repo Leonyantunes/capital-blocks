@@ -38,7 +38,12 @@ function texto(body, campo) {
   return m2 ? m2[1] : null
 }
 
-const campo = (b, n) => (b.match(new RegExp(`\\b${n}:\\s*'([^']*)'`)) || [])[1] ?? null
+const campo = (b, n) => {
+  const simples = b.match(new RegExp(`\\b${n}:\\s*'([^']*)'`))
+  if (simples) return simples[1]
+  const template = b.match(new RegExp(`\\b${n}:\\s*\`([\\s\\S]*?)\``))
+  return template ? template[1] : null
+}
 
 const paradas = blocos()
 let avisos = 0
@@ -63,6 +68,31 @@ for (const p of paradas) {
 if (!semDid && !semAdv) ok(`todas as ${paradas.length} paradas têm did e adv`)
 if (curtosDid.length) aviso(`did curto (<160): ${curtosDid.join(', ')}`)
 if (curtosAdv.length) aviso(`adv curto (<110): ${curtosAdv.join(', ')}`)
+
+console.log('')
+console.log('=== 1B. MODO SIMPLES (FUNDAMENTAL / INÍCIO DO MÉDIO) ===')
+const semSimples = []
+const simplesTecnico = []
+const termosSimplesProibidos = [
+  'mais-valia', 'capital constante', 'capital variável', 'composição orgânica',
+  'superexploração', 'chokepoint', 'clearing', 'default', 'foundry',
+  'export controls', 'nearshoring', 'offshore', 'proletariado', 'burguesia',
+  'cost-plus', 'GVC', 'TMD', 'financeirização', 'rentismo',
+]
+for (const p of paradas) {
+  const simples = texto(p.body, 'simples')
+  if (!simples) {
+    semSimples.push(p.id)
+    continue
+  }
+  for (const termo of termosSimplesProibidos) {
+    if (simples.toLowerCase().includes(termo.toLowerCase())) simplesTecnico.push(`${p.id}: '${termo}'`)
+  }
+}
+if (semSimples.length) erro(`paradas sem texto simples: ${semSimples.join(', ')}`)
+else ok(`todas as ${paradas.length} paradas têm texto simples explícito`)
+if (simplesTecnico.length) aviso(`jargão técnico no simples: ${simplesTecnico.join(' | ')}`)
+else ok('nenhum jargão técnico bloqueado aparece no texto simples')
 
 console.log('')
 console.log('=== 2. PROGRESSÃO DID → ADV ===')

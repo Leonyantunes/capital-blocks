@@ -8,6 +8,7 @@ import ModeBadge from './ui/ModeBadge'
 import { computeCircuit, fmtHours, pct, units, unpaidHours } from '../lib/marx'
 import { mt, modRef } from '../i18n'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 function UnpaidWorkCard() {
   const { e, mode } = useApp()
@@ -26,7 +27,7 @@ function UnpaidWorkCard() {
           <UnpaidClock minutesUnpaid={minutes} size={170} />
           <div>
             <h3 className="text-sm font-semibold text-zinc-100">
-              {mode !== 'avancado' ? 'Seu dia de trabalho em 8 horas' : 'Tradutor: trabalho não pago na jornada'}
+              {textoPorModo(mode, 'Seu dia de trabalho em 8 horas', 'Tradutor: trabalho não pago na jornada', 'O que acontece nas suas 8 horas de trabalho')}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
               Em uma jornada de 8 horas, você trabalha{' '}
@@ -40,9 +41,12 @@ function UnpaidWorkCard() {
               paga o seu salário.
             </p>
             <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-              {mode !== 'avancado'
-                ? 'A parte verde é o tempo em que você produz lucro de graça. Suba a intensidade de exploração e veja o verde engolir o seu dia.'
-                : `Horas Não Pagas = 8 · m/(m+v) = 8 · ${r.e.toFixed(2)}/${(r.e + 1).toFixed(2)} = ${fmtHours(minutes / 60)} — equivalente material da taxa de mais-valia.`}
+              {textoPorModo(
+                mode,
+                'A parte verde é o tempo em que você produz lucro de graça. Suba a intensidade de exploração e veja o verde engolir o seu dia.',
+                `Horas Não Pagas = 8 · m/(m+v) = 8 · ${r.e.toFixed(2)}/${(r.e + 1).toFixed(2)} = ${fmtHours(minutes / 60)} — equivalente material da taxa de mais-valia.`,
+                'A parte verde mostra o tempo em que você continua produzindo depois de já ter gerado o valor equivalente ao seu salário. Mexa no controle e veja esse tempo mudar.',
+              )}
             </p>
           </div>
         </div>
@@ -50,18 +54,26 @@ function UnpaidWorkCard() {
         {/* barra de progresso explicativa */}
         <div className="min-w-[220px] flex-1">
           <div className="mb-1 flex justify-between text-[10px] uppercase tracking-wider">
-            <span className="text-red-300">Para você ({fmtHours(paid / 60)})</span>
-            <span className="text-emerald-300">De graça p/ empresa ({fmtHours(minutes / 60)})</span>
+            <span className="text-red-300">{textoPorModo(mode, `Para você (${fmtHours(paid / 60)})`, `Equivalente ao salário (${fmtHours(paid / 60)})`, `Tempo ligado ao salário (${fmtHours(paid / 60)})`)}</span>
+            <span className="text-emerald-300">{textoPorModo(mode, `Não pago (${fmtHours(minutes / 60)})`, `Trabalho não pago (${fmtHours(minutes / 60)})`, `Tempo além do salário (${fmtHours(minutes / 60)})`)}</span>
           </div>
           <div className="flex h-5 w-full overflow-hidden rounded-lg border border-zinc-800">
             <div className="bg-red-400 transition-all duration-300" style={{ width: `${(paid / 480) * 100}%` }} />
             <div className="bg-emerald-400 transition-all duration-300" style={{ width: `${(minutes / 480) * 100}%` }} />
           </div>
-          <Tip text={mode !== 'avancado'
-            ? 'Arraste o slider "Intensidade de Exploração" acima para mudar este relógio.'
-            : 'Derivado diretamente de e = m/v no circuito acima.'}>
+          <Tip text={textoPorModo(
+            mode,
+            'Arraste o slider "Intensidade de Exploração" acima para mudar este relógio.',
+            'Derivado diretamente de e = m/v no circuito acima.',
+            'Mexa no controle de trabalho não pago para mudar este relógio.',
+          )}>
             <div className="mt-2 inline-block cursor-help rounded bg-zinc-800/80 px-2 py-1 font-mono text-[10px] text-zinc-400">
-              e = m/v = {(e * 100).toFixed(0)}% → jornada {((unpaidHours(e) / 8) * 100).toFixed(0)}% gratuita
+              {textoPorModo(
+                mode,
+                `${((unpaidHours(e) / 8) * 100).toFixed(0)}% da jornada além do tempo ligado ao salário`,
+                `e = m/v = ${(e * 100).toFixed(0)}% → jornada ${((unpaidHours(e) / 8) * 100).toFixed(0)}% não paga`,
+                `${((unpaidHours(e) / 8) * 100).toFixed(0)}% das 8 horas ficam além do tempo equivalente ao salário`,
+              )}
             </div>
           </Tip>
         </div>
@@ -84,7 +96,11 @@ export default function CircuitModule() {
         </div>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">{mt(lang, 'circuit').title}</h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico ? (
+          {mode === 'simples' ? (
+            <>
+              O dinheiro entra na empresa, paga máquinas, materiais e salários, e volta depois da venda. Use os controles para ver como o valor produzido é dividido.
+            </>
+          ) : didatico ? (
             <>
               Toda riqueza começa com dinheiro que vira máquinas + trabalho, passa pela produção e volta como MAIS
               dinheiro. A pergunta central:{' '}
@@ -107,7 +123,18 @@ export default function CircuitModule() {
         <div className="flex flex-col gap-4">
           <CircuitDiagram />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {didatico ? (
+            {mode === 'simples' ? (
+              <>
+                <MetricCard label="Dinheiro colocado na produção" value={units(r.M)} sub="valor inicial do exemplo" accent="text-money" fonte="modelo do app" />
+                <MetricCard label="Valor que sobra no modelo" value={units(r.m)} sub="depois da parcela ligada aos salários" accent="text-emerald-300" fonte="modelo do app"
+                  tip="É a parte que o modelo separa do valor equivalente aos salários." />
+                <MetricCard label="Máquinas por trabalhador" value={r.k.toFixed(1)} sub="nível usado na simulação" accent="text-sky-300" fonte="modelo do app"
+                  tip="Aumente este número para simular uma produção com mais máquinas e materiais por pessoa." />
+                <MetricCard label="Lucro sobre o investimento" value={pct(r.profitRate)} sub={`a cada ${units(r.M)} investidos`} fonte="modelo do app"
+                  accent={r.profitRate < 20 ? 'text-red-300' : 'text-emerald-300'}
+                  tip="Mostra quanto o modelo calcula de lucro em relação ao dinheiro colocado no início." />
+              </>
+            ) : didatico ? (
               <>
                 <MetricCard label="O patrão investe" value={units(r.M)} sub="dinheiro inicial" accent="text-money" fonte="modelo do app" />
                 <MetricCard label="Lucro extraído" value={units(r.m)} sub="produzido por quem trabalha" accent="text-emerald-300" fonte="modelo do app"
@@ -136,13 +163,19 @@ export default function CircuitModule() {
         <div className="grid gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           {/* história em 3 passos */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-            <h3 className="text-sm font-bold text-zinc-100">A história inteira em 3 passos</h3>
+            <h3 className="text-sm font-bold text-zinc-100">
+              {textoPorModo(mode, 'A história inteira em 3 passos', 'A história inteira em 3 passos', 'O caminho do dinheiro em 3 passos')}
+            </h3>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {[
+              {(mode === 'simples' ? [
+                { n: '1', t: 'A empresa investe', d: 'compra materiais, máquinas e paga salários', color: '#ffc107' },
+                { n: '2', t: 'A produção acontece', d: 'pessoas usam esses recursos para criar o produto', color: '#f44336' },
+                { n: '3', t: 'O produto é vendido', d: 'o dinheiro volta e o modelo calcula o que sobra', color: '#4caf50' },
+              ] : [
                 { n: '1', t: 'O patrão investe', d: 'compra máquinas e paga salários', color: '#ffc107' },
                 { n: '2', t: 'Você trabalha', d: 'e produz TODA a riqueza do produto', color: '#f44336' },
                 { n: '3', t: 'Ele vende e lucra', d: 'fica com o pedaço que você não recebeu', color: '#4caf50' },
-              ].map((s, i, arr) => (
+              ]).map((s, i, arr) => (
                 <div key={s.n} className="flex items-center gap-2">
                   <div className="rounded-lg border p-2.5" style={{ borderColor: `${s.color}66`, background: `${s.color}0d` }}>
                     <div className="flex items-center gap-1.5">
@@ -157,14 +190,18 @@ export default function CircuitModule() {
               ))}
             </div>
             <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
-              O segredo está entre o passo 2 e o 3: o produto sai valendo MAIS do que custou pagar por ele. Esse
-              “mais” é o trabalho não pago — o relógio acima mostra exatamente quantas horas ele representa.
+              {textoPorModo(
+                mode,
+                'O ponto central está entre produzir e vender: o modelo separa uma parte equivalente ao salário e outra que fica como excedente. O relógio acima traduz essa divisão em horas.',
+                'O segredo está entre o passo 2 e o 3: o produto sai valendo MAIS do que custou pagar por ele. Esse “mais” é o trabalho não pago — o relógio acima mostra exatamente quantas horas ele representa.',
+                'O modelo compara o valor ligado aos salários com o valor que fica além dele. O relógio acima mostra essa divisão em horas de uma jornada de 8 horas.',
+              )}
             </p>
           </div>
 
           {/* termômetro do lucro */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-            <h3 className="text-sm font-bold text-zinc-100">Termômetro do lucro</h3>
+            <h3 className="text-sm font-bold text-zinc-100">{textoPorModo(mode, 'Termômetro do lucro', 'Termômetro do lucro', 'Quanto volta como lucro')}</h3>
             <div className="mt-3">
               <div className="relative h-5 w-full overflow-visible rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400">
                 <div className="absolute -top-1.5 h-8 w-1.5 rounded-full bg-white shadow-lg ring-2 ring-zinc-950"
@@ -177,7 +214,12 @@ export default function CircuitModule() {
                 a cada R$100 investidos, voltam <span className="text-money">R${r.profitRate.toFixed(0)}</span> de lucro
               </p>
               <p className="mt-1 text-[10.5px] leading-snug text-zinc-500">
-                mexa os sliders e veja o ponteiro: mais automação = ponteiro escorregando para a esquerda.
+                {textoPorModo(
+                  mode,
+                  'mexa nos controles e veja como o ponteiro muda.',
+                  'mexa os sliders e veja o ponteiro: mais automação = ponteiro escorregando para a esquerda.',
+                  'mexa nos controles para comparar os cenários.',
+                )}
               </p>
             </div>
           </div>
@@ -187,28 +229,43 @@ export default function CircuitModule() {
       {didatico ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-dashed border-sky-400/40 bg-sky-400/5 p-4">
-            <h4 className="text-sm font-bold text-sky-300">Por que a automação derruba o lucro?</h4>
+            <h4 className="text-sm font-bold text-sky-300">
+              {textoPorModo(mode, 'O que muda quando entram mais máquinas?', 'Por que a automação derruba o lucro?', 'O que o modelo mostra sobre automação?')}
+            </h4>
             <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-              Máquinas não pedem aumento — mas também <strong>não produzem lucro novo</strong>. Só o trabalho vivo
-              gera valor. Quanto mais robôs e menos gente, menor o ganho sobre todo o capital investido. É a
-              “tendência de queda do lucro”.
+              {textoPorModo(
+                mode,
+                'Neste modelo, colocar mais máquinas por trabalhador aumenta a parte do investimento gasta em equipamentos. Mantendo as outras regras iguais, a porcentagem de lucro sobre todo o investimento diminui.',
+                'Máquinas não pedem aumento — mas também não produzem lucro novo. Só o trabalho vivo gera valor. Quanto mais robôs e menos gente, menor o ganho sobre todo o capital investido. É a “tendência de queda do lucro”.',
+                'Neste modelo, mais máquinas por trabalhador mudam a divisão do investimento e podem reduzir a taxa de lucro calculada.',
+              )}
             </p>
           </div>
           <div className="rounded-xl border border-dashed border-fuchsia-400/40 bg-fuchsia-400/5 p-4">
-            <h4 className="text-sm font-bold text-fuchsia-300">Bancos × produção real</h4>
+            <h4 className="text-sm font-bold text-fuchsia-300">
+              {textoPorModo(mode, 'E os bancos?', 'Bancos × produção real', 'Onde entram os bancos?')}
+            </h4>
             <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-              Nem todo capital passa pela fábrica: bancos vivem de <span className="font-mono">M—M′</span> (emprestar
-              para receber mais). Esse ganho financeiro é descontado — no juro, no aluguel, na dívida pública — do
-              valor que só a produção real criou.
+              {textoPorModo(
+                mode,
+                'Bancos também recebem dinheiro por juros de empréstimos. Esse fluxo acontece junto da produção e ajuda a explicar para onde vai parte da renda de famílias, empresas e governos.',
+                'Nem todo capital passa pela fábrica: bancos vivem de M—M′ (emprestar para receber mais). Esse ganho financeiro é descontado — no juro, no aluguel, na dívida pública — do valor que só a produção real criou.',
+                'Além da produção, existem fluxos financeiros como juros de empréstimos. Eles redistribuem parte da renda entre famílias, empresas, bancos e governo.',
+              )}
             </p>
           </div>
           <div className="rounded-xl border border-dashed border-money/40 bg-money/5 p-4 sm:col-span-2">
-            <h4 className="text-sm font-bold text-money">Mas… quem garante que C′ será VENDIDO? (Keynes & Kalecki)</h4>
+            <h4 className="text-sm font-bold text-money">
+              {textoPorModo(mode, 'E se ninguém comprar?', 'Mas… quem garante que C′ será VENDIDO? (Keynes & Kalecki)', 'Produzir não basta: alguém precisa comprar')}
+            </h4>
             <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-              O circuito mostra como o valor nasce — não se ele será realizado. Isso depende da{' '}
-              <strong>demanda efetiva</strong>: alguém precisa comprar o produto sob incerteza. Por isso déficit
-              público sustenta vendas e lucros, e por isso “todo mundo poupar de uma vez” derruba a economia inteira
-              (paradoxo da parcimônia). Veja o simulador no {modRef('debt')}.
+              {textoPorModo(
+                mode,
+                'Uma empresa pode produzir e ainda assim não vender tudo. As vendas dependem de pessoas, empresas e governo terem renda e decidirem gastar. O simulador de dívida mostra como os gastos públicos entram nessa história.',
+                'O circuito mostra como o valor nasce — não se ele será realizado. Isso depende da demanda efetiva: alguém precisa comprar o produto sob incerteza. Por isso déficit público sustenta vendas e lucros, e por isso “todo mundo poupar de uma vez” derruba a economia inteira (paradoxo da parcimônia).',
+                'Produzir não garante a venda. O resultado também depende de haver compradores e renda circulando na economia.',
+              )}{' '}
+              Veja o simulador no {modRef('debt')}.
             </p>
           </div>
         </div>

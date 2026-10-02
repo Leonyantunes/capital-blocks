@@ -58,6 +58,20 @@ const numField = (body, nome) => {
   const m = body.match(new RegExp(`\\b${nome}:\\s*(-?[\\d.]+)`))
   return m ? Number(m[1]) : null
 }
+const arrayField = (body, nome) => {
+  const m = new RegExp(`\\b${nome}:\\s*\\[`).exec(body)
+  if (!m) return null
+  const start = body.indexOf('[', m.index)
+  let depth = 0
+  for (let i = start; i < body.length; i++) {
+    if (body[i] === '[') depth++
+    else if (body[i] === ']') {
+      depth--
+      if (depth === 0) return body.slice(start + 1, i)
+    }
+  }
+  return null
+}
 const has = (body, re) => re.test(body)
 
 const flowIds = new Set(
@@ -190,16 +204,16 @@ console.log('')
 console.log('=== 5. ESTATÍSTICAS DAS PARADAS (didStats) ===')
 let nStats = 0
 for (const s of todasParadas) {
-  const m = s.body.match(/didStats:\s*\[([\s\S]*?)\]/)
-  if (!m) continue
-  for (const st of m[1].matchAll(/\{\s*v:\s*'([^']*)'\s*,\s*k:\s*'([^']*)'/g)) {
+  const statsBody = arrayField(s.body, 'didStats')
+  if (statsBody === null) continue
+  for (const st of statsBody.matchAll(/\{\s*v:\s*'([^']*)'\s*,\s*k:\s*'([^']*)'/g)) {
     nStats++
     if (!st[1].trim()) erro(`${s.id}: didStat sem valor`)
     if (!st[2].trim()) erro(`${s.id}: didStat sem rótulo`)
   }
   /* detecta didStat malformado (sem o par v/k esperado) */
-  const abertos = (m[1].match(/\{/g) || []).length
-  const fechados = (m[1].match(/\}/g) || []).length
+  const abertos = (statsBody.match(/\{/g) || []).length
+  const fechados = (statsBody.match(/\}/g) || []).length
   if (abertos !== fechados) erro(`${s.id}: didStats com chaves desbalanceadas`)
 }
 ok(`${nStats} estatísticas verificadas`)
@@ -213,9 +227,9 @@ console.log('')
 console.log('=== 6. NÚMEROS NAS PARADAS ===')
 let statsOk = 0
 for (const s of todasParadas) {
-  const m = s.body.match(/didStats:\s*\[([\s\S]*?)\]/)
-  if (!m) continue
-  for (const st of m[1].matchAll(/\{\s*v:\s*'([^']*)'\s*,\s*k:\s*'([^']*)'/g)) {
+  const statsBody = arrayField(s.body, 'didStats')
+  if (statsBody === null) continue
+  for (const st of statsBody.matchAll(/\{\s*v:\s*'([^']*)'\s*,\s*k:\s*'([^']*)'/g)) {
     statsOk++
     const [, v, k] = st
     /* o valor é um número puro E o rótulo é curto/genérico → sem contexto */

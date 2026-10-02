@@ -1,6 +1,6 @@
 /**
  * FLUXOS DO MAPA-HOME COM DETALHAMENTO COMPLETO.
- * Cada fluxo é clicável: itens, valores, empresas, mecanismo dual-mode.
+ * Cada fluxo é clicável: itens, valores, empresas e mecanismo em três níveis de leitura.
  * Valores anuais aproximados (2024) — fontes citadas por fluxo.
  * tier: 'base' = sempre visível · 'detail' = só com zoom (rotas regionais).
  */

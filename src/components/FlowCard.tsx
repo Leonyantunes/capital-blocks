@@ -2,10 +2,12 @@ import { AnimatePresence, m } from 'framer-motion'
 import { TYPE_STYLE, type FlowDef } from '../data/flows'
 import { BLOCS } from '../lib/world'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 /** Card flutuante do fluxo selecionado no mapa 2D — mesma estética dos painéis do mapa. */
 export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onClose: () => void }) {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   const code = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {
@@ -60,7 +62,7 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
 
             {/* mecanismo dual */}
             <p className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 text-xs leading-relaxed text-zinc-200">
-              {didatico ? flow.did : flow.adv}
+              {textoPorModo(mode, flow.did, flow.adv)}
             </p>
 
             {/* itens */}

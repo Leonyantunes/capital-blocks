@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { m } from 'framer-motion'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 /**
  * Vídeo YouTube com facade lazy (thumbnail → iframe no clique):
@@ -8,7 +9,7 @@ import { useApp } from '../../store/useApp'
  */
 export default function VideoEmbed({ videoId, titulo }: { videoId: string; titulo: string }) {
   const [playing, setPlaying] = useState(false)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
 
   if (playing) {
     return (
@@ -51,7 +52,7 @@ export default function VideoEmbed({ videoId, titulo }: { videoId: string; titul
         </span>
         <span className="mt-0.5 block text-sm font-bold text-zinc-50">{titulo}</span>
         <span className="mt-0.5 block text-[10.5px] text-zinc-400">
-          {didatico ? 'clique para assistir (≈15 min) — depois volte para a análise' : 'fonte audiovisual · análise documental abaixo'}
+          {textoPorModo(mode, 'clique para assistir (≈15 min) — depois volte para a análise', 'fonte audiovisual · análise documental abaixo', 'clique para assistir e depois volte para continuar')}
         </span>
       </span>
     </button>

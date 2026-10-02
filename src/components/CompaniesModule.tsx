@@ -11,6 +11,7 @@ import ModeBadge from './ui/ModeBadge'
 import { fmtHours } from '../lib/marx'
 import { mt } from '../i18n'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 import type { ApiProvider } from '../lib/marketApi/types'
 import {
   loadCachedQuotes, loadSyncSettings, quotesToRecords, runSync, saveSyncSettings,
@@ -225,7 +226,7 @@ function MarketSyncPanel({ records, onLoad }: {
 /* ───────────────────── células GLOBAL ───────────────────── */
 
 const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const eOk = Number.isFinite(r.d.e) && r.d.e > 0
   return (
     <>
@@ -276,7 +277,12 @@ const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
       </td>
       <td className="px-3 py-2.5 text-right">
         {r.anosReceita !== undefined ? (
-          <Tip text={`O mercado paga ${r.anosReceita.toFixed(1)} anos da receita atual pela empresa — quanto maior, mais expectativa (fictício) embutida. ${didatico ? '' : '(capitalização/receita)'}`}>
+          <Tip text={textoPorModo(
+            mode,
+            `O mercado paga ${r.anosReceita.toFixed(1)} anos da receita atual pela empresa — quanto maior, mais expectativa (fictício) embutida.`,
+            `Capitalização/receita = ${r.anosReceita.toFixed(1)}×: relação entre valor de mercado e receita anual.`,
+            `Compara quanto a empresa vale na bolsa com quanto vende em um ano: ${r.anosReceita.toFixed(1)} vezes.`,
+          )}>
             <span className="cursor-help font-mono text-[13px] font-bold text-sky-300">{r.anosReceita.toFixed(1)}×</span>
           </Tip>
         ) : <span className="text-zinc-600">—</span>}
@@ -323,7 +329,7 @@ const GlCardM = memo(function GlCardM({ r }: { r: GlRow }) {
 /* ───────────────────── células BRASIL ───────────────────── */
 
 const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const prodOk = r.funcionariosMil > 0
   return (
     <>
@@ -345,15 +351,18 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
       </td>
       <td className="px-3 py-2.5 text-right">
         {prodOk ? (
-          <Tip text={didatico ? 'Quanto riqueza cada trabalhador gera por ano, em média.' : 'Valor novo (v+m) produzido por trabalhador/ano.'}>
+          <Tip text={textoPorModo(mode, 'Quanto riqueza cada trabalhador gera por ano, em média.', 'Valor novo (v+m) produzido por trabalhador/ano.', 'Quanto valor a empresa produz por trabalhador em um ano, em média.')}>
             <span className="font-mono text-[13px]">{fmtBRL(r.produtividade)}</span>
           </Tip>
         ) : <span className="text-zinc-600">—</span>}
       </td>
       <td className="px-3 py-2.5 text-right">
-        <Tip text={didatico
-          ? 'De cada R$1 pago de salário, este é o número de reais de lucro que a empresa extrai do trabalho.'
-          : 'e = m/v: mais-valia dividida pelo capital variável (%).'}>
+        <Tip text={textoPorModo(
+          mode,
+          'De cada R$1 pago de salário, este é o número de reais de lucro que a empresa extrai do trabalho.',
+          'e = m/v: mais-valia dividida pelo capital variável (%).',
+          'Compara o lucro estimado com o total gasto em salários.',
+        )}>
           <span className="font-mono text-[13px] font-bold" style={{ color: severityColor(r.taxaExploracao) }}>
             {Number.isFinite(r.taxaExploracao) ? `${r.taxaExploracao.toLocaleString('pt-BR')}%` : '—'}
           </span>
@@ -369,7 +378,7 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
       </td>
       <td className="px-3 py-2.5 text-right">
         {r.dividendosBi > 0 ? (
-          <Tip text={didatico ? 'Lucro distribuído aos donos — parte pode vazar para o exterior.' : 'Massa de mais-valia distribuída como dividendos no exercício.'}>
+          <Tip text={textoPorModo(mode, 'Lucro distribuído aos donos — parte pode vazar para o exterior.', 'Massa de mais-valia distribuída como dividendos no exercício.', 'Parte do lucro paga aos acionistas como dividendos.')}>
             <span className="cursor-help font-mono text-[13px] text-fuchsia-300">
               R$ {r.dividendosBi.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} bi
             </span>
@@ -721,7 +730,7 @@ export default function CompaniesModule() {
 }
 
 function ExpandedGlRow({ r }: { r: GlRow }) {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const segments = [
     { key: 'c', label: 'Insumos + máquinas consumidas (c)', value: r.d.c, color: '#2196f3' },
     { key: 'v', label: 'Folha de salários (v)', value: r.d.v, color: '#f44336' },
@@ -748,9 +757,12 @@ function ExpandedGlRow({ r }: { r: GlRow }) {
             hint={`A receita anual da ${r.nome} move ${((r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100).toFixed(2)}% do que o mundo inteiro produz em um ano`} />
         </>
       )}
-      texto={didatico
-        ? `Traduzindo: o mercado avalia ${r.nome} em ${r.capTri?.toLocaleString('pt-BR') ?? '?'} trilhões — uma promessa sobre lucros futuros que vale ${r.anosReceita?.toFixed(1) ?? '?'} anos da sua produção atual. Quanto maior esse número sem aumento de produção real, mais "ar fictício" tem o preço.`
-        : `Capitalização/receita = ${r.anosReceita?.toFixed(1) ?? '?'}×: prêmio de expectativa sobre fluxos futuros de m. Extensão do fictício embutido no preço do título de propriedade.`}
+      texto={textoPorModo(
+        mode,
+        `Traduzindo: o mercado avalia ${r.nome} em ${r.capTri?.toLocaleString('pt-BR') ?? '?'} trilhões — uma promessa sobre lucros futuros que vale ${r.anosReceita?.toFixed(1) ?? '?'} anos da sua produção atual. Quanto maior esse número sem aumento de produção real, mais "ar fictício" tem o preço.`,
+        `Capitalização/receita = ${r.anosReceita?.toFixed(1) ?? '?'}×: prêmio de expectativa sobre fluxos futuros de m. Extensão do fictício embutido no preço do título de propriedade.`,
+        `A bolsa avalia ${r.nome} em ${r.capTri?.toLocaleString('pt-BR') ?? '?'} trilhões. Isso equivale a cerca de ${r.anosReceita?.toFixed(1) ?? '?'} anos da receita atual e mostra quanto do preço depende das expectativas sobre o futuro.`,
+      )}
     />
   )
 }

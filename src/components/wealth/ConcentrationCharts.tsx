@@ -1,6 +1,7 @@
 import { CONCENTRATION_STATS, TOP1_SERIES, TOP1_ERAS, WEALTH_BANDS, type WealthBand } from '../../data/concentration'
 import Tip from '../ui/Tip'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 const CW = 720
 const CH = 260
@@ -24,13 +25,16 @@ function top1Path() {
 
 /** Gráfico Top 1% EUA (1913→2024) com eras anotadas. */
 export function TopOneChart() {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
   const trough = point(1975, 22)
   const now = point(2024, 36)
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-sm font-bold text-zinc-100">A riqueza voltou às mãos de poucos — e está indo além de 1929</h3>
+        <h3 className="text-sm font-bold text-zinc-100">
+          {textoPorModo(mode, 'A riqueza voltou às mãos de poucos — e está indo além de 1929', 'Concentração patrimonial do Top 1% nos EUA (1913–2024)', 'Quanto da riqueza ficou com o 1% mais rico ao longo do tempo')}
+        </h3>
         <span className="font-mono text-[10px] text-zinc-500">parcela da riqueza detida pelo Top 1% · EUA · WID.world</span>
       </div>
       <svg viewBox={`0 0 ${CW} ${CH}`} className="mt-2 h-auto w-full" role="img" aria-label="Série histórica da concentração da riqueza no Top 1%">
@@ -68,20 +72,25 @@ export function TopOneChart() {
         <circle cx={point(1929, 46).x} cy={point(1929, 46).y} r="4" fill="#f44336" />
         <text x={point(1929, 46).x + 8} y={point(1929, 46).y - 6} fontSize="9.5" className="fill-red-300">1929 · pico pré-crise</text>
         <circle cx={trough.x} cy={trough.y} r="4" fill="#4caf50" />
-        <text x={trough.x - 8} y={trough.y + 18} textAnchor="end" fontSize="9.5" className="fill-emerald-300">1975 · vale da compressão</text>
+        <text x={trough.x - 8} y={trough.y + 18} textAnchor="end" fontSize="9.5" className="fill-emerald-300">
+          {textoPorModo(mode, '1975 · ponto mais baixo', '1975 · vale da compressão', '1975 · ponto mais baixo')}
+        </text>
         <circle cx={now.x} cy={now.y} r="4.5" fill="#ffc107" stroke="#161b22" strokeWidth="1.5" />
         <text x={now.x - 8} y={now.y - 10} textAnchor="end" fontSize="10" fontWeight="700" className="fill-money font-mono">36% e subindo</text>
 
         {didatico && (
           <text x={point(1957, 42).x} y={point(1957, 42).y} textAnchor="middle" fontSize="9" className="fill-zinc-400">
-            imposto progressivo + sindicatos derrubaram a concentração…
+            {textoPorModo(mode, 'impostos sobre altas rendas + sindicatos reduziram a concentração…', 'imposto progressivo + sindicatos derrubaram a concentração…', 'impostos e sindicatos ajudaram a reduzir essa fatia…')}
           </text>
         )}
       </svg>
       <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-400">
-        {didatico
-          ? 'Não é “sempre foi assim”: entre os anos 1930 e 1970, imposto alto sobre herança/renda alta, sindicatos fortes e Estado de bem-estar COMPRIMIRAM a fatia dos 1% pela metade. A partir de Reagan/Thatcher, desregulamentação e financeirização devolveram tudo — e a curva segue subindo.'
-          : 'Mecânica Piketty (r > g): retorno patrimonial supera crescimento salarial → recomposição autômática da concentração na ausência de compressão política (tributação de herança/patrimônio, densidade sindical).'}
+        {textoPorModo(
+          mode,
+          'Não é “sempre foi assim”: entre os anos 1930 e 1970, imposto alto sobre herança/renda alta, sindicatos fortes e Estado de bem-estar COMPRIMIRAM a fatia dos 1% pela metade. A partir de Reagan/Thatcher, desregulamentação e financeirização devolveram tudo — e a curva segue subindo.',
+          'Mecânica Piketty (r > g): retorno patrimonial supera crescimento salarial → recomposição autômática da concentração na ausência de compressão política (tributação de herança/patrimônio, densidade sindical).',
+          'A parte da riqueza do 1% mais rico mudou bastante no último século. Ela caiu por várias décadas e depois voltou a subir. Impostos, salários, sindicatos, crescimento e preços de imóveis e ações fazem parte dessa história.',
+        )}
       </p>
     </div>
   )
@@ -106,9 +115,9 @@ function Segment({ b, field, total }: { b: WealthBand; field: 'adultosPct' | 'ri
   )
 }
 
-/** Espelho população × riqueza (UBS GWR 2024) — dual-mode. */
+/** Espelho população × riqueza (UBS GWR 2024) — três níveis de leitura. */
 export function MirrorBars() {
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const totalA = WEALTH_BANDS.reduce((s, b) => s + b.adultosPct, 0)
   const totalR = WEALTH_BANDS.reduce((s, b) => s + b.riquezaPct, 0)
 
@@ -145,9 +154,12 @@ export function MirrorBars() {
         ))}
       </ul>
       <p className="mt-2 rounded-lg bg-zinc-950/70 p-2.5 text-[11px] leading-relaxed text-zinc-300">
-        {didatico
-          ? 'Como ler: corte as duas barras na mesma altura. A fatia roxa (1,1% das pessoas) quase some na barra de cima — mas DOMINA a de baixo, com 43% de toda a riqueza. Já a fatia vermelha (metade da humanidade) é gigante em cima e vira um fio de cabelo embaixo. Essa assimetria É a concentração.'
-          : 'Distribuição log-normal com cauda de Pareto: a cauda superior captura a valorização de ativos (r > g), enquanto a base monetiza exclusivamente força de trabalho. A assimetria entre as barras é a assinatura gráfica da financeirização.'}
+        {textoPorModo(
+          mode,
+          'Como ler: corte as duas barras na mesma altura. A fatia roxa (1,1% das pessoas) quase some na barra de cima — mas DOMINA a de baixo, com 43% de toda a riqueza. Já a fatia vermelha (metade da humanidade) é gigante em cima e vira um fio de cabelo embaixo. Essa assimetria É a concentração.',
+          'Distribuição log-normal com cauda de Pareto: a cauda superior captura a valorização de ativos (r > g), enquanto a base monetiza exclusivamente força de trabalho. A assimetria entre as barras é a assinatura gráfica da financeirização.',
+          'Compare as duas barras: um grupo muito pequeno de pessoas aparece com uma parte muito grande da riqueza, enquanto a metade com menos patrimônio fica com uma parcela pequena.',
+        )}
       </p>
     </div>
   )
@@ -158,7 +170,7 @@ export function ConcentrationStats() {
   return (
     <div className="grid gap-3 md:grid-cols-3">
       {CONCENTRATION_STATS.map((st) => (
-        <Tip key={st.label} className="w-full" text={mode !== 'avancado' ? st.tipDidatico : st.tipAvancado}>
+        <Tip key={st.label} className="w-full" text={textoPorModo(mode, st.tipDidatico, st.tipAvancado)}>
           <article className="h-full w-full cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-colors hover:border-zinc-600">
             <div className="font-mono text-2xl font-extrabold text-money">{st.value}</div>
             <div className="mt-1 text-xs font-semibold leading-snug text-zinc-200">{st.label}</div>

@@ -32,7 +32,7 @@ interface AppState {
   tab: TabId
   setTab: (t: TabId) => void
 
-  /** Dual-Mode global: didático (padrão) vs avançado marxista-contábil */
+  /** Três níveis globais: simples, didático (padrão) e avançado marxista-contábil. */
   mode: UIMode
   setMode: (m: UIMode) => void
 

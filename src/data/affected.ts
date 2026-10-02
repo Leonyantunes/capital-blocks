@@ -1,7 +1,7 @@
 /**
  * MÓDULO 08 · SEÇÃO MAPA — "O outro lado do mapa"
  * Países atrasados/explorados pela expansão capitalista (fora dos blocos),
- * com história dual-mode, dados atuais (FMI aprox.) e contagem de
+ * com história em três níveis de leitura, dados atuais (FMI aprox.) e contagem de
  * intervenções documentadas 1890–hoje (Blum/Kinzer/Tufts MIP, aprox.).
  */
 

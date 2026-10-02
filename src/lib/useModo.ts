@@ -6,9 +6,10 @@
  * camada de apresentação que troca só o que a pessoa LÊ, mantendo número,
  * cor e chave intactos.
  *
- * Os demais componentes derivam `didatico = mode !== 'avancado'` direto do
- * store: em modo simples o conteúdo cai no ramo didático (o mais próximo do
- * cotidiano), sem um terceiro par nos dados (ver `lib/simples.ts`).
+ * O modo `simples` é um terceiro nível editorial. Componentes de texto usam
+ * `textoPorModo()` para preferir copy simples explícita e, quando ela não
+ * existe, aplicar uma simplificação conservadora ao texto didático. Números,
+ * datas, percentuais, moedas, cores e chaves de dados permanecem intactos.
  */
 import { useMemo } from 'react'
 import { useApp } from '../store/useApp'

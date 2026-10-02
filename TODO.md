@@ -9,7 +9,7 @@ Critério de sucesso: 60fps sustentados no mapa base e ≥45fps durante tour/zoo
 mid-range (perfis DevTools mobile + device real), com aparência idêntica lado a lado.
 
 > **Auditoria 2026-10-02 — estado de fechamento:** `npm run build` ✅ · `npm test`
-> 97/97 executados ✅ (1 suíte/1 teste deliberadamente skipped) · `test:globe` 392/392 ✅ ·
+> 102/102 executados ✅ (1 suíte/1 teste deliberadamente skipped) · `test:globe` 392/392 ✅ ·
 > `test:framing` 52/52 ✅ · `test:tours` 0 erros/0 avisos ✅. Entraram mais três melhorias
 > sem reduzir a qualidade: pan/pinch/trackpad do mapa 2D agora coalescem eventos em no máximo
 > 1 commit React por frame; o globo 3D recupera DPR/nitidez automaticamente com histerese após
@@ -17,13 +17,23 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > desligados e fluxos invisíveis deixam de recalcular Bézier. O manifesto PWA também passou a
 > usar URLs relativas e foi validado num build com `VITE_BASE=/capital-blocks/`.
 >
-> **Para considerar a versão final:** (1) perfil + comparação visual em Android mid-range real;
-> (2) revisar as 7 fontes ainda marcadas `revisao-pendente`; (3) anexar fonte por estatística às
-> 101 estatísticas dos tours; (4) zerar o aviso editorial de 6 paradas sem ação/dica e revisar os
-> 16 textos avançados sinalizados como curtos; (5) decidir se EN/ES completo faz parte do escopo
-> da v1 — hoje só o chrome está traduzido; (6) ampliar a cobertura de empresas se isso for requisito
-> editorial da v1; (7) capturar screenshots/GIFs reais para a landing. O globo pode sair do selo
+> **V1.0.0:** o escopo funcional/editorial está fechado. Tradução completa EN/ES foi
+> explicitamente movida para o ciclo pós-V1; hoje só o chrome está parcialmente traduzido.
+> Como validações/polimentos pós-release permanecem: (1) perfil + comparação visual em Android
+> mid-range real; (2) ampliar a cobertura de empresas quando houver nova rodada editorial;
+> (3) capturar screenshots/GIFs reais para a landing. Revisão das fontes pendentes, proveniência das 101
+> estatísticas dos tours e auditoria editorial (0 erros/0 avisos) foram concluídas em 2026-10-02.
+> O globo pode sair do selo
 > BETA depois da validação visual/performance em aparelho real.
+
+> **2026-10-02 — Fecho editorial dos tours + 3º nível de leitura:** as 101 estatísticas
+> dos 6 tours agora carregam `sourceIds` canônicos e os cards 2D/3D abrem diretamente a
+> ficha da fonte no Módulo 10. A auditoria dos tours passou a validar arrays aninhados de
+> `didStats` corretamente; `test:tours` fecha com 101/101 estatísticas conferidas. As 49
+> paradas têm texto `simples` explícito e o teste editorial bloqueia jargões técnicos no
+> nível fundamental/início do médio. A varredura transversal também levou `textoPorModo()`
+> aos principais módulos, simuladores, drawers, gráficos e tooltips. O registro de fontes
+> está sem entradas efetivas em `revisao-pendente` nesta data.
 
 > **Status (2026-09-12):** P0 concluída (commit 7cc5f7a 2D · e59d585 3D+worker) e P2
 > concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico
@@ -146,16 +156,16 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
     flag `showRefs` no store + `ui/RefTag.tsx` + `fonte` no `MetricCard`
     (proveniência "modelo do app" nos cartões de slider) + toggle nas Configurações.
     Os painéis que já exibiam fonte inline (IndicatorsStrip, FlowCard, drawers,
-    wealth, linhas expandidas do Raio-X) seguem como estão. Falta ainda: fonte
-    por estatística nos tours (101 stats — campanha editorial própria).
+    wealth, linhas expandidas do Raio-X) seguem como estão. As 101 estatísticas dos
+    tours agora também têm `sourceIds` canônicos e atalho direto para a ficha da fonte.
 15. **Página de configurações** — ✅ CONCLUÍDA (2026-09-30): aba `settings` no
     registro canônico (fora da fileira numerada), botão ⚙ na Navbar (desktop,
     mobile e gaveta), página com nível de leitura, tema, idioma, modo referências
     e modo apresentação, com descrições e estado anunciado (role="switch").
-16. **Auditoria didático × avançado** — parcial: 52 flows, consequences e
-    alternatives têm pares `did`/`adv` e o `test:tours` valida os tours. Falta
-    varredura formal módulo a módulo (há pares quase idênticos nos simuladores).
-17. **Modo didático simplificado (3º nível)** — ✅ CONCLUÍDA (133504c): `UIMode
+16. **Auditoria didático × avançado × simples** — ✅ CONCLUÍDA na rodada de fechamento
+    da V1: tours, módulos principais, simuladores, drawers, gráficos e tooltips passaram
+    pela varredura; `test:tours:editorial` bloqueia regressões editoriais nas 49 paradas.
+17. **Modo didático simplificado (3º nível)** — ✅ CONCLUÍDA (2026-10-02): `UIMode
     'simples'` com estratégia `resolve()` (simples → didático → avançado) e
     traduções curadas em `src/lib/simples.ts` — simplifica a LINGUAGEM sem
     simplificar o NÚMERO.
@@ -168,9 +178,9 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
 19. **Completar a listagem de empresas do Raio-X** — parcial: dedupe com fontes
     dinâmicas resolvido (merge por ticker) e as globais agora têm `fonte` por
     registro (2026-09-30). Falta ampliar cobertura (empresas ausentes relevantes).
-20. **Tradução completa do app para ES e EN** — parcial: o chrome (`i18n.ts`)
+20. **Tradução completa do app para ES e EN — PÓS-V1** — parcial: o chrome (`i18n.ts`)
     cobre a UI inteira incluindo Configurações e Módulo 10; o conteúdo dos
-    módulos/tours/dados segue PT-BR. Grande esforço editorial: planejar pipeline
+    módulos/tours/dados segue PT-BR. Não bloqueia a V1. Grande esforço editorial: planejar pipeline
     (dados dual-language em `src/data` vs camada de tradução).
 21. **Landing page profissional** — ✅ CONCLUÍDA (2026-09-30): página estática
     autocontida em `public/landing.html` (design system do app, hero com a

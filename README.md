@@ -1,5 +1,7 @@
 # Capital Blocks
 
+**Versão 1.0.0** — primeira versão pública estável.
+
 **A anatomia do capitalismo global** — um visualizador interativo, em português, que
 traduz categorias de *O Capital* em componentes visuais alimentados por dados
 econômicos reais.
@@ -9,8 +11,9 @@ capitais com as linhas de suprimento das matrizes, o mecanismo de dívida pela l
 MMT, um raio-X de ~160 empresas decompostas pela mesma fórmula `W = c + v + m`, e
 simuladores jogáveis (salário por peça, curva da taxa de lucro, curva kaleckiana).
 
-> 🇧🇷 Interface e conteúdo em **português do Brasil**. O "chrome" da UI tem esboço de
-> tradução EN/ES, mas o conteúdo dos módulos é PT-BR.
+> 🇧🇷 A V1 é publicada com interface e conteúdo em **português do Brasil**. O "chrome"
+> da UI já tem tradução parcial EN/ES; a tradução completa dos módulos, dados e tours
+> fica para o ciclo pós-V1.
 
 ---
 
@@ -22,7 +25,7 @@ simuladores jogáveis (salário por peça, curva da taxa de lucro, curva kalecki
 - [Stack](#stack)
 - [Módulos](#módulos)
 - [Arquitetura](#arquitetura)
-- [Dual-Mode (Didático ⇄ Avançado)](#dual-mode-didático--avançado)
+- [Três níveis de leitura](#três-níveis-de-leitura)
 - [Design System](#design-system)
 - [Como os dados entram](#como-os-dados-entram)
 - [Metodologia e limites](#metodologia-e-limites)
@@ -57,7 +60,7 @@ num lugar só, com descrições.
 
 ## Como rodar
 
-Requer **Node 20+**.
+Requer **Node 22+**.
 
 ```bash
 npm install
@@ -79,9 +82,10 @@ inteiramente cliente. Tudo o que precisa saber está nos arquivos de `src/data/`
 | `npm run test:globe` | Testes de propriedade do voo da câmera 3D |
 | `npm run test:framing` | Testes de enquadramento de rota (2D/3D, antimeridiano) |
 | `npm run test:tours` | Auditoria de integridade do contrato de parada dos tours |
+| `npm run test:tours:editorial` | Auditoria das 49 paradas, do nível Simples e da qualidade editorial |
 
-As três últimas suítes são `.mjs` puros (sem dependência de teste) e verificam
-invariantes do globe e a integridade dos tours. O deploy no GitHub Pages roda as
+As quatro suítes auxiliares são `.mjs` puros (sem dependência de teste) e verificam
+invariantes do globo, enquadramento e integridade/editorial dos tours. O deploy no GitHub Pages roda as
 **cinco** suítes antes do build — nada quebrado é publicado.
 
 ## Stack
@@ -154,17 +158,22 @@ Decisões que valem destaque:
 - **Service worker** com estratégia network-first para HTML (deploy novo nunca fica
   preso num `index.html` antigo) e cache-first para assets com hash.
 
-## Dual-Mode (Didático ⇄ Avançado)
+## Três níveis de leitura
 
-Alternador global no cabeçalho, padrão **Didático**. Vale para todo o app.
+Alternador global no cabeçalho, padrão **Didático**. Vale para todo o app e mantém os
+mesmos números, datas e unidades: muda a linguagem, não o dado.
 
-| Aspecto | Didático | Avançado |
-| :--- | :--- | :--- |
-| Automação | "Nível de Automação" | Composição orgânica `k = c/v` |
-| Exploração | "Intensidade de Exploração" + relógio | Taxa de mais-valia `e = m/v` |
-| Lucro | "Trabalho não pago na jornada" | `g = m/(c+v)` e tendência decrescente |
-| Fórmulas | deslizam para fora | sempre visíveis |
-| Tooltips | linguagem direta | definições formais |
+| Aspecto | Simples | Didático | Avançado |
+| :--- | :--- | :--- | :--- |
+| Automação | "Máquinas por trabalhador" | "Nível de Automação" | Composição orgânica `k = c/v` |
+| Exploração | "Tempo de trabalho não pago" | "Intensidade de Exploração" + relógio | Taxa de mais-valia `e = m/v` |
+| Lucro | explicação em linguagem cotidiana | "Trabalho não pago na jornada" | `g = m/(c+v)` e tendência decrescente |
+| Fórmulas | evitadas quando não são necessárias | aparecem com apoio visual | sempre visíveis |
+| Tooltips | vocabulário de início do ensino médio | linguagem direta | definições formais |
+
+Nos tours, as **49 paradas** têm copy simples explícita. Nos demais componentes,
+`textoPorModo()` prefere copy simples curada e usa uma simplificação conservadora do
+texto didático como fallback, preservando números e unidades.
 
 ## Design System
 
@@ -192,7 +201,7 @@ Tipografia: Inter (UI) + JetBrains Mono (toda grandeza econômica).
 Este projeto leva dados a sério, e isso é **documentado como contrato**:
 
 - [`DATA-GUIDELINES.md`](DATA-GUIDELINES.md) — política editorial: fonte primária + ano em
-  todo número, textos dual-mode, flag `estimate`, semântica de cores conceituais.
+  todo número, níveis de leitura, flag `estimate`, semântica de cores conceituais.
 - [`DATA-STANDARD.md`](DATA-STANDARD.md) — contrato legível por humanos **e por IA**:
   schemas TypeScript, vocabulários controlados, tabela de roteamento "fato → arquivo
   canônico" e workflow de verificação.
@@ -204,6 +213,10 @@ Este projeto leva dados a sério, e isso é **documentado como contrato**:
 
 O Módulo 10 expõe esse registro na UI, incluindo o que ainda está pendente. Um dado
 incompleto é exibido com honestidade, não escondido.
+
+As **101 estatísticas dos tours** apontam para uma ou mais entradas canônicas desse
+registro e exibem atalho para a fonte diretamente nos cards do mapa 2D e do globo 3D.
+Em 2026-10-02 não havia nenhuma entrada efetivamente marcada `revisao-pendente`.
 
 **Fontes dinâmicas de mercado** (BRAPI/B3 e Alpha Vantage) são **desligadas por
 padrão** e ficam na própria página do Módulo 05. Quando ligadas, o token é o **do

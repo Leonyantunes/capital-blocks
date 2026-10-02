@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { THEORY_TOPICS } from '../data/theory'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 /**
  * PILAR 2/3/4 — Card comparativo: interpretação Ortodoxa dominante ×
@@ -8,10 +9,10 @@ import { useApp } from '../store/useApp'
  */
 export default function TheoryCompareCard() {
   const [topicId, setTopicId] = useState(THEORY_TOPICS[0].id)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
   const topic = THEORY_TOPICS.find((t) => t.id === topicId)!
-  const ortoBody = didatico ? topic.ortodoxa.tese : `${topic.ortodoxa.tese} ${topic.ortodoxa.contra}`
-  const hetBody = didatico ? topic.heterodoxa.tese : `${topic.heterodoxa.tese} · Ref.: ${topic.heterodoxa.autores}`
+  const ortoBody = textoPorModo(mode, topic.ortodoxa.tese, `${topic.ortodoxa.tese} ${topic.ortodoxa.contra}`)
+  const hetBody = textoPorModo(mode, topic.heterodoxa.tese, `${topic.heterodoxa.tese} · Ref.: ${topic.heterodoxa.autores}`)
 
   return (
     <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { computeCircuit, profitCurve } from '../lib/marx'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 const W = 660
 const H = 250
@@ -42,14 +43,20 @@ export default function ProfitCurve() {
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold text-zinc-200">
-          {mode !== 'avancado' ? (
-            <>Quanto maior a automação, menor o lucro sobre o total investido</>
-          ) : (
-            <>Tendência da taxa de lucro <span className="font-mono text-zinc-500">g = m/(c+v)</span></>
+          {textoPorModo(
+            mode,
+            'Quanto maior a automação, menor o lucro sobre o total investido',
+            'Tendência da taxa de lucro g = m/(c+v)',
+            'Como o lucro muda quando há mais máquinas por trabalhador',
           )}
         </h3>
         <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-zinc-400">
-          curvas de família para e fixo · marcador = simulação atual
+          {textoPorModo(
+            mode,
+            'outras curvas mantêm o mesmo nível de exploração · ponto = situação atual',
+            'curvas de família para e fixo · marcador = simulação atual',
+            'linhas = outros cenários · ponto amarelo = situação atual',
+          )}
         </span>
       </div>
 
@@ -69,7 +76,7 @@ export default function ProfitCurve() {
         ))}
         <text x={(W - PAD.r + PAD.l) / 2} y={H - 4} textAnchor="middle" fontSize="10"
           className="fill-zinc-400">
-          {mode !== 'avancado' ? 'nível de automação →' : 'composição orgânica k = c/v →'}
+          {textoPorModo(mode, 'nível de automação →', 'composição orgânica k = c/v →', 'mais máquinas por trabalhador →')}
         </text>
 
         {/* família */}
@@ -88,14 +95,25 @@ export default function ProfitCurve() {
           className="fill-amber-300 font-mono">g = {current.profitRate.toFixed(1)}%</text>
       </svg>
 
-      <InsightNote profitRate={current.profitRate} k={k} />
+      <InsightNote profitRate={current.profitRate} k={k} mode={mode} />
     </div>
   )
 }
 
-function InsightNote({ profitRate, k }: { profitRate: number; k: number }) {
+function InsightNote({ profitRate, k, mode }: { profitRate: number; k: number; mode: 'simples' | 'didatico' | 'avancado' }) {
   const gRef = computeCircuit(K_MIN, useApp.getState().e).profitRate
   const loss = gRef - profitRate
+  if (mode === 'simples') {
+    return (
+      <p className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950/70 p-2.5 text-xs leading-relaxed text-zinc-400">
+        Neste cenário, com <span className="font-mono text-sky-300">{k.toFixed(1)}</span> de máquinas por trabalhador,
+        o lucro sobre o total investido fica em{' '}
+        <span className="font-mono font-semibold text-emerald-300">{profitRate.toFixed(1)}%</span>. Em comparação com o
+        menor nível de máquinas do gráfico, isso representa uma queda de{' '}
+        <span className="text-zinc-200">{loss.toFixed(1)} pontos percentuais</span> neste modelo.
+      </p>
+    )
+  }
   return (
     <p className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950/70 p-2.5 text-xs leading-relaxed text-zinc-400">
       Com <span className="font-mono text-sky-300">k = {k.toFixed(1)}</span>, a taxa de lucro é{' '}

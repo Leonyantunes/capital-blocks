@@ -9,6 +9,7 @@ import ModeBadge from './ui/ModeBadge'
 import { BUDGET_BR, DEATH_STEPS } from '../data/debt'
 import { mt } from '../i18n'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 function BudgetDashboard() {
   const segments = BUDGET_BR.map((b) => ({ key: b.key, label: b.label, value: b.pct, color: b.color }))
@@ -97,7 +98,7 @@ export default function DebtModule() {
                   {s.n}
                 </span>
                 <h4 className="text-sm font-semibold" style={{ color: s.accent }}>{s.title}</h4>
-                <p className="mt-1 text-xs leading-relaxed text-zinc-300">{didatico ? s.didatico : s.avancado}</p>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, s.didatico, s.avancado)}</p>
               </m.li>
             ))}
           </ol>

@@ -39,6 +39,8 @@ jobs:
         run: npm run test:framing
       - name: Auditoria de integridade dos tours
         run: npm run test:tours
+      - name: Auditoria editorial dos tours e modo simples
+        run: npm run test:tours:editorial
 
   build:
     needs: test

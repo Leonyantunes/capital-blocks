@@ -7,6 +7,7 @@ import ModeBadge from '../ui/ModeBadge'
 import Tip from '../ui/Tip'
 import { mt } from '../../i18n'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 type Era = 'historica' | 'atual'
 
@@ -46,7 +47,8 @@ function EpisodeStrip({ selected, onSelect }: { selected: Episode; onSelect: (e:
 function MechanismCard({ mec, color, index }: { mec: Episode['mecanismos'][number]; color: string; index: number }) {
   const [open, setOpen] = useState(index === 0)
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
   return (
     <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/60">
       <button onClick={() => setOpen((o) => !o)}
@@ -65,7 +67,7 @@ function MechanismCard({ mec, color, index }: { mec: Episode['mecanismos'][numbe
           <m.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22 }} className="overflow-hidden">
             <p className="border-t border-zinc-800/70 px-4 pb-3.5 pt-3 text-xs leading-relaxed text-zinc-200">
-              {didatico ? mec.did : mec.adv}
+              {textoPorModo(mode, mec.did, mec.adv)}
             </p>
           </m.div>
         )}
@@ -78,7 +80,8 @@ export default function ConsequencesModule() {
   const lang = useApp((s) => s.lang)
   const [era, setEra] = useState<Era>('historica')
   const [selId, setSelId] = useState(EPISODES[0].id)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   const ep = EPISODES.find((e) => e.id === selId) ?? EPISODES[0]
   const eraEps = EPISODES.filter((e) => e.era === era)
@@ -167,7 +170,7 @@ export default function ConsequencesModule() {
             <div className="mt-1 font-mono text-3xl font-extrabold" style={{ color: ep.color }}>{ep.vitimas.numero}</div>
             <div className="mt-1 text-xs text-zinc-300">{ep.vitimas.rotulo}</div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-400">
-              {didatico ? ep.vitimas.did : ep.vitimas.adv}
+              {textoPorModo(mode, ep.vitimas.did, ep.vitimas.adv)}
             </p>
           </section>
 
@@ -190,7 +193,7 @@ export default function ConsequencesModule() {
               <span className="font-mono text-[9.5px] text-zinc-600">{ep.aprof.autores}</span>
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-zinc-300">
-              {didatico ? ep.aprof.did : ep.aprof.adv}
+              {textoPorModo(mode, ep.aprof.did, ep.aprof.adv)}
             </p>
           </section>
         </m.article>

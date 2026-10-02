@@ -5,6 +5,7 @@ import ModeBadge from '../ui/ModeBadge'
 import { COOP_STATS, ALT_CASES, PAY_RATIOS, JG } from '../../data/alternatives'
 import { mt } from '../../i18n'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 /** Pirâmide salarial interativa: cooperativa × corporações. */
 function PayPyramid() {
@@ -60,7 +61,8 @@ function JobGuaranteeSim() {
   const [participantes, setParticipantes] = useState(12) // milhões
   const [salario, setSalario] = useState(1518)
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
   const custoBi = (participantes * 1e6 * salario * 13.3) / 1e9
   const pctPib = (custoBi / (JG.pibBrTri * 1000)) * 100
   const vsJuros = (custoBi / JG.jurosAnoBi) * 100
@@ -124,7 +126,8 @@ function JobGuaranteeSim() {
 /** MÓDULO 09 — E PARA ONDE PODEMOS IR? */
 export default function AlternativesModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
+  const didatico = mode !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">
@@ -167,12 +170,12 @@ export default function AlternativesModule() {
               <span className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-wider"
                 style={{ color: c.color, background: `${c.color}18` }}>{c.local.split('·')[0].trim()}</span>
             </div>
-            <Tip text={didatico ? 'Dado-chave do caso — passe o mouse para a leitura técnica.' : 'Dado-chave do caso.'}>
+            <Tip text={textoPorModo(mode, 'Dado-chave do caso — passe o mouse para a leitura técnica.', 'Dado-chave do caso.', 'Número importante deste caso.')}>
               <div className="mt-2 cursor-help rounded-lg bg-zinc-950/60 p-2 font-mono text-[11px] font-bold" style={{ color: c.color }}>
                 {c.dado}
               </div>
             </Tip>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-300">{didatico ? c.did : c.adv}</p>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, c.did, c.adv)}</p>
             <div className="mt-auto pt-2 font-mono text-[9px] uppercase tracking-wider text-zinc-600">{c.pilares}</div>
           </m.article>
         ))}
@@ -187,7 +190,7 @@ export default function AlternativesModule() {
       {/* fechamento */}
       <section className="rounded-xl border border-dashed border-emerald-400/40 bg-emerald-400/5 p-4">
         <h4 className="text-sm font-bold text-emerald-300">
-          {didatico ? 'O ponto final (que é um começo)' : 'Conclusão analítica'}
+          {textoPorModo(mode, 'O ponto final (que é um começo)', 'Conclusão analítica', 'O que aprendemos')}
         </h4>
         <p className="mt-1 text-xs leading-relaxed text-zinc-300">
           {didatico

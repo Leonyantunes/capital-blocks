@@ -572,13 +572,24 @@ export const SOURCES: SourceRecord[] = [
     categoria: 'comercio',
     tipo: 'base-oficial',
     ano: '2024',
-    urls: [],
+    urls: [
+      {
+        rotulo: 'US Census — International Trade Data',
+        url: 'https://www.census.gov/foreign-trade/data/index.html',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'Eurostat — International trade in goods (Comext)',
+        url: 'https://ec.europa.eu/eurostat/web/international-trade-in-goods/database',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'Os registros oficiais de importação e exportação de cada país.',
     resumoAvancado: 'Base para rotas comerciais bilaterais e cadeias produtivas.',
     cobre: ['Comércio bilateral e setorial usado nos fluxos do mapa.'],
     usadoEm: ['src/data/flows.ts', 'Mapa 2D'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Registrar órgão, tabela e ano por fluxo antes de citar valores isolados.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO: Census e Eurostat/Comext oferecem séries por parceiro, produto, fluxo e período. O registro funciona como fonte-guarda-chuva; cada valor isolado continua devendo declarar órgão, tabela/dataset, período e unidade no próprio fluxo.',
   },
   {
     id: 'zucman-tjn-paraísos',
@@ -614,13 +625,24 @@ export const SOURCES: SourceRecord[] = [
     categoria: 'moeda',
     tipo: 'base-oficial',
     ano: '2024',
-    urls: [],
+    urls: [
+      {
+        rotulo: 'Treasury International Capital (TIC) — portal oficial',
+        url: 'https://home.treasury.gov/data/treasury-international-capital-tic-system',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'TIC — holdings anuais de títulos por país',
+        url: 'https://home.treasury.gov/data/treasury-international-capital-tic-system/tic-forms-instructions/us-claims-on-foreigners-from-holdings-of-foreign-securities',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'Quem compra e vende títulos e dólares dos EUA no mundo.',
     resumoAvancado: 'Base para liquidez do dólar e detenção estrangeira de Treasuries.',
     cobre: ['Fluxos de capitais e títulos do Tesouro dos EUA.'],
     usadoEm: ['src/data/flows.ts', 'Mapa 2D'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Localizar relatório/mês exato antes de citar valores isolados.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO: o TIC publica transações mensais e holdings mensais/anuais, incluindo Major Foreign Holders of Treasury Securities. Para números de estoque, registrar a data de referência; para fluxo, registrar o mês/período — não misturar estoque e transação.',
   },
   {
     id: 'pboc-cips',
@@ -628,14 +650,25 @@ export const SOURCES: SourceRecord[] = [
     instituicao: 'People’s Bank of China',
     categoria: 'moeda',
     tipo: 'base-oficial',
-    ano: '2023–2024',
-    urls: [],
+    ano: '2024',
+    urls: [
+      {
+        rotulo: 'PBoC — RMB Internationalization Reports',
+        url: 'https://www.pbc.gov.cn/en/3688241/3688636/3828468/index.html',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'CIPS — retrospectiva operacional de 2024',
+        url: 'https://www.cips.com.cn/kjjqgs/2025-01/15/article_2026071719450899636.shtml',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'Como a China tenta fazer comércio sem depender do dólar.',
     resumoAvancado: 'Base para CIPS, liquidação em yuan e infraestrutura alternativa ao SWIFT.',
     cobre: ['Comércio Rússia–China em moedas locais e pagamentos em yuan.'],
     usadoEm: ['src/data/flows.ts', 'Mapa 2D'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Registrar relatório/ano exato antes de citar percentuais isolados.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO: o PBoC mantém a série anual de internacionalização do RMB e o CIPS publica estatísticas operacionais/participantes. Percentuais de comércio em moedas locais exigem a fonte bilateral correspondente; CIPS mede infraestrutura de pagamento, não participação do dólar por si só.',
   },
   {
     id: 'sipri-milex',
@@ -706,13 +739,24 @@ export const SOURCES: SourceRecord[] = [
     categoria: 'guerra',
     tipo: 'base-oficial',
     ano: '2024',
-    urls: [],
+    urls: [
+      {
+        rotulo: 'Comissão Europeia — European Defence Industrial Strategy (5 mar 2024)',
+        url: 'https://commission.europa.eu/news-and-media/news/first-ever-european-defence-industrial-strategy-enhance-europes-readiness-and-security-2024-03-05_en',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'Comissão Europeia — ASAP e capacidade de munição',
+        url: 'https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/story-von-der-leyen-commission/solidarity-ukraine_en',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'A meta europeia de produzir munição e armas em casa.',
     resumoAvancado: 'Base para militarização europeia e metas de produção de projéteis.',
     cobre: ['Meta de produção de projéteis e gasto militar europeu.'],
     usadoEm: ['src/data/wars.ts', 'War Room'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Localizar documento/meta exata antes de citar valores isolados.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO: a EDIS foi apresentada em 5/3/2024 e fixa metas de compras conjuntas/europeias até 2030; a meta de capacidade de 2 milhões de munições/ano até o fim de 2025 aparece no programa ASAP. Não atribuir a meta de munições à EDIS quando a fonte específica é o ASAP.',
   },
   {
     id: 'nist-chips',
@@ -742,13 +786,24 @@ export const SOURCES: SourceRecord[] = [
     categoria: 'guerra',
     tipo: 'base-oficial',
     ano: '2022–2024',
-    urls: [],
+    urls: [
+      {
+        rotulo: 'BIS — pacote de controles de 2 dez 2024',
+        url: 'https://www.bis.gov/press-release/commerce-strengthens-export-controls-restrict-chinas-capability-produce-advanced-semiconductors-military',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'Federal Register — 89 FR 96790 (regra AJ74)',
+        url: 'https://www.govinfo.gov/content/pkg/FR-2024-12-05/pdf/2024-28270.pdf',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'As regras dos EUA que tentam travar os chips avançados da China.',
     resumoAvancado: 'Base para export controls sobre EUV, foundry avançada e chips de IA.',
     cobre: ['Regime de controles sobre chips/EUV e guerra tecnológica.'],
     usadoEm: ['src/data/wars.ts', 'War Room'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Registrar regra/data exata do Federal Register antes de citar medidas isoladas.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO: regra 89 FR 96790, efetiva em 2/12/2024, adicionou controles sobre equipamentos de fabricação, HBM, software/tecnologia e regras FDP; o comunicado BIS resume 24 tipos de equipamentos, 3 tipos de software e mudanças na Entity List. Medidas futuras devem ser versionadas separadamente.',
   },
   {
     id: 'orcamento-uniao',
@@ -756,14 +811,30 @@ export const SOURCES: SourceRecord[] = [
     instituicao: 'Governo Federal do Brasil',
     categoria: 'fiscal-br',
     tipo: 'base-oficial',
-    ano: 'safra pendente',
-    urls: [],
+    ano: 'LOA 2025',
+    urls: [
+      {
+        rotulo: 'MPO — Orçamento Cidadão 2025',
+        url: 'https://www.gov.br/planejamento/pt-br/assuntos/orcamento/orcamento-cidadao/orcamento-cidadao-2025',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'MPO — Lei Orçamentária Anual 2025',
+        url: 'https://www.gov.br/planejamento/pt-br/assuntos/orcamento/orcamentos-anuais/2025/loa/lei-orcamentaria-anual-loa-2025',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'MPO — Painel do Orçamento Federal / SIOP',
+        url: 'https://www.gov.br/planejamento/pt-br/acesso-a-informacao/transparencia-e-prestacao-de-contas/mpo-transparente/orcamento',
+        acessoEm: '2026-10-02',
+      },
+    ],
     resumoDidatico: 'Para onde vai cada R$100 do orçamento federal.',
     resumoAvancado: 'Base do painel orçamentário; distinguir despesa primária, financeira e rolagem.',
     cobre: ['Juros, amortizações, saúde, educação, assistência e infraestrutura.'],
     usadoEm: ['src/data/debt.ts', 'Módulo Dívida'],
-    verificacao: 'revisao-pendente',
-    observacao: 'Registrar ano, conceito de despesa e URL do relatório antes de citar percentuais isolados.',
+    verificacao: 'url-incluida',
+    observacao: 'VERIFICADO para LOA 2025: o Orçamento Cidadão separa despesas primárias e financeiras e o SIOP permite consultar a execução. O app deve rotular claramente LOA (autorização) versus execução e nunca tratar rolagem/amortização da dívida como se fosse despesa primária comparável a saúde ou educação.',
   },
   {
     id: 'ibpt-millenium-fiscal',
@@ -1214,14 +1285,25 @@ export const SOURCES: SourceRecord[] = [
     categoria: 'metodo',
     tipo: 'metodologia-interna',
     ano: 'premissas didáticas',
-    urls: [],
-    resumoDidatico: 'Chutes organizados para estimar lucro e folha quando faltam dados.',
-    resumoAvancado: 'Tabela de margem líquida e participação da folha por setor; exige calibragem.',
+    urls: [
+      {
+        rotulo: 'OCDE — valor adicionado em corporações não financeiras',
+        url: 'https://www.oecd.org/en/data/indicators/value-added-in-non-financial-corporations.html',
+        acessoEm: '2026-10-02',
+      },
+      {
+        rotulo: 'OCDE — remuneração de empregados por atividade',
+        url: 'https://www.oecd.org/en/data/indicators/employee-compensation-by-activity.html',
+        acessoEm: '2026-10-02',
+      },
+    ],
+    resumoDidatico: 'Estimativas sinalizadas para lucro e folha quando a empresa não traz todos os dados; a OCDE ajuda a conferir se a ordem de grandeza do setor faz sentido.',
+    resumoAvancado: 'Premissas internas de margem e participação da folha, tratadas como estimativas e calibradas contra contas setoriais da OCDE; não são parâmetros oficiais nem substituem demonstrações financeiras.',
     cobre: ['Estimativas de registros dinâmicos sem fundamentais completos.'],
     usadoEm: ['src/lib/companyMetrics.ts', 'src/lib/marketApi/sync.ts'],
     estimate: true,
-    verificacao: 'revisao-pendente',
-    observacao: 'Calibrar com OCDE/BLS/relatórios setoriais antes de tratar como parâmetro estável.',
+    verificacao: 'url-incluida',
+    observacao: 'METODOLOGIA, NÃO ESTATÍSTICA: a OCDE fornece participação do trabalho/capital no valor adicionado e remuneração por atividade, úteis como teste de plausibilidade. As margens internas continuam estimate=true e não devem ser apresentadas como “média oficial do setor”. Preferir DFs da empresa sempre que disponíveis.',
   },
   {
     id: 'fluxos-tiers',
@@ -1238,6 +1320,19 @@ export const SOURCES: SourceRecord[] = [
     verificacao: 'fonte-declarada',
   },
 ];
+
+/** Índice canônico para ligar números, tours e cards à página de fontes. */
+export const SOURCE_BY_ID: Readonly<Record<string, SourceRecord>> = Object.freeze(
+  Object.fromEntries(SOURCES.map((s) => [s.id, s])) as Record<string, SourceRecord>,
+);
+
+export function sourceById(id: string): SourceRecord | undefined {
+  return SOURCE_BY_ID[id];
+}
+
+export function sourcePrimaryUrl(id: string): string | undefined {
+  return SOURCE_BY_ID[id]?.urls[0]?.url;
+}
 
 export function sourcesSummary(list: SourceRecord[] = SOURCES) {
   const porCategoria = SOURCE_CATEGORIES.map((c) => ({

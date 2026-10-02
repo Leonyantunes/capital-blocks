@@ -15,15 +15,17 @@ import {
   rotuloDoModo,
   descricaoDoModo,
   resolve,
+  simplificarTexto,
+  textoPorModo,
   termoSimples,
 } from '../lib/simples'
 
 describe('resolve — cadeia de escolha do texto', () => {
-  it('o campo `simples` vence SEMPRE (qualquer modo)', () => {
+  it('cada modo respeita o seu nível quando os três textos existem', () => {
     const t = { simples: 'facinho', did: 'conta', adv: 'fórmula' }
     expect(resolve(t, 'simples')).toBe('facinho')
-    expect(resolve(t, 'didatico')).toBe('facinho')
-    expect(resolve(t, 'avancado')).toBe('facinho')
+    expect(resolve(t, 'didatico')).toBe('conta')
+    expect(resolve(t, 'avancado')).toBe('fórmula')
   })
 
   it('sem `simples`: didático vence avançado nos modos simples e didático', () => {
@@ -43,10 +45,31 @@ describe('resolve — cadeia de escolha do texto', () => {
     expect(typeof r).toBe('string')
   })
 
-  it('em modo avançado, `simples` presente ainda vence (dado explícito)', () => {
-    /* decisão: se o dado TEM campo simples, ele é a versão certa em qualquer
-       nível — o modo não força o avançado sobre uma tradução curada */
-    expect(resolve({ simples: 'facinho', adv: 'fórmula' }, 'avancado')).toBe('facinho')
+  it('em modo avançado, `adv` vence o texto simples', () => {
+    expect(resolve({ simples: 'facinho', adv: 'fórmula' }, 'avancado')).toBe('fórmula')
+  })
+
+  it('modo simples simplifica o didático quando não há string simples explícita', () => {
+    expect(resolve({ did: 'A primarização aumenta a financeirização.' }, 'simples'))
+      .toBe('A dependência maior de produtos primários aumenta a importância das finanças.')
+  })
+
+  it('textoPorModo é um atalho coerente para componentes', () => {
+    expect(textoPorModo('didatico', 'did', 'adv', 'sim')).toBe('did')
+    expect(textoPorModo('avancado', 'did', 'adv', 'sim')).toBe('adv')
+    expect(textoPorModo('simples', 'did', 'adv', 'sim')).toBe('sim')
+  })
+})
+
+describe('simplificarTexto — cobertura transversal sem mexer nos números', () => {
+  it('troca vocabulário técnico e preserva números/moedas', () => {
+    const src = 'US$ 95 bi em primarização e mais-valia; 27% em 1985.'
+    const out = simplificarTexto(src)
+    expect(out).toContain('US$ 95 bi')
+    expect(out).toContain('27%')
+    expect(out).toContain('1985')
+    expect(out).toContain('dependência maior de produtos primários')
+    expect(out).toContain('valor criado pelo trabalho e não pago em salário')
   })
 })
 

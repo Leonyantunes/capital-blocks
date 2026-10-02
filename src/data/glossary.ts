@@ -1,4 +1,4 @@
-/** GLOSSÁRIO — termos-chave com definição dual-mode (THEORY.md compliant). */
+/** GLOSSÁRIO — termos-chave com definições para os três níveis de leitura (THEORY.md compliant). */
 
 export interface GlossaryTerm {
   id: string

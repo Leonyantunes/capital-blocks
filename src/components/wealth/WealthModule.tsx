@@ -7,6 +7,7 @@ import Tip from '../ui/Tip'
 import ModeBadge from '../ui/ModeBadge'
 import { mt } from '../../i18n'
 import { useApp } from '../../store/useApp'
+import { textoPorModo } from '../../lib/simples'
 
 /**
  * MÓDULO 07 — QUEM SUSTENTA QUÊ?
@@ -17,7 +18,7 @@ import { useApp } from '../../store/useApp'
  */
 export default function WealthModule() {
   const lang = useApp((s) => s.lang)
-  const didatico = useApp((s) => s.mode) !== 'avancado'
+  const mode = useApp((s) => s.mode)
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,9 +29,12 @@ export default function WealthModule() {
         </div>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">{mt(lang, 'wealth').title}</h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? 'Duas perguntas simples, duas respostas desconfortáveis: (1) quem produz TODA a riqueza? O trabalho. (2) Onde ela fica? Em cima, nas mãos de cada vez menos gente. Aqui você segue o dinheiro passo a passo — do salário até o bilionário.'
-            : 'Circulação do valor entre classes (Kalecki/Marx) + dinâmica seular da concentração patrimonial (WID/Piketty): compressão distributiva 1936–79 como exceção política, não regra econômica; r > g como força restauradora.'}
+          {textoPorModo(
+            mode,
+            'Duas perguntas simples, duas respostas desconfortáveis: (1) quem produz TODA a riqueza? O trabalho. (2) Onde ela fica? Em cima, nas mãos de cada vez menos gente. Aqui você segue o dinheiro passo a passo — do salário até o bilionário.',
+            'Circulação do valor entre classes (Kalecki/Marx) + dinâmica seular da concentração patrimonial (WID/Piketty): compressão distributiva 1936–79 como exceção política, não regra econômica; r > g como força restauradora.',
+            'Aqui você acompanha dois caminhos: para onde o salário vai depois que chega ao trabalhador e como a riqueza está dividida entre grupos diferentes. Os gráficos usam dados históricos e estimativas indicadas nas fontes.',
+          )}
         </p>
       </header>
 
@@ -54,20 +58,26 @@ export default function WealthModule() {
       <div className="grid gap-3 md:grid-cols-2">
         <article className="rounded-xl border border-dashed border-sky-400/40 bg-sky-400/5 p-4">
           <h4 className="text-sm font-bold text-sky-300">
-            {didatico ? 'E então… dá para reverter?' : 'Compressão: a exceção que prova a regra'}
+            {textoPorModo(mode, 'E então… dá para reverter?', 'Compressão: a exceção que prova a regra', 'Essa divisão pode mudar?')}
           </h4>
           <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-            {didatico
-              ? 'Sim — já aconteceu. Entre 1936 e 1979, imposto altíssimo sobre heranças e lucros, sindicatos fortes e salário mínimo valorizado espremeram a fatia dos 1% pela metade. Não foi bondade: foi pressão organizada. Quando a pressão parou, a curva voltou a subir. Concentração não é destino — é escolha política mantida.'
-              : 'A janela 1936–1979 (top marginal rates >70%, capital controls, densidade sindical >30%) demonstra elasticidade política da distribuição: sem instituições comprimidoras, r>g restaura o padrão patrimonial em ~uma geração.'}
+            {textoPorModo(
+              mode,
+              'Sim — já aconteceu. Entre 1936 e 1979, imposto altíssimo sobre heranças e lucros, sindicatos fortes e salário mínimo valorizado espremeram a fatia dos 1% pela metade. Não foi bondade: foi pressão organizada. Quando a pressão parou, a curva voltou a subir. Concentração não é destino — é escolha política mantida.',
+              'A janela 1936–1979 (top marginal rates >70%, capital controls, densidade sindical >30%) demonstra elasticidade política da distribuição: sem instituições comprimidoras, r>g restaura o padrão patrimonial em ~uma geração.',
+              'Sim. Em vários períodos históricos, impostos, salários, sindicatos, crescimento econômico e preços dos ativos mudaram a divisão da riqueza. O gráfico mostra que essa distribuição varia ao longo do tempo.',
+            )}
           </p>
         </article>
-        <Tip text={didatico
-          ? 'O sistema inteiro — bancos, Estado, acionistas, aluguéis — é sustentado pelo trabalho vivo de todos os dias. Se ele para uma semana, tudo trava. Se os mercados financeiros param uma semana… ninguém passa fome.'
-          : 'Assimetria estrutural: reprodução social depende integralmente do trabalho vivo; a realização financeira depende dele apenas indiretamente — daí o poder de veto do capital e a fragilidade negociadora do trabalho.'}>
+        <Tip text={textoPorModo(
+          mode,
+          'O sistema inteiro — bancos, Estado, acionistas, aluguéis — é sustentado pelo trabalho vivo de todos os dias. Se ele para uma semana, tudo trava. Se os mercados financeiros param uma semana… ninguém passa fome.',
+          'Assimetria estrutural: reprodução social depende integralmente do trabalho vivo; a realização financeira depende dele apenas indiretamente — daí o poder de veto do capital e a fragilidade negociadora do trabalho.',
+          'Transporte, comida, energia e hospitais dependem de trabalho diário. Este cartão usa essa comparação para mostrar a diferença entre produzir bens e serviços e negociar ativos financeiros.',
+        )}>
           <article className="h-full cursor-help rounded-xl border border-dashed border-red-400/40 bg-red-400/5 p-4">
             <h4 className="text-sm font-bold text-red-300">
-              {didatico ? 'O teste definitivo' : 'Teste material da dependência'}
+              {textoPorModo(mode, 'O teste definitivo', 'Teste material da dependência', 'Compare dois tipos de atividade')}
             </h4>
             <p className="mt-1 text-xs leading-relaxed text-zinc-300">
               Pare o trabalho uma semana: transporte, comida, energia, hospitais — TUDO trava em dias. Pare a

@@ -1,7 +1,7 @@
 # DATA-GUIDELINES — Diretrizes de Dados do Capital Blocks
 
 Normas obrigatórias para qualquer informação exibida no sistema. O objetivo é manter o
-rigor das fontes, a didática dual-mode e a coerência conceitual (marxista + lente MMT
+rigor das fontes, três níveis de leitura e a coerência conceitual (marxista + lente MMT
 onde couber).
 
 Implementação normativa: `DATA-STANDARD.md` é o contrato legível por humanos e por IA,
@@ -30,6 +30,11 @@ e o contrato em `DATA-STANDARD.md`):
 | `avancado` | formulação técnica com categoria marxista correta (c, v, m, capital fictício…) |
 | `estimate: true` | OBRIGATÓRIO quando o valor for ilustrativo/não-verificado (badge “est.” na UI) |
 
+Os datasets históricos continuam exigindo pelo menos `didatico` + `avancado`. O nível
+**Simples** é obrigatório nas narrativas, tours e superfícies prioritárias destinadas a
+fundamental/início do ensino médio. Quando um dataset legado ainda não tiver copy simples
+curada, `textoPorModo()` pode aplicar fallback conservador, sem alterar número, data ou unidade.
+
 **Proibido:** número solto em texto sem fonte; misturar bases de anos diferentes sem
 sinalizar; usar média “de cabeça” como se fosse estatística oficial.
 
@@ -41,7 +46,7 @@ sinalizar; usar média “de cabeça” como se fosse estatística oficial.
 3. **Agências de referência**: Reuters/FT citando a primária (linkar a primária mesmo assim).
 4. **Estimativas próprias didáticas**: sempre `estimate: true`.
 
-## 3. Lente MMT — regras para o Módulo 05 (Dívida Pública)
+## 3. Lente MMT — regras para o Módulo 04 (Dívida Pública)
 
 Toda explicação de dívida pública deve oferecer as DUAS leituras lado a lado:
 
@@ -107,7 +112,8 @@ bend e dur escolhidos para legibilidade. Máx. 3 partículas por rota.
 - [ ] Entrada correspondente em `src/data/sources.ts`?
 - [ ] ID estável em kebab-case e `usadoEm` atualizado?
 - [ ] URL direta aberta quando existir; se não existir, `revisao-pendente`?
-- [ ] Textos `didatico` E `avancado` escritos?
+- [ ] Textos `didatico` E `avancado` escritos no dataset?
+- [ ] Copy `simples` explícita nas narrativas/tours prioritários, ou fallback conservador validado?
 - [ ] `estimate: true` se ilustrativo?
 - [ ] Cores respeitam §4?
 - [ ] Se é dívida/fiscal: passou pelo §3 (dual-lens)?

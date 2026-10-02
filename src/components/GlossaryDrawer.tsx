@@ -3,6 +3,7 @@ import { AnimatePresence, m } from 'framer-motion'
 import { GLOSSARY, type GlossaryTerm } from '../data/glossary'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useApp } from '../store/useApp'
+import { textoPorModo } from '../lib/simples'
 
 const CAT_LABEL: Record<GlossaryTerm['categoria'], { label: string; color: string }> = {
   valor: { label: 'Valor & exploração', color: '#f44336' },
@@ -11,7 +12,7 @@ const CAT_LABEL: Record<GlossaryTerm['categoria'], { label: string; color: strin
   crise: { label: 'Crises', color: '#42a5f5' },
 }
 
-/** GLOSSÁRIO GLOBAL — termos-chave com definição dual-mode. */
+/** GLOSSÁRIO GLOBAL — termos-chave com definições para os três níveis de leitura. */
 export default function GlossaryDrawer() {
   const { glossaryOpen, setGlossaryOpen, mode } = useApp()
   const [query, setQuery] = useState('')
@@ -38,7 +39,7 @@ export default function GlossaryDrawer() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-[10px] uppercase tracking-widest text-zinc-500">
-                    {didatico ? 'as ideias do site, sem enrolação' : 'categorias teóricas · THEORY.md'}
+                    {textoPorModo(mode, 'as ideias do site, sem enrolação', 'categorias teóricas · THEORY.md', 'palavras difíceis explicadas de forma simples')}
                   </div>
                   <h2 className="text-lg font-bold text-zinc-100">Glossário</h2>
                 </div>
@@ -59,9 +60,9 @@ export default function GlossaryDrawer() {
                       {CAT_LABEL[g.categoria].label}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-zinc-200">{didatico ? g.didatico : g.avancado}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, g.didatico, g.avancado)}</p>
                   <p className="mt-1.5 font-mono text-[9.5px] text-zinc-600">
-                    {didatico ? `nos livros aparece como: ${g.formal}` : g.formal}
+                    {textoPorModo(mode, `nos livros aparece como: ${g.formal}`, g.formal, `nome usado nos livros: ${g.formal}`)}
                   </p>
                 </article>
               ))}
