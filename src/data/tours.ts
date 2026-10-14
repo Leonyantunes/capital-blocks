@@ -395,9 +395,7 @@ export const TOURES: TourDef[] = [
     finalLabel: `explorar ${modTitle('home')} →`,
     stops: [
       {
-        id: 'geo-intro',
-        chapter: 'Geografia · Abertura',
-        titulo: 'A Divisão Internacional do Trabalho no século XXI',
+        id: 'geo-intro', chapter: 'Geografia · Abertura', titulo: 'A Divisão Internacional do Trabalho no século XXI',
         lng: 10, lat: 20, k: 1.4,
         isos: ['840', '156', '076'],
         did: 'A Geografia Econômica explica por que o espaço mundial é desigual: países do Centro concentram comando financeiro, patentes e sedes, enquanto a Periferia fornece matérias-primas, energia e montagem barata.',
@@ -417,9 +415,7 @@ export const TOURES: TourDef[] = [
       byId('canal'),
       byId('salario'),
       {
-        id: 'geo-fim',
-        chapter: 'Geografia · Fechamento',
-        titulo: 'O território como rede desigual',
+        id: 'geo-fim', chapter: 'Geografia · Fechamento', titulo: 'O território como rede desigual',
         lng: -45, lat: -10, k: 2.0,
         isos: ['076', '156', '840'],
         did: 'Fechando a leitura geográfica: o território mundial funciona como uma rede hierárquica onde matérias-primas e trabalho barato fluem da periferia e o comando tecnológico e financeiro permanece concentrado no centro.',
@@ -444,9 +440,7 @@ export const TOURES: TourDef[] = [
     finalLabel: `ir ao ${modTitle('war')} →`,
     stops: [
       {
-        id: 'hist-intro',
-        chapter: 'História · Abertura',
-        titulo: 'Ciclos hegemônicos da economia-mundo',
+        id: 'hist-intro', chapter: 'História · Abertura', titulo: 'Ciclos hegemônicos da economia-mundo',
         lng: -10, lat: 35, k: 1.5,
         isos: ['826', '840', '156'],
         did: 'A história do capitalismo é uma sucessão de potências que lideraram o comércio, a indústria e a moeda: do Império Britânico no século XIX aos Estados Unidos pós-1945 e à disputa atual com a China.',
@@ -460,9 +454,7 @@ export const TOURES: TourDef[] = [
       },
       byId('tecnologia'),
       {
-        id: 'hist-1971',
-        chapter: 'História · 1971–1979',
-        titulo: 'O Choque de 1971 e o nascimento do dólar flexível',
+        id: 'hist-1971', chapter: 'História · 1971–1979', titulo: 'O Choque de 1971 e o nascimento do dólar flexível',
         lng: -40, lat: 35, k: 2.0,
         flowId: 'fin-usa-eu',
         isos: ['840', '276'],
@@ -480,9 +472,7 @@ export const TOURES: TourDef[] = [
       byId('fantasma'),
       byId('saida'),
       {
-        id: 'hist-fim',
-        chapter: 'História · Fechamento',
-        titulo: 'Transição hegemônica no século XXI',
+        id: 'hist-fim', chapter: 'História · Fechamento', titulo: 'Transição hegemônica no século XXI',
         lng: 60, lat: 30, k: 1.6,
         isos: ['840', '156', '643'],
         did: 'Olhando o século inteiro, vemos que as regras da economia mundial mudam após grandes crises e guerras. Hoje, a ascensão asiática e os acordos fora do dólar abrem uma nova transição histórica.',
@@ -507,9 +497,7 @@ export const TOURES: TourDef[] = [
     finalLabel: `ir ao ${modTitle('debt')} →`,
     stops: [
       {
-        id: 'eco-intro',
-        chapter: 'Economia Política · Abertura',
-        titulo: 'Quatro lentes para a mesma anatomia',
+        id: 'eco-intro', chapter: 'Economia Política · Abertura', titulo: 'Quatro lentes para a mesma anatomia',
         lng: 0, lat: 20, k: 1.4,
         isos: ['840', '156', '076', '276'],
         did: 'Quatro lentes explicam este mapa: Marx mostra como o trabalho gera o lucro; Kalecki explica como o gasto sustenta as vendas; a MMT revela o poder de quem emite a moeda; e a TMD mostra como o Sul transfere riqueza ao Norte.',
@@ -528,9 +516,7 @@ export const TOURES: TourDef[] = [
       byId('salario'),
       byId('agora'),
       {
-        id: 'eco-fim',
-        chapter: 'Economia Política · Fechamento',
-        titulo: 'A síntese macroeconômica crítica',
+        id: 'eco-fim', chapter: 'Economia Política · Fechamento', titulo: 'A síntese macroeconômica crítica',
         lng: -53, lat: -10, k: 2.2,
         isos: ['076', '840', '392'],
         did: 'Unindo as quatro escolas, fica claro que produção, moeda, orçamento público e comércio internacional formam uma única engrenagem. Mudar o resultado exige atuar sobre a propriedade, o trabalho e a soberania.',
