@@ -294,11 +294,40 @@ export default function MapWorld() {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  const viewportRef = useRef<SVGGElement>(null)
   const [view, setView] = useState(INIT.view)
+
+  /* ── Interação ativa: suprime filtros caros e pausa pulsos contínuos durante pan/zoom ── */
+  const [isInteracting, setIsInteracting] = useState(false)
+  const interactTimeoutRef = useRef<number | null>(null)
+  const markInteracting = useCallback(() => {
+    setIsInteracting(true)
+    if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current)
+    interactTimeoutRef.current = window.setTimeout(() => {
+      setIsInteracting(false)
+    }, 180)
+  }, [])
+  useEffect(() => () => {
+    if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current)
+  }, [])
+
+  /* ── Cache de getBoundingClientRect para eliminar layout thrashing durante gestos ── */
+  const cachedRectRef = useRef<{ rect: DOMRect; time: number } | null>(null)
+  const getSvgRect = useCallback(() => {
+    const now = performance.now()
+    if (cachedRectRef.current && now - cachedRectRef.current.time < 300) {
+      return cachedRectRef.current.rect
+    }
+    const el = svgRef.current
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    cachedRectRef.current = { rect: r, time: now }
+    return r
+  }, [])
+
   /*
    * Coalesce pan/pinch/trackpad updates to at most one React commit per frame.
-   * High-rate pointer/trackpad devices can emit well above 60 events/s; rendering
-   * every event wastes CPU without producing an extra visible frame.
+   * Direct DOM transform is applied immediately for instantaneous 60-120 FPS response.
    */
   const viewRef = useRef(view)
   const queuedViewRef = useRef<typeof view | null>(null)
@@ -309,6 +338,12 @@ export default function MapWorld() {
     const next = update(base)
     queuedViewRef.current = next
     viewRef.current = next
+
+    // Atualização direta do DOM (transform) sem esperar a reconciliação do React
+    if (viewportRef.current) {
+      viewportRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.k})`
+    }
+
     if (viewRafRef.current !== null) return
     viewRafRef.current = requestAnimationFrame(() => {
       viewRafRef.current = null
@@ -320,12 +355,16 @@ export default function MapWorld() {
   useEffect(() => () => {
     if (viewRafRef.current !== null) cancelAnimationFrame(viewRafRef.current)
   }, [])
+
   /**
-   * k QUANTIZADO (degraus de 0,25×): as camadas SVG pesadas são memoizadas por
-   * kq — durante o PAN (x/y variando, k constante) nada é reconciliado; no
-   * ZOOM a recomposição acontece só nos degraus, imperceptível ao olho.
+   * PATAMARES ESTÁVEIS DE ZOOM (zoomTier):
+   * Em vez de quebrar e reconstruir camadas a cada 0.25x (o que destruía e recriava
+   * dezenas de animações SMIL <animateMotion>), o zoomTier opera em 3 degraus estáveis:
+   * tier 1 (visão mundial k < 2), tier 2 (continental 2 <= k < 3.8), tier 4 (países/estados k >= 3.8).
+   * Do zoom 1.0 ao 1.99, ZERO elementos SVG são destruídos ou recriados!
    */
-  const kq = Math.round(view.k * 4) / 4
+  const zoomTier = view.k >= 3.8 ? 4 : view.k >= 2 ? 2 : 1
+  const detailOn = view.k >= 2
   const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null)
   const [dragging, setDragging] = useState(false)
 
@@ -410,9 +449,10 @@ export default function MapWorld() {
   }
   const flyTo = (mx: number, my: number, k2 = 2.6, fy = 0.5, kLift?: number) => {
     stopFlight()
-    const k1 = view.k
-    const c1x = (MAP_W / 2 - view.x) / k1
-    const c1y = (MAP_H / 2 - view.y) / k1
+    const v = queuedViewRef.current ?? viewRef.current
+    const k1 = v.k
+    const c1x = (MAP_W / 2 - v.x) / k1
+    const c1y = (MAP_H / 2 - v.y) / k1
     /* viagem de verdade: sobe (zoom out) → cruza → desce; durações generosas
        p/ o olho acompanhar o trajeto (o gesto do usuário cancela o voo) */
     const kMid = kLift ?? Math.max(1, Math.min(k1, k2, 1.25))
@@ -422,24 +462,35 @@ export default function MapWorld() {
     const CY = MAP_H * fy // altura focal: 0.5 = centro; tour usa ~0.36 p/ não tapar o país
     const frame = (now: number) => {
       const e = now - t0
+      let nextV: { k: number; x: number; y: number }
       if (e <= D1) {
         const t = ease(e / D1)
         const k = k1 + (kMid - k1) * t
-        setView({ k, x: MAP_W / 2 - c1x * k, y: CY - c1y * k })
+        nextV = { k, x: MAP_W / 2 - c1x * k, y: CY - c1y * k }
       } else if (e <= D1 + D2) {
         const t = ease((e - D1) / D2)
         const cx = c1x + (mx - c1x) * t
         const cy = c1y + (my - c1y) * t
-        setView({ k: kMid, x: MAP_W / 2 - cx * kMid, y: CY - cy * kMid })
+        nextV = { k: kMid, x: MAP_W / 2 - cx * kMid, y: CY - cy * kMid }
       } else if (e <= D1 + D2 + D3) {
         const t = ease((e - D1 - D2) / D3)
         const k = kMid + (k2 - kMid) * t
-        setView({ k, x: MAP_W / 2 - mx * k, y: CY - my * k })
+        nextV = { k, x: MAP_W / 2 - mx * k, y: CY - my * k }
       } else {
-        setView({ k: k2, x: MAP_W / 2 - mx * k2, y: CY - my * k2 })
+        nextV = { k: k2, x: MAP_W / 2 - mx * k2, y: CY - my * k2 }
+        viewRef.current = nextV
+        if (viewportRef.current) {
+          viewportRef.current.style.transform = `translate(${nextV.x}px, ${nextV.y}px) scale(${nextV.k})`
+        }
+        setView(nextV)
         rafRef.current = null
         return
       }
+      viewRef.current = nextV
+      if (viewportRef.current) {
+        viewportRef.current.style.transform = `translate(${nextV.x}px, ${nextV.y}px) scale(${nextV.k})`
+      }
+      setView(nextV)
       rafRef.current = requestAnimationFrame(frame)
     }
     rafRef.current = requestAnimationFrame(frame)
@@ -502,19 +553,38 @@ export default function MapWorld() {
     return inv ? inv([mx, my]) : null
   }, [view])
 
-  /* Sincronização de câmera, seleção e tour para 2D ⇄ 3D via sharedMap */
+  /* Sincronização de seleção e tour para 2D ⇄ 3D via sharedMap (imediata) */
   useEffect(() => {
-    const lng = viewCenter ? viewCenter[0] : -15
-    const lat = viewCenter ? viewCenter[1] : 15
+    setSharedMap({ selFlow, activeTourId, tourStep })
+  }, [selFlow, activeTourId, tourStep, setSharedMap])
+
+  /* Sincronização de coordenadas de câmera debounced (250ms) para não inundar o store no pan/zoom */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const lng = viewCenter ? viewCenter[0] : -15
+      const lat = viewCenter ? viewCenter[1] : 15
+      setSharedMap({ lng, lat, k: view.k })
+    }, 250)
+    return () => clearTimeout(t)
+  }, [viewCenter, view.k, setSharedMap])
+
+  /* Transição atômica e precisa ao alternar 2D → Globo 3D */
+  const handleGoTo3D = useCallback(() => {
+    const v = queuedViewRef.current ?? viewRef.current
+    const mx = (MAP_W / 2 - v.x) / v.k
+    const my = (MAP_H / 2 - v.y) / v.k
+    const inv = (projection as unknown as { invert?: (p: [number, number]) => [number, number] | null }).invert
+    const center = inv ? inv([mx, my]) : null
     setSharedMap({
       selFlow,
       activeTourId,
       tourStep,
-      lng,
-      lat,
-      k: view.k,
+      lng: center ? center[0] : -15,
+      lat: center ? center[1] : 15,
+      k: v.k,
     })
-  }, [selFlow, activeTourId, tourStep, viewCenter, view.k, setSharedMap])
+    setTab('globe3d')
+  }, [selFlow, activeTourId, tourStep, setSharedMap, setTab])
 
   const inBrazil =
     !!viewCenter && viewCenter[0] > -76 && viewCenter[0] < -31 && viewCenter[1] > -36 && viewCenter[1] < 7
@@ -531,7 +601,6 @@ export default function MapWorld() {
   }, [selFlow, lang])
 
   /* ── países envolvidos em rotas de DETALHE → glow quando o zoom os revela ── */
-  const detailOn = kq >= 2
   const detailIsoSet = useMemo(() => {
     const s = new Set<string>()
     FLOWS.forEach((f) => {
@@ -602,7 +671,9 @@ export default function MapWorld() {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
       stopFlight()
-      const rect = el.getBoundingClientRect()
+      markInteracting()
+      const rect = getSvgRect()
+      if (!rect) return
       const vx = ((e.clientX - rect.left) / rect.width) * MAP_W
       const vy = ((e.clientY - rect.top) / rect.height) * MAP_H
       queueViewUpdate((v) => {
@@ -614,10 +685,11 @@ export default function MapWorld() {
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [queueViewUpdate])
+  }, [queueViewUpdate, markInteracting, getSvgRect])
 
-  const zoomAroundCenter = (factor: number) =>
-    setView((v) => {
+  const zoomAroundCenter = (factor: number) => {
+    markInteracting()
+    queueViewUpdate((v) => {
       const nk = Math.min(10, Math.max(1, v.k * factor))
       const cxp = MAP_W / 2
       const cyp = MAP_H / 2
@@ -625,6 +697,7 @@ export default function MapWorld() {
       const wy = (cyp - v.y) / v.k
       return { k: nk, x: cxp - wx * nk, y: cyp - wy * nk }
     })
+  }
 
   /* ── ponteiros ativos: 1 = pan · 2 = pinch-zoom (celular) ── */
   const pointersRef = useRef(new Map<number, { x: number; y: number }>())
@@ -633,9 +706,13 @@ export default function MapWorld() {
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     (e.target as Element).setPointerCapture?.(e.pointerId)
     stopFlight()
+    markInteracting()
     setSheetOpen(false) // toque no mapa fecha o sheet (comportamento de apps de mapa)
     setHoverFlow(null)
     setFlowTip(null)
+    if (svgRef.current) {
+      cachedRectRef.current = { rect: svgRef.current.getBoundingClientRect(), time: performance.now() }
+    }
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointersRef.current.size === 1) {
       const v = queuedViewRef.current ?? viewRef.current
@@ -651,14 +728,16 @@ export default function MapWorld() {
   }
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!pointersRef.current.has(e.pointerId)) return
+    markInteracting()
     pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     const pts = [...pointersRef.current.values()]
 
     /* PINCH: escala em torno do ponto médio dos dois dedos */
-    if (pts.length >= 2 && pinchRef.current && svgRef.current) {
+    if (pts.length >= 2 && pinchRef.current) {
       const [p1, p2] = pts
       const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y) || 1
-      const rect = svgRef.current.getBoundingClientRect()
+      const rect = getSvgRect()
+      if (!rect) return
       const mx = ((p1.x + p2.x) / 2 - rect.left) / rect.width * MAP_W
       const my = ((p1.y + p2.y) / 2 - rect.top) / rect.height * MAP_H
       const base = pinchRef.current
@@ -674,8 +753,9 @@ export default function MapWorld() {
 
     /* PAN com um ponteiro */
     const d = dragRef.current
-    if (!d || !svgRef.current) return
-    const rect = svgRef.current.getBoundingClientRect()
+    if (!d) return
+    const rect = getSvgRect()
+    if (!rect) return
     const dx = ((e.clientX - d.sx) / rect.width) * MAP_W
     const dy = ((e.clientY - d.sy) / rect.height) * MAP_H
     if (Math.abs(dx) + Math.abs(dy) > 3) movedRef.current = true
@@ -704,7 +784,7 @@ export default function MapWorld() {
   }
 
   const showHoverLabel = (e: React.PointerEvent, iso: string, name: string, wageUsd?: number) => {
-    if (e.pointerType === 'touch') return // rótulo de país é ferramenta de mouse
+    if (e.pointerType === 'touch' || isInteracting) return // rótulo suprimido no toque ou durante gestos
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
     setHover({ name, iso, x: e.clientX - rect.left, y: e.clientY - rect.top, wageUsd })
@@ -735,13 +815,13 @@ export default function MapWorld() {
   const tourGlowLayer = useMemo(() => {
     if (!tourHi) return null
     return (
-      <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 5px ${tourHi.color})` }}>
+      <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 5px ${tourHi.color})` }}>
         {COUNTRY_FEATURES.filter((f) => tourHi.isos.has(f.id)).map((f) => (
           <path key={f.id} d={f.d} fill={`${tourHi.color}3d`} stroke={tourHi.color} strokeWidth={1.4} strokeLinejoin="round" />
         ))}
       </g>
     )
-  }, [tourHi])
+  }, [tourHi, isInteracting])
 
   const ditActive = lens === 'geografia' || overlayMode === 'dit'
 
@@ -828,7 +908,7 @@ export default function MapWorld() {
              selecionadas ou acesas por um conflito/tour: o destaque sempre
              aparece (o tour pode selecioná-las em visão mundial) */
           const isEmph = selFlow === fl.id || active?.highlight.includes(fl.id) === true
-          if (fl.tier === 'detail' && kq < 2 && !isEmph) return null
+          if (fl.tier === 'detail' && !detailOn && !isEmph) return null
           const st = TYPE_STYLE[fl.type]
           const geo = FLOW_GEO[fl.id]
           const { from, to, d } = geo
@@ -836,12 +916,12 @@ export default function MapWorld() {
           const conflictBoost = active?.highlight.includes(fl.id) ?? false
           const opacity = selFlow ? (isSel ? 1 : 0.05) : active ? (conflictBoost ? 1 : 0.08) : 1
           const emphasized = isSel || conflictBoost
-          /* vectorEffect=non-scaling-stroke: largura em px de tela, sem /kq */
+          /* vectorEffect=non-scaling-stroke: largura em px de tela, sem /zoomTier */
           const baseW = 1 + (fl.peso - 1) * 1.5
           return (
             <g key={fl.id} style={{ transition: 'opacity .35s' }} opacity={opacity}>
               {isSel && (
-                <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 10px ${st.color})` }}>
+                <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 10px ${st.color})` }}>
                   <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 5.5}
                     opacity="0.42" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                   <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1}
@@ -857,7 +937,7 @@ export default function MapWorld() {
                 style={{ pointerEvents: 'none' }} />
               {/* partículas: toque ganha 1 por rota (selecionada 3); desktop inalterado */}
               {(isSel ? [0, 1, 2] : COARSE ? [0] : fl.peso >= 2.5 ? [0, 1, 2] : [0, 1]).map((i) => (
-                <circle key={i} r={(isSel ? 5 : emphasized ? 3.2 : 2.2) / kq} fill={st.color} style={{ pointerEvents: 'none' }}>
+                <circle key={i} r={(isSel ? 5 : emphasized ? 3.2 : 2.2) / zoomTier} fill={st.color} style={{ pointerEvents: 'none' }}>
                   <animateMotion dur={`${fl.dur / (isSel ? 3.2 : 1)}s`} repeatCount="indefinite"
                     begin={`-${(fl.dur * i) / 3}s`} path={d} />
                 </circle>
@@ -880,9 +960,9 @@ export default function MapWorld() {
               {/* endpoints destacados no fluxo selecionado */}
               {isSel && (
                 <g pointerEvents="none">
-                  <circle cx={from[0]} cy={from[1]} r={7.5 / kq} fill={st.color} stroke="#0d1117" strokeWidth={1.4 / kq} />
-                  <circle cx={to[0]} cy={to[1]} r={6 / kq} fill="none" stroke={st.color} strokeWidth={1.6 / kq}>
-                    <animate attributeName="r" values={`${5 / kq};${10 / kq};${5 / kq}`} dur="1.6s" repeatCount="indefinite" />
+                  <circle cx={from[0]} cy={from[1]} r={7.5 / zoomTier} fill={st.color} stroke="#0d1117" strokeWidth={1.4 / zoomTier} />
+                  <circle cx={to[0]} cy={to[1]} r={6 / zoomTier} fill="none" stroke={st.color} strokeWidth={1.6 / zoomTier}>
+                    <animate attributeName="r" values={`${5 / zoomTier};${10 / zoomTier};${5 / zoomTier}`} dur="1.6s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="1;.2;1" dur="1.6s" repeatCount="indefinite" />
                   </circle>
                 </g>
@@ -892,7 +972,7 @@ export default function MapWorld() {
         })}
       </g>
     ),
-    [visibleLayers, selFlow, active, kq],
+    [visibleLayers, selFlow, active, zoomTier, detailOn, isInteracting],
   )
 
   /* ── overlay de destaque do fluxo em hover (só 1 caminho; não toca na base) ── */
@@ -900,19 +980,19 @@ export default function MapWorld() {
     if (!hoverFlow || selFlow === hoverFlow) return null
     const fl = FLOWS.find((f) => f.id === hoverFlow)
     if (!fl || !visibleLayers[fl.type]) return null
-    if (fl.tier === 'detail' && kq < 2) return null
+    if (fl.tier === 'detail' && !detailOn) return null
     const st = TYPE_STYLE[fl.type]
     const { d } = FLOW_GEO[fl.id]
     const baseW = 1 + (fl.peso - 1) * 1.5
     return (
-      <g pointerEvents="none" style={{ filter: `drop-shadow(0 0 8px ${st.color})` }}>
+      <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 8px ${st.color})` }}>
         <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1} opacity="0.5"
           strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 1.9} opacity="1"
           strokeDasharray={st.dash || undefined} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </g>
     )
-  }, [hoverFlow, selFlow, visibleLayers, kq])
+  }, [hoverFlow, selFlow, visibleLayers, detailOn, isInteracting])
 
   /* ── arcos de conflito: memoizados ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -929,12 +1009,12 @@ export default function MapWorld() {
                 className={arc.blocked ? '' : 'flow-line'} markerEnd={arc.blocked ? undefined : 'url(#arrRed)'} />
               {!arc.blocked &&
                 [...Array(3)].map((_, j) => (
-                  <circle key={j} r={3 / kq} fill={active.color}>
+                  <circle key={j} r={3 / zoomTier} fill={active.color}>
                     <animateMotion dur="4.5s" repeatCount="indefinite" begin={`-${j * 1.5}s`} path={d} />
                   </circle>
                 ))}
               {arc.blocked && (
-                <g transform={`translate(${mid[0]} ${mid[1]}) scale(${1 / kq})`}>
+                <g transform={`translate(${mid[0]} ${mid[1]}) scale(${1 / zoomTier})`}>
                   <circle r="13" fill="#f4433622" stroke="#ef5350" strokeWidth="1.5" />
                   <text y="5" textAnchor="middle" fontSize="14" fontWeight="700" className="fill-red-400">✕</text>
                 </g>
@@ -944,7 +1024,7 @@ export default function MapWorld() {
         })}
       </g>
     ),
-    [active, kq],
+    [active, zoomTier],
   )
 
   /* ── MODO BRASIL: contornos IBGE + fluxo interno + estados (memoizado) ── */
@@ -963,11 +1043,11 @@ export default function MapWorld() {
                 const internalCopy = lang === 'pt' ? [f.rotulo, f.valor] : (BR_MAP_I18N[lang].internal[f.id] ?? [f.rotulo, f.valor])
                 return (
                   <g key={f.id} style={{ pointerEvents: 'none' }}>
-                    <path d={d} fill="none" stroke={f.color} strokeWidth={2.4 / kq}
+                    <path d={d} fill="none" stroke={f.color} strokeWidth={2.4 / zoomTier}
                       strokeDasharray="6 4" className="flow-line" opacity="0.95" vectorEffect="non-scaling-stroke" />
-                    <text x={mid[0]} y={mid[1] - 8 / kq} textAnchor="middle" fontSize={10 / kq}
+                    <text x={mid[0]} y={mid[1] - 8 / zoomTier} textAnchor="middle" fontSize={10 / zoomTier}
                       fontWeight="700" fill={f.color} className="font-mono"
-                      style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3.5 / kq, strokeLinejoin: 'round' }}>
+                      style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3.5 / zoomTier, strokeLinejoin: 'round' }}>
                       {internalCopy[0]} · {internalCopy[1]}
                     </text>
                   </g>
@@ -977,11 +1057,11 @@ export default function MapWorld() {
             {brGeo ? (
               brGeo.map((g) => (
                 <path key={g.code} d={g.d} fill="#4caf5008" stroke="#4caf50"
-                  strokeWidth={0.7 / kq} vectorEffect="non-scaling-stroke" opacity="0.55"
+                  strokeWidth={0.7 / zoomTier} vectorEffect="non-scaling-stroke" opacity="0.55"
                   style={{ pointerEvents: 'none' }} />
               ))
             ) : (
-              <text x={MAP_W / 2} y={40 / kq} textAnchor="middle" fontSize={11 / kq}
+              <text x={MAP_W / 2} y={40 / zoomTier} textAnchor="middle" fontSize={11 / zoomTier}
                 className="fill-zinc-500 font-mono" style={{ pointerEvents: 'none' }}>
                 {copy.loadingStates}
               </text>
@@ -993,7 +1073,7 @@ export default function MapWorld() {
               const d = arcPath(from, to, 0.16)
               return (
                 <path key={`sfl-${st.code}`} d={d} fill="none" stroke="#4caf50"
-                  strokeWidth={1.2 / kq} strokeDasharray="3 4" opacity="0.5"
+                  strokeWidth={1.2 / zoomTier} strokeDasharray="3 4" opacity="0.5"
                   vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
               )
             })}
@@ -1001,19 +1081,19 @@ export default function MapWorld() {
             {BR_STATES.map((st) => {
               const [x, y] = project([st.lng, st.lat])
               const meta = STATE_CAT_META[st.cat]
-              const r = (3.5 + Math.sqrt(st.expBi) * 1.7) / kq
+              const r = (3.5 + Math.sqrt(st.expBi) * 1.7) / zoomTier
               const sel = selFlow === `st-${st.code}`
               return (
                 <g key={st.code} style={{ cursor: 'pointer' }}
                   onClick={() => { if (!movedRef.current) setSelFlow(`st-${st.code}`) }}>
                   <circle cx={x} cy={y} r={r} fill={`${meta.color}66`} stroke={sel ? '#ffffff' : meta.color}
-                    strokeWidth={(sel ? 2 : 1) / kq}>
+                    strokeWidth={(sel ? 2 : 1) / zoomTier}>
                     <title>{`${st.nome}: US$ ${st.expBi.toLocaleString(lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR')} ${lang === 'en' ? 'bn' : lang === 'es' ? 'mil M' : 'bi'} (${lang === 'en' ? 'Jan–Jul' : lang === 'es' ? 'ene–jul' : 'jan–jul'} 2025) · ${brFragmentForLang(st.produtos, lang)} — ${copy.click}`}</title>
                   </circle>
                   {st.expBi >= 4 && (
-                    <text x={x} y={y - r - 4 / kq} textAnchor="middle" fontSize={9.5 / kq} fontWeight="700"
+                    <text x={x} y={y - r - 4 / zoomTier} textAnchor="middle" fontSize={9.5 / zoomTier} fontWeight="700"
                       fill={meta.color} className="font-mono pointer-events-none"
-                      style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3 / kq, strokeLinejoin: 'round' }}>
+                      style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3 / zoomTier, strokeLinejoin: 'round' }}>
                       {st.code} ${st.expBi.toFixed(0)}{lang === 'en' ? 'bn' : lang === 'es' ? 'mil M' : 'bi'}
                     </text>
                   )}
@@ -1024,7 +1104,7 @@ export default function MapWorld() {
         )}
       </g>
     ),
-    [statesOn, showInternal, brGeo, selFlow, kq, lang],
+    [statesOn, showInternal, brGeo, selFlow, zoomTier, lang],
   )
 
   /* ── marcadores de mortes corporativas (memoizados) ── */
@@ -1035,15 +1115,15 @@ export default function MapWorld() {
         {showDeaths &&
           DISASTERS.map((d) => {
             const [x, y] = project(d.lngLat)
-            const r = (4 + Math.sqrt(d.mortosNum / 500000) * 8) / kq
+            const r = (4 + Math.sqrt(d.mortosNum / 500000) * 8) / zoomTier
             const sel = selDisaster === d.id
             return (
               <g key={d.id} className="cursor-pointer" onClick={() => setSelDisaster(sel ? null : d.id)}>
                 <circle cx={x} cy={y} r={r * 2.2} fill="#f44336" opacity="0.12" className="marker-ring"
                   style={{ transformBox: 'fill-box', transformOrigin: 'center' }} />
-                <circle cx={x} cy={y} r={r} fill="#f44336" stroke="#0d1117" strokeWidth={1 / kq} />
-                <text x={x} y={y - r - 4 / kq} textAnchor="middle" fontSize={9 / kq} fontWeight="700"
-                  className="fill-red-300 font-mono" style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3 / kq }}>
+                <circle cx={x} cy={y} r={r} fill="#f44336" stroke="#0d1117" strokeWidth={1 / zoomTier} />
+                <text x={x} y={y - r - 4 / zoomTier} textAnchor="middle" fontSize={9 / zoomTier} fontWeight="700"
+                  className="fill-red-300 font-mono" style={{ paintOrder: 'stroke', stroke: '#0d1117', strokeWidth: 3 / zoomTier }}>
                   {d.local.split(',')[0]}
                 </text>
                 <title>{`${d.local} (${d.ano}) · ${d.empresa} · ${d.mortos} — ${copy.click}`}</title>
@@ -1052,7 +1132,7 @@ export default function MapWorld() {
           })}
       </g>
     ),
-    [showDeaths, selDisaster, kq, lang],
+    [showDeaths, selDisaster, zoomTier, lang],
   )
 
   /* ── camada de chokepoints navais e gargalos estratégicos (memoizada) ── */
@@ -1070,7 +1150,7 @@ export default function MapWorld() {
           const risk = cp.risco[langIdx]
           return (
             <g key={cp.id} transform={`translate(${cx} ${cy})`} className="cursor-pointer">
-              <g transform={`scale(${1 / kq})`}>
+              <g transform={`scale(${1 / zoomTier})`}>
                 <circle r={14} fill="#f59e0b" opacity="0.18" className="marker-ring" style={{ transformBox: 'fill-box', transformOrigin: 'center' }} />
                 <path d="M 0 -8 L 8 0 L 0 8 L -8 0 Z" fill="#f59e0b" stroke="#0d1117" strokeWidth="1.5" />
                 <text y={-11} textAnchor="middle" fontSize="9" fontWeight="800" fill="#f59e0b" className="font-mono pointer-events-none"
@@ -1084,9 +1164,9 @@ export default function MapWorld() {
         })}
       </g>
     )
-  }, [lens, overlayMode, kq, lang])
+  }, [lens, overlayMode, zoomTier, lang])
 
-  /* ── marcadores dos blocos (memoizados; escala compensada por kq) ── */
+  /* ── marcadores dos blocos (memoizados; escala compensada por zoomTier) ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const markersLayer = useMemo(
     () => (
@@ -1096,7 +1176,7 @@ export default function MapWorld() {
           const small = b.tier === 'secondary'
           return (
             <g key={b.id} transform={`translate(${x} ${y})`} className="cursor-pointer" onClick={() => openCountry(b.id)}>
-              <g transform={`scale(${1 / kq})`}>
+              <g transform={`scale(${1 / zoomTier})`}>
                 <circle r={small ? 13 : 19} fill={b.color} opacity="0.1" className="marker-ring"
                   style={{ transformBox: 'fill-box', transformOrigin: 'center' }} />
                 <rect
@@ -1115,7 +1195,7 @@ export default function MapWorld() {
         })}
       </g>
     ),
-    [kq, lang],
+    [zoomTier, lang],
   )
 
   /* ── pausa das animações SMIL quando a aba está oculta ou movimento reduzido ── */
@@ -1141,7 +1221,7 @@ export default function MapWorld() {
 
   return (
     <div ref={containerRef}
-      className={`map-root relative overflow-hidden border-zinc-800 bg-zinc-900/60 ${
+      className={`map-root ${isInteracting ? 'is-interacting' : ''} relative overflow-hidden border-zinc-800 bg-zinc-900/60 ${
         isFs
           ? 'fixed inset-0 z-[100] flex flex-col items-stretch justify-start rounded-none border-0 bg-black'
           : 'rounded-xl border'
@@ -1168,10 +1248,11 @@ export default function MapWorld() {
         <rect width={MAP_W} height={MAP_H} fill="#0d1117" />
 
         <g
+          ref={viewportRef}
           style={{
             transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})`,
             transformOrigin: '0 0',
-            willChange: 'transform',
+            willChange: isInteracting ? 'transform' : undefined,
           }}
         >
           {/* oceano + grade */}
@@ -1264,7 +1345,7 @@ export default function MapWorld() {
             <span className={`flex-1 ${lens === 'geografia' || overlayMode === 'dit' ? 'text-zinc-200 font-bold' : 'text-zinc-500'}`}>🌐 DIT / Chokepoints</span>
             <span className={`font-mono text-[10px] ${lens === 'geografia' || overlayMode === 'dit' ? 'text-emerald-300' : 'text-zinc-600'}`}>{lens === 'geografia' || overlayMode === 'dit' ? 'ON' : 'off'}</span>
           </button>
-          <button onClick={() => { setTab('globe3d'); setSheetOpen(false) }}
+          <button onClick={() => { handleGoTo3D(); setSheetOpen(false) }}
             className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs active:bg-zinc-800/80">
             <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-sky-400" />
             <span className="flex-1 text-zinc-200">🌐 {lang === 'en' ? '3D Globe' : 'Globo 3D'}</span>
@@ -1380,7 +1461,7 @@ export default function MapWorld() {
           <span className="inline-block h-2 w-2 shrink-0 rounded-sm bg-amber-400" />
           <span className="hidden text-zinc-300 sm:inline">🌐 DIT / Chokepoints</span>
         </button>
-        <button onClick={() => setTab('globe3d')}
+        <button onClick={handleGoTo3D}
           className="rounded-md border border-sky-500/50 px-1.5 py-1 text-left text-[10px] font-semibold text-sky-300 hover:bg-sky-500/10">
           🌐 3D {lang === 'en' ? 'Globe' : 'Globo'}
         </button>

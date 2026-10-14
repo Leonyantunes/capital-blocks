@@ -20,7 +20,10 @@ function useSegmentsOf() {
 
 /** HOME — "Mapa Geopolítico Interativo de Blocos e Fluxos de Capital" */
 export default function MapModule() {
-  const { basis, setBasis, openCountry, lang } = useApp()
+  const basis = useApp((s) => s.basis)
+  const setBasis = useApp((s) => s.setBasis)
+  const openCountry = useApp((s) => s.openCountry)
+  const lang = useApp((s) => s.lang)
   const segmentsOf = useSegmentsOf()
   const countries = countriesForLang(lang)
   const copy = lang === 'en'
@@ -154,7 +157,8 @@ export default function MapModule() {
 }
 
 function ComparisonStrip() {
-  const { openCountry, lang } = useApp()
+  const openCountry = useApp((s) => s.openCountry)
+  const lang = useApp((s) => s.lang)
   const segmentsOf = useSegmentsOf()
   const countries = countriesForLang(lang)
   return (

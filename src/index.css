@@ -141,6 +141,7 @@ body {
   100% { transform: scale(1.6); opacity:0 }
 }
 .marker-ring { animation: markerring 2.4s ease-out infinite; }
+.is-interacting .marker-ring { animation-play-state: paused !important; }
 
 input[type='range'] {
   @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-800 accent-amber-400;
