@@ -1,5 +1,7 @@
 import { memo } from 'react'
 import { fmtHours } from '../lib/marx'
+import { pick } from '../i18n'
+import { useApp } from '../store/useApp'
 
 const CX = 80
 const CY = 80
@@ -25,8 +27,9 @@ function arc(fromPct: number, toPct: number, r: number): string {
  */
 export function UnpaidClock({ minutesUnpaid, size = 190 }: { minutesUnpaid: number; size?: number }) {
   const pctUnpaid = Math.min(minutesUnpaid / 480, 1)
+  const lang = useApp((s) => s.lang)
   return (
-    <svg viewBox="0 0 160 160" style={{ width: size, height: size }} role="img" aria-label={`Relógio da jornada: ${fmtHours(minutesUnpaid / 60)} não pagos`}>
+    <svg viewBox="0 0 160 160" style={{ width: size, height: size }} role="img" aria-label={pick(lang, `Relógio da jornada: ${fmtHours(minutesUnpaid / 60)} não pagos`, `Workday clock: ${fmtHours(minutesUnpaid / 60)} unpaid`, `Reloj de la jornada: ${fmtHours(minutesUnpaid / 60)} no pagadas`)}>
       <circle cx={CX} cy={CY} r={R + 12} fill="#161b22" stroke="#30363d" />
       {/* trilho */}
       <path d={arc(0, 0.9999, R)} fill="none" stroke="#30363d" strokeWidth={13} strokeLinecap="round" />
@@ -43,7 +46,7 @@ export function UnpaidClock({ minutesUnpaid, size = 190 }: { minutesUnpaid: numb
         {fmtHours(minutesUnpaid / 60)}
       </text>
       <text x={CX} y={CY + 14} textAnchor="middle" fontSize="8.5" className="fill-zinc-400">
-        não pagos · jornada 8h
+        {pick(lang, 'não pagos · jornada 8h', 'unpaid · 8h workday', 'no pagadas · jornada 8h')}
       </text>
     </svg>
   )

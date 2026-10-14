@@ -9,7 +9,8 @@ import DonutChart from './DonutChart'
 import Tip from './ui/Tip'
 import ModeBadge from './ui/ModeBadge'
 import { fmtHours } from '../lib/marx'
-import { mt } from '../i18n'
+import { locale, mt, pick, pickTri, type TriText } from '../i18n'
+import { generatedText } from '../data/generatedTranslations'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
 import type { ApiProvider } from '../lib/marketApi/types'
@@ -115,12 +116,14 @@ function MarketSyncPanel({ records, onLoad }: {
   records: CompanyRecord[]
   onLoad: (recs: CompanyRecord[]) => void
 }) {
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const [initial] = useState(loadSyncSettings)
   const [enabled, setEnabled] = useState(initial.enabled)
   const [provider, setProvider] = useState<ApiProvider>(initial.provider)
   const [token, setToken] = useState(initial.token)
   const [syncing, setSyncing] = useState(false)
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatus] = useState<TriText | null>(null)
   const [errors, setErrors] = useState<string[]>([])
 
   /* cache válido? hidrata sem chamadas */
@@ -128,7 +131,12 @@ function MarketSyncPanel({ records, onLoad }: {
     const cached = loadCachedQuotes()
     if (!cached || !loadSyncSettings().enabled) return
     onLoad(quotesToRecords(cached))
-    setStatus(`cache de ${new Date(cached.at).toLocaleString('pt-BR')} · ${cached.quotes.length} empresas`)
+    const when = new Date(cached.at).toLocaleString(loc)
+    setStatus([
+      `cache de ${when} · ${cached.quotes.length} empresas`,
+      `cache from ${when} · ${cached.quotes.length} companies`,
+      `caché de ${when} · ${cached.quotes.length} empresas`,
+    ])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -141,18 +149,30 @@ function MarketSyncPanel({ records, onLoad }: {
   const sync = async () => {
     if (syncing) return
     if (provider === 'alphavantage' && !token.trim()) {
-      setStatus('Alpha Vantage exige a chave gratuita no campo acima.')
+      setStatus([
+        'Alpha Vantage exige a chave gratuita no campo acima.',
+        'Alpha Vantage requires the free API key in the field above.',
+        'Alpha Vantage requiere la clave gratuita en el campo de arriba.',
+      ])
       return
     }
-    setSyncing(true); setErrors([]); setStatus('sincronizando…')
+    setSyncing(true); setErrors([]); setStatus(['sincronizando…', 'syncing…', 'sincronizando…'])
     try {
       const res = await runSync(provider, token.trim())
       onLoad(quotesToRecords(res))
-      setStatus(`${res.quotes.length} empresas recebidas · ${new Date(res.at).toLocaleTimeString('pt-BR')}`)
+      const when = new Date(res.at).toLocaleTimeString(loc)
+      setStatus([
+        `${res.quotes.length} empresas recebidas · ${when}`,
+        `${res.quotes.length} companies received · ${when}`,
+        `${res.quotes.length} empresas recibidas · ${when}`,
+      ])
       setErrors(res.errors.slice(0, 3))
     } catch (e) {
       setStatus(null)
-      setErrors([e instanceof Error ? e.message : 'falha desconhecida na sincronização'])
+      setErrors([e instanceof Error ? e.message : pick(lang,
+        'falha desconhecida na sincronização',
+        'unknown synchronization failure',
+        'fallo desconocido de sincronización')])
     } finally {
       setSyncing(false)
     }
@@ -167,9 +187,13 @@ function MarketSyncPanel({ records, onLoad }: {
           className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${enabled ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
           <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
         </button>
-        <span className="text-xs font-semibold text-zinc-200">⚡ Fontes dinâmicas de mercado</span>
+        <span className="text-xs font-semibold text-zinc-200">
+          ⚡ {pick(lang, 'Fontes dinâmicas de mercado', 'Dynamic market sources', 'Fuentes dinámicas de mercado')}
+        </span>
         <span className="font-mono text-[10px] text-zinc-500">
-          {records.length > 0 ? `${records.length} via API` : 'desligado'}
+          {records.length > 0
+            ? `${records.length} via API`
+            : pick(lang, 'desligado', 'off', 'desactivado')}
         </span>
       </label>
 
@@ -177,8 +201,8 @@ function MarketSyncPanel({ records, onLoad }: {
         <div className="mt-3 space-y-2.5 border-t border-zinc-800 pt-3">
           <div className="flex flex-wrap gap-1.5">
             {([
-              ['brapi', 'BRAPI · Brasil (B3, 1 chamada)'],
-              ['alphavantage', 'Alpha Vantage · Globais'],
+              ['brapi', pick(lang, 'BRAPI · Brasil (B3, 1 chamada)', 'BRAPI · Brazil (B3, 1 request)', 'BRAPI · Brasil (B3, 1 solicitud)')],
+              ['alphavantage', pick(lang, 'Alpha Vantage · Globais', 'Alpha Vantage · Global', 'Alpha Vantage · Globales')],
             ] as [ApiProvider, string][]).map(([p, label]) => (
               <button key={p} onClick={() => persist({ provider: p })}
                 className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
@@ -193,27 +217,47 @@ function MarketSyncPanel({ records, onLoad }: {
             <input
               type="password" value={token}
               onChange={(e) => persist({ token: e.target.value })}
-              placeholder={provider === 'brapi' ? 'token brapi.dev (opcional na cota free)' : 'chave alphavantage.co (grátis)'}
+              placeholder={provider === 'brapi'
+                ? pick(lang,
+                    'token brapi.dev (opcional na cota free)',
+                    'brapi.dev token (optional on free tier)',
+                    'token brapi.dev (opcional en el nivel gratis)')
+                : pick(lang,
+                    'chave alphavantage.co (grátis)',
+                    'alphavantage.co key (free)',
+                    'clave alphavantage.co (gratis)')}
               className="min-w-[220px] flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60"
             />
             <a href={provider === 'brapi' ? 'https://brapi.dev' : 'https://www.alphavantage.co/support/#api-key'}
               target="_blank" rel="noreferrer"
               className="text-[11px] text-sky-400 underline decoration-dotted hover:text-sky-300">
-              obter chave ↗
+              {pick(lang, 'obter chave', 'get key', 'obtener clave')} ↗
             </a>
             <button onClick={sync} disabled={syncing}
               className="rounded-lg bg-money px-3 py-1.5 text-xs font-bold text-onaccent transition-opacity hover:opacity-90 disabled:opacity-40">
-              {syncing ? 'sincronizando…' : 'Sincronizar agora'}
+              {syncing
+                ? pick(lang, 'sincronizando…', 'syncing…', 'sincronizando…')
+                : pick(lang, 'Sincronizar agora', 'Sync now', 'Sincronizar ahora')}
             </button>
           </div>
 
           <p className="text-[10px] leading-relaxed text-zinc-500">
-            Cotações entram no Raio-X com badge <span className="font-mono">API·est.</span>; fundamentais ausentes são
-            estimados por margem/folha setoriais. Cache local de 24 h — nada é enviado para servidores próprios.
-            {provider === 'alphavantage' && <> Cota free ≈ 20 empresas/dia (retome amanhã).</>}
+            {pick(lang,
+              'Cotações entram no Raio-X com badge',
+              'Quotes enter the X-Ray with the badge',
+              'Las cotizaciones entran en la Radiografía con la etiqueta')}{' '}
+            <span className="font-mono">API·est.</span>;{' '}
+            {pick(lang,
+              'fundamentais ausentes são estimados por margem/folha setoriais. Cache local de 24 h — nada é enviado para servidores próprios.',
+              'missing fundamentals are estimated from sector margins/payroll. Local 24 h cache — nothing is sent to proprietary servers.',
+              'los fundamentales faltantes se estiman por margen/nómina sectorial. Caché local de 24 h — nada se envía a servidores propios.')}
+            {provider === 'alphavantage' && <> {pick(lang,
+              'Cota free ≈ 20 empresas/dia (retome amanhã).',
+              'Free tier ≈ 20 companies/day (resume tomorrow).',
+              'Nivel gratis ≈ 20 empresas/día (retoma mañana).')}</>}
           </p>
 
-          {status && <p className="font-mono text-[10px] text-emerald-300">{status}</p>}
+          {status && <p className="font-mono text-[10px] text-emerald-300">{pickTri(lang, status)}</p>}
           {errors.map((er) => (
             <p key={er} className="font-mono text-[10px] text-amber-400">{er}</p>
           ))}
@@ -227,6 +271,8 @@ function MarketSyncPanel({ records, onLoad }: {
 
 const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
   const mode = useApp((s) => s.mode)
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const eOk = Number.isFinite(r.d.e) && r.d.e > 0
   return (
     <>
@@ -234,39 +280,56 @@ const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
         <div className="flex items-center gap-1.5">
           <span className="font-medium text-zinc-100">{r.nome}</span>
           {r.origem === 'api' ? (
-            <Tip text={`Cotação dinâmica (${r.fonte}). Fundamentais ausentes estimados por setor.`}>
+            <Tip text={pick(lang,
+              `Cotação dinâmica (${r.fonte}). Fundamentais ausentes estimados por setor.`,
+              `Dynamic quote (${r.fonte}). Missing fundamentals estimated by sector.`,
+              `Cotización dinámica (${r.fonte}). Fundamentales faltantes estimados por sector.`)}>
               <span className="rounded border border-sky-700 px-1 font-mono text-[9px] text-sky-400">API</span>
             </Tip>
           ) : r.estimate ? (
-            <Tip text="Entrada ilustrativa para fins pedagógicos.">
+            <Tip text={pick(lang,
+              'Entrada ilustrativa para fins pedagógicos.',
+              'Illustrative entry for educational purposes.',
+              'Entrada ilustrativa con fines pedagógicos.')}>
               <span className="rounded border border-zinc-700 px-1 font-mono text-[9px] text-zinc-500">est.</span>
             </Tip>
           ) : null}
         </div>
-        <span className="text-[10.5px] text-zinc-500">{r.setor} · {r.pais}</span>
+        <span className="text-[10.5px] text-zinc-500">{generatedText(lang, r.setor)} · {generatedText(lang, r.pais)}</span>
       </td>
       <td className="px-3 py-2.5 text-right">
         {r.pctMktCap !== undefined ? (
-          <Tip text={`${r.pctMktCap.toFixed(1)}% de todo o mercado acionário mundial`}>
+          <Tip text={pick(lang,
+            `${r.pctMktCap.toFixed(1)}% de todo o mercado acionário mundial`,
+            `${r.pctMktCap.toFixed(1)}% of the entire global stock market`,
+            `${r.pctMktCap.toFixed(1)}% de todo el mercado bursátil mundial`)}>
             <span className="cursor-help font-mono text-[13px] font-bold text-fuchsia-300">
-              ${r.capTri!.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} tri
+              ${r.capTri!.toLocaleString(loc, { minimumFractionDigits: 2 })} {pick(lang, 'tri', 'tn', 'bill.')}
             </span>
           </Tip>
         ) : <span className="text-zinc-600">—</span>}
       </td>
       <td className="px-3 py-2.5 text-right font-mono text-[13px] text-zinc-200">
-        ${r.receitaBi > 0 ? r.receitaBi.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '—'}
+        ${r.receitaBi > 0 ? r.receitaBi.toLocaleString(loc, { maximumFractionDigits: 0 }) : '—'}
       </td>
       <td className="px-3 py-2.5 text-right font-mono text-[13px] text-emerald-300">
-        ${r.lucroBi.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
+        ${r.lucroBi.toLocaleString(loc, { maximumFractionDigits: 1 })}
       </td>
       <td className="px-3 py-2.5 text-right font-mono text-[13px] text-zinc-300">
-        {r.funcionariosMil > 0 ? `${(r.funcionariosMil / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} mi` : '—'}
+        {r.funcionariosMil > 0
+          ? `${(r.funcionariosMil / 1000).toLocaleString(loc, { maximumFractionDigits: 2 })} ${pick(lang, 'mi', 'M', 'M')}`
+          : '—'}
       </td>
       <td className="px-3 py-2.5">
         <Tip text={eOk
-          ? `Exploração ESTIMADA pela decomposição W=c+v+m (${fmtHours(r.d.minutesUnpaid / 60)} não pagas em jornada de 8h). Salário médio assumido por país/setor.`
-          : 'Sem folha estimável para este registro — exploração não calculada.'}>
+          ? pick(lang,
+              `Exploração ESTIMADA pela decomposição W=c+v+m (${fmtHours(r.d.minutesUnpaid / 60)} não pagas em jornada de 8h). Salário médio assumido por país/setor.`,
+              `ESTIMATED exploitation from the W=c+v+m decomposition (${fmtHours(r.d.minutesUnpaid / 60)} unpaid in an 8 h workday). Average wage assumed by country/sector.`,
+              `Explotación ESTIMADA mediante la descomposición W=c+v+m (${fmtHours(r.d.minutesUnpaid / 60)} no pagadas en una jornada de 8 h). Salario medio supuesto por país/sector.`)
+          : pick(lang,
+              'Sem folha estimável para este registro — exploração não calculada.',
+              'No estimable payroll for this record — exploitation not calculated.',
+              'Sin nómina estimable para este registro — explotación no calculada.')}>
           <span className="inline-flex cursor-help items-center gap-2">
             <MiniClock minutesUnpaid={eOk ? r.d.minutesUnpaid : 0} />
             <span className="font-mono text-[12.5px] font-bold" style={{ color: severityColor(Math.min(r.d.e, 1500)) }}>
@@ -279,9 +342,18 @@ const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
         {r.anosReceita !== undefined ? (
           <Tip text={textoPorModo(
             mode,
-            `O mercado paga ${r.anosReceita.toFixed(1)} anos da receita atual pela empresa — quanto maior, mais expectativa (fictício) embutida.`,
-            `Capitalização/receita = ${r.anosReceita.toFixed(1)}×: relação entre valor de mercado e receita anual.`,
-            `Compara quanto a empresa vale na bolsa com quanto vende em um ano: ${r.anosReceita.toFixed(1)} vezes.`,
+            pick(lang,
+              `O mercado paga ${r.anosReceita.toFixed(1)} anos da receita atual pela empresa — quanto maior, mais expectativa (fictício) embutida.`,
+              `The market pays ${r.anosReceita.toFixed(1)} years of current revenue for the company — the higher it is, the more expectations are embedded in the price.`,
+              `El mercado paga ${r.anosReceita.toFixed(1)} años de ingresos actuales por la empresa — cuanto mayor sea, más expectativas están incorporadas en el precio.`),
+            pick(lang,
+              `Capitalização/receita = ${r.anosReceita.toFixed(1)}×: relação entre valor de mercado e receita anual.`,
+              `Market cap/revenue = ${r.anosReceita.toFixed(1)}×: relationship between market value and annual revenue.`,
+              `Capitalización/ingresos = ${r.anosReceita.toFixed(1)}×: relación entre valor de mercado e ingresos anuales.`),
+            pick(lang,
+              `Compara quanto a empresa vale na bolsa com quanto vende em um ano: ${r.anosReceita.toFixed(1)} vezes.`,
+              `Compares the company’s stock-market value with one year of sales: ${r.anosReceita.toFixed(1)} times.`,
+              `Compara cuánto vale la empresa en bolsa con lo que vende en un año: ${r.anosReceita.toFixed(1)} veces.`),
           )}>
             <span className="cursor-help font-mono text-[13px] font-bold text-sky-300">{r.anosReceita.toFixed(1)}×</span>
           </Tip>
@@ -292,6 +364,8 @@ const GlCells = memo(function GlCells({ r }: { r: GlRow }) {
 })
 
 const GlCardM = memo(function GlCardM({ r }: { r: GlRow }) {
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const eOk = Number.isFinite(r.d.e) && r.d.e > 0
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
@@ -300,27 +374,45 @@ const GlCardM = memo(function GlCardM({ r }: { r: GlRow }) {
           <h4 className="text-sm font-semibold text-zinc-100">
             {r.nome} {r.origem === 'api' && <sup className="font-mono text-[9px] text-sky-400">API</sup>}
           </h4>
-          <span className="text-[10.5px] text-zinc-500">{r.setor} · {r.pais}</span>
+          <span className="text-[10.5px] text-zinc-500">{generatedText(lang, r.setor)} · {generatedText(lang, r.pais)}</span>
         </div>
         <MiniClock minutesUnpaid={eOk ? r.d.minutesUnpaid : 0} />
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-950/60 p-2">
-          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">Valor de mercado</div>
-          <div className="font-mono text-lg font-bold text-fuchsia-300">
-            {r.capTri !== undefined ? `$${r.capTri.toLocaleString('pt-BR')} tri` : '—'}
+          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">
+            {pick(lang, 'Valor de mercado', 'Market value', 'Valor de mercado')}
           </div>
-          <div className="text-[9.5px] text-zinc-500">{r.pctMktCap?.toFixed(1) ?? '—'}% do mundo</div>
+          <div className="font-mono text-lg font-bold text-fuchsia-300">
+            {r.capTri !== undefined ? `$${r.capTri.toLocaleString(loc)} ${pick(lang, 'tri', 'tn', 'bill.')}` : '—'}
+          </div>
+          <div className="text-[9.5px] text-zinc-500">
+            {r.pctMktCap?.toFixed(1) ?? '—'}% {pick(lang, 'do mundo', 'of global market', 'del mercado mundial')}
+          </div>
         </div>
         <div className="rounded-lg bg-zinc-950/60 p-2">
-          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">Exploração (est.)</div>
+          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">
+            {pick(lang, 'Exploração (est.)', 'Exploitation (est.)', 'Explotación (est.)')}
+          </div>
           <div className="font-mono text-lg font-bold" style={{ color: severityColor(Math.min(r.d.e, 1500)) }}>
             {eOk ? `${r.d.e.toFixed(0)}%` : '—'}
           </div>
-          <div className="font-mono text-[9.5px] text-emerald-300">{fmtHours(r.d.minutesUnpaid / 60)} não pagas</div>
+          <div className="font-mono text-[9.5px] text-emerald-300">
+            {fmtHours(r.d.minutesUnpaid / 60)} {pick(lang, 'não pagas', 'unpaid', 'no pagadas')}
+          </div>
         </div>
-        <div className="text-[11px] text-zinc-400">Receita: <span className="font-mono text-zinc-200">${r.receitaBi.toLocaleString('pt-BR')} bi</span></div>
-        <div className="text-right text-[11px] text-zinc-400">Lucro: <span className="font-mono text-emerald-300">${r.lucroBi.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi</span></div>
+        <div className="text-[11px] text-zinc-400">
+          {pick(lang, 'Receita', 'Revenue', 'Ingresos')}:{' '}
+          <span className="font-mono text-zinc-200">
+            ${r.receitaBi.toLocaleString(loc)} {pick(lang, 'bi', 'bn', 'mil M')}
+          </span>
+        </div>
+        <div className="text-right text-[11px] text-zinc-400">
+          {pick(lang, 'Lucro', 'Profit', 'Beneficio')}:{' '}
+          <span className="font-mono text-emerald-300">
+            ${r.lucroBi.toLocaleString(loc, { maximumFractionDigits: 1 })} {pick(lang, 'bi', 'bn', 'mil M')}
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -330,6 +422,8 @@ const GlCardM = memo(function GlCardM({ r }: { r: GlRow }) {
 
 const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
   const mode = useApp((s) => s.mode)
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const prodOk = r.funcionariosMil > 0
   return (
     <>
@@ -338,20 +432,40 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
           <span className="font-medium text-zinc-100">{r.nome}</span>
           {r.ticker && <span className="rounded bg-zinc-800 px-1 font-mono text-[9px] text-zinc-500">{r.ticker}</span>}
           {r.origem === 'api' ? (
-            <Tip text={`Cotação dinâmica (${r.fonte}).`}>
+            <Tip text={pick(lang,
+              `Cotação dinâmica (${r.fonte}).`,
+              `Dynamic quote (${r.fonte}).`,
+              `Cotización dinámica (${r.fonte}).`)}>
               <span className="rounded border border-sky-700 px-1 font-mono text-[9px] text-sky-400">API</span>
             </Tip>
           ) : r.estimate ? (
-            <Tip text="Valores aproximados das demonstrações FY2024 — ver fonte na linha expandida.">
+            <Tip text={pick(lang,
+              'Valores aproximados das demonstrações FY2024 — ver fonte na linha expandida.',
+              'Approximate values from FY2024 statements — see the source in the expanded row.',
+              'Valores aproximados de los estados FY2024 — consulta la fuente en la fila expandida.')}>
               <span className="rounded border border-zinc-700 px-1 font-mono text-[9px] text-zinc-500">est.</span>
             </Tip>
           ) : null}
         </div>
-        <span className="text-[10.5px] text-zinc-500">{r.setor}</span>
+        <span className="text-[10.5px] text-zinc-500">{generatedText(lang, r.setor)}</span>
       </td>
       <td className="px-3 py-2.5 text-right">
         {prodOk ? (
-          <Tip text={textoPorModo(mode, 'Quanto riqueza cada trabalhador gera por ano, em média.', 'Valor novo (v+m) produzido por trabalhador/ano.', 'Quanto valor a empresa produz por trabalhador em um ano, em média.')}>
+          <Tip text={textoPorModo(
+            mode,
+            pick(lang,
+              'Quanto riqueza cada trabalhador gera por ano, em média.',
+              'How much wealth each worker generates per year, on average.',
+              'Cuánta riqueza genera cada trabajador por año, en promedio.'),
+            pick(lang,
+              'Valor novo (v+m) produzido por trabalhador/ano.',
+              'New value (v+m) produced per worker/year.',
+              'Valor nuevo (v+m) producido por trabajador/año.'),
+            pick(lang,
+              'Quanto valor a empresa produz por trabalhador em um ano, em média.',
+              'How much value the company produces per worker in one year, on average.',
+              'Cuánto valor produce la empresa por trabajador en un año, en promedio.'),
+          )}>
             <span className="font-mono text-[13px]">{fmtBRL(r.produtividade)}</span>
           </Tip>
         ) : <span className="text-zinc-600">—</span>}
@@ -359,18 +473,30 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
       <td className="px-3 py-2.5 text-right">
         <Tip text={textoPorModo(
           mode,
-          'De cada R$1 pago de salário, este é o número de reais de lucro que a empresa extrai do trabalho.',
-          'e = m/v: mais-valia dividida pelo capital variável (%).',
-          'Compara o lucro estimado com o total gasto em salários.',
+          pick(lang,
+            'De cada R$1 pago de salário, este é o número de reais de lucro que a empresa extrai do trabalho.',
+            'For each R$1 paid in wages, this is the number of reais in profit the company extracts from labor.',
+            'Por cada R$1 pagado en salarios, este es el número de reales de beneficio que la empresa extrae del trabajo.'),
+          pick(lang,
+            'e = m/v: mais-valia dividida pelo capital variável (%).',
+            'e = m/v: surplus value divided by variable capital (%).',
+            'e = m/v: plusvalía dividida por capital variable (%).'),
+          pick(lang,
+            'Compara o lucro estimado com o total gasto em salários.',
+            'Compares estimated profit with total payroll spending.',
+            'Compara el beneficio estimado con el gasto total en salarios.'),
         )}>
           <span className="font-mono text-[13px] font-bold" style={{ color: severityColor(r.taxaExploracao) }}>
-            {Number.isFinite(r.taxaExploracao) ? `${r.taxaExploracao.toLocaleString('pt-BR')}%` : '—'}
+            {Number.isFinite(r.taxaExploracao) ? `${r.taxaExploracao.toLocaleString(loc)}%` : '—'}
           </span>
         </Tip>
       </td>
       <td className="px-3 py-2.5">
         <div className="flex items-center justify-end gap-2">
-          <Tip text={`Numa jornada de 8h, ${fmtHours(r.minutosNaoPagos / 60)} são trabalho gratuito para a empresa.`}>
+          <Tip text={pick(lang,
+            `Numa jornada de 8h, ${fmtHours(r.minutosNaoPagos / 60)} são trabalho gratuito para a empresa.`,
+            `In an 8 h workday, ${fmtHours(r.minutosNaoPagos / 60)} are unpaid labor for the company.`,
+            `En una jornada de 8 h, ${fmtHours(r.minutosNaoPagos / 60)} son trabajo no pagado para la empresa.`)}>
             <MiniClock minutesUnpaid={r.minutosNaoPagos} />
           </Tip>
           <span className="font-mono text-[12.5px] text-emerald-300">{fmtHours(r.minutosNaoPagos / 60)}</span>
@@ -378,9 +504,23 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
       </td>
       <td className="px-3 py-2.5 text-right">
         {r.dividendosBi > 0 ? (
-          <Tip text={textoPorModo(mode, 'Lucro distribuído aos donos — parte pode vazar para o exterior.', 'Massa de mais-valia distribuída como dividendos no exercício.', 'Parte do lucro paga aos acionistas como dividendos.')}>
+          <Tip text={textoPorModo(
+            mode,
+            pick(lang,
+              'Lucro distribuído aos donos — parte pode vazar para o exterior.',
+              'Profit distributed to owners — part of it may flow abroad.',
+              'Beneficio distribuido a los propietarios — una parte puede salir al exterior.'),
+            pick(lang,
+              'Massa de mais-valia distribuída como dividendos no exercício.',
+              'Mass of surplus value distributed as dividends during the fiscal year.',
+              'Masa de plusvalía distribuida como dividendos durante el ejercicio.'),
+            pick(lang,
+              'Parte do lucro paga aos acionistas como dividendos.',
+              'Part of profit paid to shareholders as dividends.',
+              'Parte del beneficio pagada a los accionistas como dividendos.'),
+          )}>
             <span className="cursor-help font-mono text-[13px] text-fuchsia-300">
-              R$ {r.dividendosBi.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} bi
+              R$ {r.dividendosBi.toLocaleString(loc, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {pick(lang, 'bi', 'bn', 'mil M')}
             </span>
           </Tip>
         ) : <span className="text-zinc-600">—</span>}
@@ -390,6 +530,8 @@ const BrCells = memo(function BrCells({ r }: { r: BrRow }) {
 })
 
 const BrCardM = memo(function BrCardM({ r }: { r: BrRow }) {
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5">
       <div className="flex items-start justify-between gap-2">
@@ -402,26 +544,34 @@ const BrCardM = memo(function BrCardM({ r }: { r: BrRow }) {
               </sup>
             )}
           </h4>
-          <span className="text-[10.5px] text-zinc-500">{r.setor}</span>
+          <span className="text-[10.5px] text-zinc-500">{generatedText(lang, r.setor)}</span>
         </div>
         <MiniClock minutesUnpaid={r.minutosNaoPagos} />
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-950/60 p-2">
-          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">Exploração m/v</div>
+          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">
+            {pick(lang, 'Exploração m/v', 'Exploitation m/v', 'Explotación m/v')}
+          </div>
           <div className="font-mono text-lg font-bold" style={{ color: severityColor(r.taxaExploracao) }}>
-            {Number.isFinite(r.taxaExploracao) ? `${r.taxaExploracao.toLocaleString('pt-BR')}%` : '—'}
+            {Number.isFinite(r.taxaExploracao) ? `${r.taxaExploracao.toLocaleString(loc)}%` : '—'}
           </div>
         </div>
         <div className="rounded-lg bg-zinc-950/60 p-2">
-          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">Não pago · 8h</div>
+          <div className="text-[9.5px] uppercase tracking-wider text-zinc-500">
+            {pick(lang, 'Não pago · 8h', 'Unpaid · 8h', 'No pagado · 8h')}
+          </div>
           <div className="font-mono text-lg font-bold text-emerald-300">{fmtHours(r.minutosNaoPagos / 60)}</div>
         </div>
         <div className="text-[11px] text-zinc-400">
-          Produt.: {r.funcionariosMil > 0 ? <span className="font-mono text-zinc-200">{fmtBRL(r.produtividade)}</span> : '—'}
+          {pick(lang, 'Produt.', 'Productiv.', 'Productiv.')}:{' '}
+          {r.funcionariosMil > 0 ? <span className="font-mono text-zinc-200">{fmtBRL(r.produtividade)}</span> : '—'}
         </div>
         <div className="text-right text-[11px] text-zinc-400">
-          Divid.: {r.dividendosBi > 0 ? <span className="font-mono text-fuchsia-300">R$ {r.dividendosBi.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi</span> : '—'}
+          {pick(lang, 'Divid.', 'Divid.', 'Divid.')}:{' '}
+          {r.dividendosBi > 0 ? <span className="font-mono text-fuchsia-300">
+            R$ {r.dividendosBi.toLocaleString(loc, { maximumFractionDigits: 1 })} {pick(lang, 'bi', 'bn', 'mil M')}
+          </span> : '—'}
         </div>
       </div>
     </div>
@@ -440,6 +590,8 @@ function ExpandedRow({ segments, centerLabel, centerValue, notes, bars, texto, c
   /** nº de colunas da tabela (global = 7, brasil = 5) */
   colSpan?: number
 }) {
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   return (
     <tr className="bg-zinc-950/70">
       <td colSpan={colSpan} className="border-t border-zinc-800/60 px-4 py-4">
@@ -450,7 +602,9 @@ function ExpandedRow({ segments, centerLabel, centerValue, notes, bars, texto, c
               {segments.map((s) => (
                 <li key={s.key} className="flex items-center gap-1.5 text-zinc-300">
                   <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />{s.label}:{' '}
-                  <span className="font-mono font-bold">{s.value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi</span>
+                  <span className="font-mono font-bold">
+                    {s.value.toLocaleString(loc, { maximumFractionDigits: 1 })} {pick(lang, 'bi', 'bn', 'mil M')}
+                  </span>
                 </li>
               ))}
               <li className="max-w-[340px] pt-1 text-[10px] leading-snug text-zinc-500">{notes}</li>
@@ -485,24 +639,25 @@ function BarLine({ label, value, color, hint }: { label: string; value: number; 
 /* ───────────────────── MÓDULO ───────────────────── */
 
 type SortGl = 'capTri' | 'receitaBi' | 'lucroBi' | 'funcionariosMil' | 'exploracao' | 'anosReceita'
-const SORT_GL: Record<SortGl, string> = {
-  capTri: 'Valor de mercado',
-  receitaBi: 'Receita anual',
-  lucroBi: 'Lucro líquido',
-  funcionariosMil: 'Funcionários',
-  exploracao: 'Taxa exploração (est.)',
-  anosReceita: 'Mercado ÷ Receita',
+const SORT_GL: Record<SortGl, TriText> = {
+  capTri: ['Valor de mercado', 'Market value', 'Valor de mercado'],
+  receitaBi: ['Receita anual', 'Annual revenue', 'Ingresos anuales'],
+  lucroBi: ['Lucro líquido', 'Net profit', 'Beneficio neto'],
+  funcionariosMil: ['Funcionários', 'Employees', 'Empleados'],
+  exploracao: ['Taxa exploração (est.)', 'Exploitation rate (est.)', 'Tasa de explotación (est.)'],
+  anosReceita: ['Mercado ÷ Receita', 'Market ÷ Revenue', 'Mercado ÷ Ingresos'],
 }
 type SortBr = 'taxaExploracao' | 'produtividade' | 'minutosNaoPagos' | 'dividendosBi'
-const SORT_BR: Record<SortBr, string> = {
-  taxaExploracao: 'Taxa de exploração',
-  produtividade: 'Produtividade/trabalhador',
-  minutosNaoPagos: 'Horas não pagas',
-  dividendosBi: 'Dividendos pagos',
+const SORT_BR: Record<SortBr, TriText> = {
+  taxaExploracao: ['Taxa de exploração', 'Exploitation rate', 'Tasa de explotación'],
+  produtividade: ['Produtividade/trabalhador', 'Productivity/worker', 'Productividad/trabajador'],
+  minutosNaoPagos: ['Horas não pagas', 'Unpaid hours', 'Horas no pagadas'],
+  dividendosBi: ['Dividendos pagos', 'Dividends paid', 'Dividendos pagados'],
 }
 
 export default function CompaniesModule() {
   const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const [dataset, setDataset] = useState<Dataset>('global')
   const [apiRecords, setApiRecords] = useState<CompanyRecord[]>([])
   const [query, setQuery] = useState('')
@@ -553,16 +708,16 @@ export default function CompaniesModule() {
     }
     return allGl
       .filter((r) => sector === 'todas' || r.setor === sector)
-      .filter((r) => !q || `${r.nome} ${r.pais}`.toLowerCase().includes(q))
+      .filter((r) => !q || `${r.nome} ${r.pais} ${generatedText(lang, r.pais)} ${generatedText(lang, r.setor)}`.toLowerCase().includes(q))
       .sort((a, b) => sortGl.dir * (val(a) - val(b)))
-  }, [allGl, q, sector, sortGl])
+  }, [allGl, q, sector, sortGl, lang])
 
   const filteredBr = useMemo(() =>
     allBr
       .filter((r) => sector === 'todas' || r.setor === sector)
-      .filter((r) => !q || r.nome.toLowerCase().includes(q))
+      .filter((r) => !q || `${r.nome} ${generatedText(lang, r.setor)}`.toLowerCase().includes(q))
       .sort((a, b) => sortBr.dir * (a[sortBr.key] - b[sortBr.key]))
-  , [allBr, q, sector, sortBr])
+  , [allBr, q, sector, sortBr, lang])
 
   const rowsCount = dataset === 'global' ? filteredGl.length : filteredBr.length
   const visibleGl = useMemo(() => filteredGl.slice(0, page), [filteredGl, page])
@@ -587,9 +742,15 @@ export default function CompaniesModule() {
         </div>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">{mt(lang, 'companies').title}</h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          Das maiores do Brasil às maiores do planeta — todas decompostas pelo mesmo motor{' '}
-          <span className="font-mono text-zinc-300">W&nbsp;=&nbsp;c+v+m</span>: quem extrai mais trabalho não pago,
-          quanto cada gigante representa do mercado mundial — e quanto de "promessa" está embutido no preço.
+          {pick(lang,
+            'Das maiores do Brasil às maiores do planeta — todas decompostas pelo mesmo motor',
+            'From Brazil’s largest companies to the world’s largest — all decomposed by the same engine',
+            'Desde las mayores de Brasil hasta las mayores del planeta — todas descompuestas por el mismo motor')}{' '}
+          <span className="font-mono text-zinc-300">W&nbsp;=&nbsp;c+v+m</span>:{' '}
+          {pick(lang,
+            'quem extrai mais trabalho não pago, quanto cada gigante representa do mercado mundial — e quanto de "promessa" está embutido no preço.',
+            'who extracts the most unpaid labor, how much each giant represents of the global market — and how much “promise” is embedded in its price.',
+            'quién extrae más trabajo no pagado, cuánto representa cada gigante del mercado mundial — y cuánta “promesa” está incorporada en el precio.')}
         </p>
       </header>
 
@@ -602,21 +763,23 @@ export default function CompaniesModule() {
                 dataset === ds ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
               }`}>
               {ds === 'global'
-                ? `Maiores do Mundo (${filteredGl.length})`
-                : `Brasil (${filteredBr.length})`}
+                ? `${pick(lang, 'Maiores do Mundo', 'World’s Largest', 'Mayores del Mundo')} (${filteredGl.length})`
+                : `${pick(lang, 'Brasil', 'Brazil', 'Brasil')} (${filteredBr.length})`}
             </button>
           ))}
         </div>
 
         <input value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder={dataset === 'global' ? 'Pesquisar empresa/país…' : 'Pesquisar empresa/ticker…'}
+          placeholder={dataset === 'global'
+            ? pick(lang, 'Pesquisar empresa/país…', 'Search company/country…', 'Buscar empresa/país…')
+            : pick(lang, 'Pesquisar empresa/ticker…', 'Search company/ticker…', 'Buscar empresa/ticker…')}
           className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60" />
 
         <select value={sector} onChange={(e) => setSector(e.target.value)}
-          aria-label="Filtrar por setor"
+          aria-label={pick(lang, 'Filtrar por setor', 'Filter by sector', 'Filtrar por sector')}
           className="h-[34px] cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-2 text-xs text-zinc-300 outline-none focus:border-money/60">
-          <option value="todas">Todos os setores ({sectors.length})</option>
-          {sectors.map((s) => <option key={s} value={s}>{s}</option>)}
+          <option value="todas">{pick(lang, 'Todos os setores', 'All sectors', 'Todos los sectores')} ({sectors.length})</option>
+          {sectors.map((s) => <option key={s} value={s}>{generatedText(lang, s)}</option>)}
         </select>
 
         <div className="ml-auto w-full sm:w-auto sm:min-w-[280px]">
@@ -630,9 +793,14 @@ export default function CompaniesModule() {
             <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4" style={{ borderColor: '#f4433655', background: '#f443360d' }}>
               <UnpaidHero minutes={topBr.minutosNaoPagos} nome={topBr.nome} taxa={topBr.taxaExploracao} />
               <p className="min-w-[240px] flex-1 text-xs leading-relaxed text-zinc-300">
-                <strong className="text-red-300">{topBr.nome}</strong> lidera a amostra brasileira:{' '}
-                {Number.isFinite(topBr.taxaExploracao) ? `${topBr.taxaExploracao.toLocaleString('pt-BR')}% de exploração` : 'exploração não calculável'} — o trabalho pago se esgota em{' '}
-                <span className="font-mono">{fmtHours((480 - topBr.minutosNaoPagos) / 60)}</span> da jornada.
+                <strong className="text-red-300">{topBr.nome}</strong>{' '}
+                {pick(lang, 'lidera a amostra brasileira', 'leads the Brazilian sample', 'lidera la muestra brasileña')}:{' '}
+                {Number.isFinite(topBr.taxaExploracao)
+                  ? `${topBr.taxaExploracao.toLocaleString(loc)}% ${pick(lang, 'de exploração', 'exploitation', 'de explotación')}`
+                  : pick(lang, 'exploração não calculável', 'exploitation cannot be calculated', 'explotación no calculable')}{' '}
+                — {pick(lang, 'o trabalho pago se esgota em', 'paid labor is exhausted after', 'el trabajo pagado se agota tras')}{' '}
+                <span className="font-mono">{fmtHours((480 - topBr.minutosNaoPagos) / 60)}</span>{' '}
+                {pick(lang, 'da jornada.', 'of the workday.', 'de la jornada.')}
               </p>
             </div>
           )}
@@ -641,11 +809,11 @@ export default function CompaniesModule() {
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-zinc-900 text-[10px] uppercase tracking-wider text-zinc-500">
                 <tr>
-                  <th className="px-3 py-2.5">Empresa</th>
+                  <th className="px-3 py-2.5">{pick(lang, 'Empresa', 'Company', 'Empresa')}</th>
                   {(Object.keys(SORT_BR) as SortBr[]).map((k) => (
                     <th key={k} className="cursor-pointer select-none px-3 py-2.5 text-right hover:text-zinc-300"
                       onClick={() => toggleSortBr(k)}>
-                      {SORT_BR[k]} {sortBr.key === k && (sortBr.dir === -1 ? '▼' : '▲')}
+                      {pickTri(lang, SORT_BR[k])} {sortBr.key === k && (sortBr.dir === -1 ? '▼' : '▲')}
                     </th>
                   ))}
                 </tr>
@@ -671,10 +839,46 @@ export default function CompaniesModule() {
         <>
           {/* síntese global */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <SumCard label={`Valor somado das ${wsFull.total}`} value={`US$ ${wsFull.capTri.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} tri`} sub={`${wsFull.pctMarketCapMundial.toFixed(0)}% do mercado acionário mundial`} color="text-fuchsia-300" tip={`Somando os valores de mercado das mega-caps rastreadas (incluindo fontes dinâmicas), chega-se a uma fração enorme de TODAS as empresas listadas do planeta.`} />
-            <SumCard label="Receitas anuais somadas" value={`US$ ${(wsFull.receitaBi / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`} sub={`${wsFull.pctPibMundial.toFixed(1)}% do PIB mundial`} color="text-emerald-300" tip="O fluxo produtivo/comercial organizado por essas empresas equivale a vários 'Brasis' por ano." />
-            <SumCard label="Lucros apropriados" value={`US$ ${(wsFull.lucroBi / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri/ano`} sub="massa de mais-valia capturada" color="text-money" tip="Lucro líquido anual somado: a mais-valia que vira dividendos, buybacks e poder de compra dos acionistas." />
-            <SumCard label="Força de trabalho" value={`${(wsFull.funcionariosMil / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`} sub="empregados diretos" color="text-red-300" tip="Trabalhadores diretamente empregados — fora disso, cadeias inteiras de terceirizados." />
+            <SumCard
+              label={`${pick(lang, 'Valor somado das', 'Combined value of', 'Valor combinado de las')} ${wsFull.total}`}
+              value={`US$ ${wsFull.capTri.toLocaleString(loc, { maximumFractionDigits: 1 })} ${pick(lang, 'tri', 'tn', 'bill.')}`}
+              sub={`${wsFull.pctMarketCapMundial.toFixed(0)}% ${pick(lang, 'do mercado acionário mundial', 'of the global stock market', 'del mercado bursátil mundial')}`}
+              color="text-fuchsia-300"
+              tip={pick(lang,
+                'Somando os valores de mercado das mega-caps rastreadas (incluindo fontes dinâmicas), chega-se a uma fração enorme de TODAS as empresas listadas do planeta.',
+                'Adding the market values of the tracked mega-caps (including dynamic sources) reaches a huge share of ALL listed companies worldwide.',
+                'Al sumar los valores de mercado de las megacaps rastreadas (incluidas las fuentes dinámicas), se alcanza una enorme fracción de TODAS las empresas cotizadas del planeta.')}
+            />
+            <SumCard
+              label={pick(lang, 'Receitas anuais somadas', 'Combined annual revenue', 'Ingresos anuales combinados')}
+              value={`US$ ${(wsFull.receitaBi / 1000).toLocaleString(loc, { maximumFractionDigits: 2 })} ${pick(lang, 'tri', 'tn', 'bill.')}`}
+              sub={`${wsFull.pctPibMundial.toFixed(1)}% ${pick(lang, 'do PIB mundial', 'of world GDP', 'del PIB mundial')}`}
+              color="text-emerald-300"
+              tip={pick(lang,
+                "O fluxo produtivo/comercial organizado por essas empresas equivale a vários 'Brasis' por ano.",
+                'The productive/commercial flow organized by these companies is equivalent to several Brazil-sized economies per year.',
+                'El flujo productivo/comercial organizado por estas empresas equivale a varias economías del tamaño de Brasil por año.')}
+            />
+            <SumCard
+              label={pick(lang, 'Lucros apropriados', 'Appropriated profits', 'Beneficios apropiados')}
+              value={`US$ ${(wsFull.lucroBi / 1000).toLocaleString(loc, { maximumFractionDigits: 2 })} ${pick(lang, 'tri/ano', 'tn/year', 'bill./año')}`}
+              sub={pick(lang, 'massa de mais-valia capturada', 'captured mass of surplus value', 'masa de plusvalía capturada')}
+              color="text-money"
+              tip={pick(lang,
+                'Lucro líquido anual somado: a mais-valia que vira dividendos, buybacks e poder de compra dos acionistas.',
+                'Combined annual net profit: surplus value that becomes dividends, buybacks and shareholder purchasing power.',
+                'Beneficio neto anual combinado: plusvalía que se convierte en dividendos, recompras y poder de compra de los accionistas.')}
+            />
+            <SumCard
+              label={pick(lang, 'Força de trabalho', 'Workforce', 'Fuerza de trabajo')}
+              value={`${(wsFull.funcionariosMil / 1000).toLocaleString(loc, { maximumFractionDigits: 1 })} ${pick(lang, 'mi', 'M', 'M')}`}
+              sub={pick(lang, 'empregados diretos', 'direct employees', 'empleados directos')}
+              color="text-red-300"
+              tip={pick(lang,
+                'Trabalhadores diretamente empregados — fora disso, cadeias inteiras de terceirizados.',
+                'Directly employed workers — beyond them are entire chains of contractors.',
+                'Trabajadores empleados directamente — fuera de ellos hay cadenas enteras de tercerizados.')}
+            />
           </div>
 
           {/* tabela global */}
@@ -682,11 +886,13 @@ export default function CompaniesModule() {
             <table className="w-full min-w-[820px] text-left text-sm">
               <thead className="bg-zinc-900 text-[10px] uppercase tracking-wider text-zinc-500">
                 <tr>
-                  <th className="px-3 py-2.5">Empresa (clique p/ raio-X)</th>
+                  <th className="px-3 py-2.5">
+                    {pick(lang, 'Empresa (clique p/ raio-X)', 'Company (click for X-Ray)', 'Empresa (clic para radiografía)')}
+                  </th>
                   {(Object.keys(SORT_GL) as SortGl[]).map((k) => (
                     <th key={k} className="cursor-pointer select-none px-3 py-2.5 text-right hover:text-zinc-300"
                       onClick={() => toggleSortGl(k)}>
-                      {SORT_GL[k]} {sortGl.key === k && (sortGl.dir === -1 ? '▼' : '▲')}
+                      {pickTri(lang, SORT_GL[k])} {sortGl.key === k && (sortGl.dir === -1 ? '▼' : '▲')}
                     </th>
                   ))}
                 </tr>
@@ -710,10 +916,10 @@ export default function CompaniesModule() {
           </div>
 
           <p className="text-[10px] leading-relaxed text-zinc-600">
-            Base estática: relatórios anuais FY2024/FY2025 (10-K/20-F) e market caps dez/2025; Brasil em DFs FY2024.
-            Taxa de exploração derivada do modelo W=c+v+m com remuneração média ESTIMADA por país/setor — ver
-            DATA-GUIDELINES §9. Registros <span className="font-mono">API·est.</span> usam cotações dinâmicas com
-            fundamentais estimados por setor. Clique numa linha para abrir o raio-X completo.
+            {pick(lang,
+              'Base estática: relatórios anuais FY2024/FY2025 (10-K/20-F) e market caps dez/2025; Brasil em DFs FY2024. Taxa de exploração derivada do modelo W=c+v+m com remuneração média ESTIMADA por país/setor — ver DATA-GUIDELINES §9. Registros API·est. usam cotações dinâmicas com fundamentais estimados por setor. Clique numa linha para abrir o raio-X completo.',
+              'Static base: FY2024/FY2025 annual reports (10-K/20-F) and Dec/2025 market caps; Brazil uses FY2024 financial statements. Exploitation rate derived from W=c+v+m with ESTIMATED average compensation by country/sector — see DATA-GUIDELINES §9. API·est. records use dynamic quotes with sector-estimated fundamentals. Click a row to open the full X-Ray.',
+              'Base estática: informes anuales FY2024/FY2025 (10-K/20-F) y capitalizaciones de dic/2025; Brasil usa estados FY2024. La tasa de explotación deriva del modelo W=c+v+m con remuneración media ESTIMADA por país/sector — consulta DATA-GUIDELINES §9. Los registros API·est. usan cotizaciones dinámicas con fundamentales estimados por sector. Haz clic en una fila para abrir la radiografía completa.')}
           </p>
         </>
       )}
@@ -721,8 +927,11 @@ export default function CompaniesModule() {
       {rowsCount > (dataset === 'global' ? visibleGl.length : visibleBr.length) && (
         <button onClick={() => setPage((p) => p + PAGE)}
           className="mx-auto rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:border-money/60 hover:text-money">
-          Mostrar mais {Math.min(PAGE, rowsCount - (dataset === 'global' ? visibleGl.length : visibleBr.length))} de{' '}
-          {rowsCount - (dataset === 'global' ? visibleGl.length : visibleBr.length)} restantes ↓
+          {pick(lang, 'Mostrar mais', 'Show more', 'Mostrar más')}{' '}
+          {Math.min(PAGE, rowsCount - (dataset === 'global' ? visibleGl.length : visibleBr.length))}{' '}
+          {pick(lang, 'de', 'of', 'de')}{' '}
+          {rowsCount - (dataset === 'global' ? visibleGl.length : visibleBr.length)}{' '}
+          {pick(lang, 'restantes', 'remaining', 'restantes')} ↓
         </button>
       )}
     </div>
@@ -731,61 +940,64 @@ export default function CompaniesModule() {
 
 function ExpandedGlRow({ r }: { r: GlRow }) {
   const mode = useApp((s) => s.mode)
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   const segments = [
-    { key: 'c', label: 'Insumos + máquinas consumidas (c)', value: r.d.c, color: '#2196f3' },
-    { key: 'v', label: 'Folha de salários (v)', value: r.d.v, color: '#f44336' },
-    { key: 'm', label: 'Lucro apropriado (m)', value: r.d.m, color: '#4caf50' },
+    { key: 'c', label: pick(lang, 'Insumos + máquinas consumidas (c)', 'Inputs + consumed machinery (c)', 'Insumos + maquinaria consumida (c)'), value: r.d.c, color: '#2196f3' },
+    { key: 'v', label: pick(lang, 'Folha de salários (v)', 'Payroll (v)', 'Nómina salarial (v)'), value: r.d.v, color: '#f44336' },
+    { key: 'm', label: pick(lang, 'Lucro apropriado (m)', 'Appropriated profit (m)', 'Beneficio apropiado (m)'), value: r.d.m, color: '#4caf50' },
   ]
   const folhaMediaK = r.funcionariosMil > 0 ? ((r.d.v * 1e6) / r.funcionariosMil / 1000).toFixed(0) : null
   return (
     <ExpandedRow
-      segments={segments} centerLabel="receita W" centerValue="= c+v+m"
+      segments={segments} centerLabel={pick(lang, 'receita W', 'revenue W', 'ingresos W')} centerValue="= c+v+m"
       notes={
         <>
-          Modelo contábil-documentado (DATA-GUIDELINES §9).{' '}
-          {folhaMediaK !== null && <>Salário médio <span className="font-mono">$ {folhaMediaK}k/ano</span> é estimativa país/setor — badge est./API.</>}
-          {' '}Sem headcount da API, v é estimado pelo share setorial de folha.
-          {r.fonte && <> Fonte: <em>{r.fonte}</em>.</>}
-          {r.nota && <> Nota: <em>{r.nota}</em>.</>}
+          {pick(lang, 'Modelo contábil-documentado (DATA-GUIDELINES §9).', 'Documented accounting model (DATA-GUIDELINES §9).', 'Modelo contable documentado (DATA-GUIDELINES §9).')}{' '}
+          {folhaMediaK !== null && <>{pick(lang, 'Salário médio', 'Average wage', 'Salario medio')} <span className="font-mono">$ {folhaMediaK}k/{pick(lang, 'ano', 'year', 'año')}</span> {pick(lang, 'é estimativa país/setor — badge est./API.', 'is a country/sector estimate — est./API badge.', 'es una estimación país/sector — etiqueta est./API.')}</>}
+          {' '}{pick(lang, 'Sem headcount da API, v é estimado pelo share setorial de folha.', 'Without API headcount, v is estimated from the sector payroll share.', 'Sin headcount de la API, v se estima por la proporción sectorial de nómina.')}
+          {r.fonte && <> {pick(lang, 'Fonte', 'Source', 'Fuente')}: <em>{generatedText(lang, r.fonte)}</em>.</>}
+          {r.nota && <> {pick(lang, 'Nota', 'Note', 'Nota')}: <em>{generatedText(lang, r.nota)}</em>.</>}
         </>
       }
       bars={r.pctMktCap !== undefined && (
         <>
-          <BarLine label="% do mercado acionário MUNDIAL" value={r.pctMktCap} color="#ba68c8"
-            hint={`${r.nome} sozinha equivale a ${r.pctMktCap.toFixed(1)}% de todas as empresas listadas do planeta`} />
-          <BarLine label="% do PIB mundial (fluxo de receita)" value={(r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100} color="#4caf50"
-            hint={`A receita anual da ${r.nome} move ${((r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100).toFixed(2)}% do que o mundo inteiro produz em um ano`} />
+          <BarLine label={pick(lang, '% do mercado acionário MUNDIAL', '% of the GLOBAL stock market', '% del mercado bursátil MUNDIAL')} value={r.pctMktCap} color="#ba68c8"
+            hint={pick(lang, `${r.nome} sozinha equivale a ${r.pctMktCap.toFixed(1)}% de todas as empresas listadas do planeta`, `${r.nome} alone equals ${r.pctMktCap.toFixed(1)}% of all listed companies worldwide`, `${r.nome} por sí sola equivale al ${r.pctMktCap.toFixed(1)}% de todas las empresas cotizadas del planeta`)} />
+          <BarLine label={pick(lang, '% do PIB mundial (fluxo de receita)', '% of world GDP (revenue flow)', '% del PIB mundial (flujo de ingresos)')} value={(r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100} color="#4caf50"
+            hint={pick(lang, `A receita anual da ${r.nome} move ${((r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100).toFixed(2)}% do que o mundo inteiro produz em um ano`, `${r.nome}’s annual revenue moves ${((r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100).toFixed(2)}% of what the entire world produces in a year`, `Los ingresos anuales de ${r.nome} mueven el ${((r.receitaBi / (WORLD_AGGREGATES.pibMundialTri * 1000)) * 100).toFixed(2)}% de lo que produce el mundo entero en un año`)} />
         </>
       )}
       texto={textoPorModo(
         mode,
-        `Traduzindo: o mercado avalia ${r.nome} em ${r.capTri?.toLocaleString('pt-BR') ?? '?'} trilhões — uma promessa sobre lucros futuros que vale ${r.anosReceita?.toFixed(1) ?? '?'} anos da sua produção atual. Quanto maior esse número sem aumento de produção real, mais "ar fictício" tem o preço.`,
-        `Capitalização/receita = ${r.anosReceita?.toFixed(1) ?? '?'}×: prêmio de expectativa sobre fluxos futuros de m. Extensão do fictício embutido no preço do título de propriedade.`,
-        `A bolsa avalia ${r.nome} em ${r.capTri?.toLocaleString('pt-BR') ?? '?'} trilhões. Isso equivale a cerca de ${r.anosReceita?.toFixed(1) ?? '?'} anos da receita atual e mostra quanto do preço depende das expectativas sobre o futuro.`,
+        pick(lang, `Traduzindo: o mercado avalia ${r.nome} em ${r.capTri?.toLocaleString(loc) ?? '?'} trilhões — uma promessa sobre lucros futuros que vale ${r.anosReceita?.toFixed(1) ?? '?'} anos da sua produção atual. Quanto maior esse número sem aumento de produção real, mais "ar fictício" tem o preço.`, `In plain terms: the market values ${r.nome} at ${r.capTri?.toLocaleString(loc) ?? '?'} trillion — a promise about future profits worth ${r.anosReceita?.toFixed(1) ?? '?'} years of its current production. The higher this number without real production growth, the more fictitious expectations are embedded in the price.`, `En términos simples: el mercado valora ${r.nome} en ${r.capTri?.toLocaleString(loc) ?? '?'} billones — una promesa sobre beneficios futuros equivalente a ${r.anosReceita?.toFixed(1) ?? '?'} años de su producción actual. Cuanto mayor sea este número sin aumento de producción real, más expectativas ficticias incorpora el precio.`),
+        pick(lang, `Capitalização/receita = ${r.anosReceita?.toFixed(1) ?? '?'}×: prêmio de expectativa sobre fluxos futuros de m. Extensão do fictício embutido no preço do título de propriedade.`, `Market cap/revenue = ${r.anosReceita?.toFixed(1) ?? '?'}×: expectation premium on future m flows. Extent of fictitious capital embedded in the ownership title price.`, `Capitalización/ingresos = ${r.anosReceita?.toFixed(1) ?? '?'}×: prima de expectativa sobre flujos futuros de m. Extensión del capital ficticio incorporado al precio del título de propiedad.`),
+        pick(lang, `A bolsa avalia ${r.nome} em ${r.capTri?.toLocaleString(loc) ?? '?'} trilhões. Isso equivale a cerca de ${r.anosReceita?.toFixed(1) ?? '?'} anos da receita atual e mostra quanto do preço depende das expectativas sobre o futuro.`, `The stock market values ${r.nome} at ${r.capTri?.toLocaleString(loc) ?? '?'} trillion. That equals about ${r.anosReceita?.toFixed(1) ?? '?'} years of current revenue and shows how much of the price depends on future expectations.`, `La bolsa valora ${r.nome} en ${r.capTri?.toLocaleString(loc) ?? '?'} billones. Eso equivale a unos ${r.anosReceita?.toFixed(1) ?? '?'} años de ingresos actuales y muestra cuánto del precio depende de expectativas futuras.`),
       )}
     />
   )
 }
 
 function ExpandedBrRow({ r }: { r: BrRow }) {
+  const lang = useApp((s) => s.lang)
   const segments = [
-    { key: 'c', label: 'Insumos + máquinas consumidas (c)', value: r.d.c, color: '#2196f3' },
-    { key: 'v', label: 'Folha de salários (v)', value: r.d.v, color: '#f44336' },
-    { key: 'm', label: 'Lucro apropriado (m)', value: r.d.m, color: '#4caf50' },
+    { key: 'c', label: pick(lang, 'Insumos + máquinas consumidas (c)', 'Inputs + consumed machinery (c)', 'Insumos + maquinaria consumida (c)'), value: r.d.c, color: '#2196f3' },
+    { key: 'v', label: pick(lang, 'Folha de salários (v)', 'Payroll (v)', 'Nómina salarial (v)'), value: r.d.v, color: '#f44336' },
+    { key: 'm', label: pick(lang, 'Lucro apropriado (m)', 'Appropriated profit (m)', 'Beneficio apropiado (m)'), value: r.d.m, color: '#4caf50' },
   ]
   return (
     <ExpandedRow
       colSpan={5}
-      segments={segments} centerLabel="receita W" centerValue="= c+v+m"
+      segments={segments} centerLabel={pick(lang, 'receita W', 'revenue W', 'ingresos W')} centerValue="= c+v+m"
       notes={
         <>
-          Decomposição unificada em R$ bi (mesmo motor da tabela global).
-          {r.funcionariosMil > 0 && <> Folha média ≈ <span className="font-mono">R$ {((r.d.v * 1e6) / r.funcionariosMil).toFixed(0)}k/ano</span> (est.).</>}
-          {r.fonte && <> Fonte: <em>{r.fonte}</em>.</>}
-          {r.nota && <> Nota: <em>{r.nota}</em>.</>}
+          {pick(lang, 'Decomposição unificada em R$ bi (mesmo motor da tabela global).', 'Unified decomposition in R$ bn (same engine as the global table).', 'Descomposición unificada en R$ mil M (mismo motor que la tabla global).')}
+          {r.funcionariosMil > 0 && <> {pick(lang, 'Folha média', 'Average payroll', 'Nómina media')} ≈ <span className="font-mono">R$ {((r.d.v * 1e6) / r.funcionariosMil).toFixed(0)}k/{pick(lang, 'ano', 'year', 'año')}</span> (est.).</>}
+          {r.fonte && <> {pick(lang, 'Fonte', 'Source', 'Fuente')}: <em>{generatedText(lang, r.fonte)}</em>.</>}
+          {r.nota && <> {pick(lang, 'Nota', 'Note', 'Nota')}: <em>{generatedText(lang, r.nota)}</em>.</>}
         </>
       }
-      texto={`Raio-X completo: de cada R$100 de receita, ~${((r.d.v / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} vão para salários e ~${((r.d.m / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} viram lucro dos donos — o resto paga insumos, máquinas e depreciação (c).`}
+      texto={pick(lang, `Raio-X completo: de cada R$100 de receita, ~${((r.d.v / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} vão para salários e ~${((r.d.m / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} viram lucro dos donos — o resto paga insumos, máquinas e depreciação (c).`, `Full X-Ray: out of every R$100 in revenue, ~${((r.d.v / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} goes to wages and ~${((r.d.m / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} becomes owners’ profit — the rest pays for inputs, machinery and depreciation (c).`, `Radiografía completa: de cada R$100 de ingresos, ~${((r.d.v / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} va a salarios y ~${((r.d.m / Math.max(r.receitaBi, 1e-9)) * 100).toFixed(1)} se convierte en beneficio de los propietarios — el resto paga insumos, maquinaria y depreciación (c).`)}
     />
   )
 }
@@ -803,14 +1015,18 @@ function SumCard({ label, value, sub, color, tip }: { label: string; value: stri
 }
 
 function UnpaidHero({ minutes, nome, taxa }: { minutes: number; nome: string; taxa: number }) {
+  const lang = useApp((s) => s.lang)
+  const loc = locale(lang)
   return (
     <div className="flex items-center gap-3">
       <UnpaidClock minutesUnpaid={minutes} size={150} />
       <div>
-        <div className="text-[10px] uppercase tracking-widest text-zinc-500">Campeã de exploração (BR)</div>
+        <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+          {pick(lang, 'Campeã de exploração (BR)', 'Highest exploitation (BR)', 'Mayor explotación (BR)')}
+        </div>
         <div className="text-sm font-bold text-zinc-100">{nome}</div>
         <div className="font-mono text-2xl font-extrabold text-red-400">
-          {Number.isFinite(taxa) ? `${taxa.toLocaleString('pt-BR')}%` : '—'}
+          {Number.isFinite(taxa) ? `${taxa.toLocaleString(loc)}%` : '—'}
         </div>
       </div>
     </div>

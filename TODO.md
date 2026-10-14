@@ -17,8 +17,8 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > desligados e fluxos invisíveis deixam de recalcular Bézier. O manifesto PWA também passou a
 > usar URLs relativas e foi validado num build com `VITE_BASE=/capital-blocks/`.
 >
-> **V1.0.0:** o escopo funcional/editorial está fechado. Tradução completa EN/ES foi
-> explicitamente movida para o ciclo pós-V1; hoje só o chrome está parcialmente traduzido.
+> **V1.0.0:** o escopo funcional/editorial está fechado. A rodada de 2026-10-04
+> completou a camada PT-BR/EN/ES do chrome, módulos, tours e metadados editoriais.
 > Como validações/polimentos pós-release permanecem: (1) perfil + comparação visual em Android
 > mid-range real; (2) ampliar a cobertura de empresas quando houver nova rodada editorial;
 > (3) capturar screenshots/GIFs reais para a landing. Revisão das fontes pendentes, proveniência das 101
@@ -175,13 +175,16 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
     (persistida + validada), `data-theme` na raiz + meta theme-color acompanham;
     token `onaccent` (texto sobre destaque não inverte). Mapas 2D/3D mantêm canvas
     escuro próprio nos dois temas.
-19. **Completar a listagem de empresas do Raio-X** — parcial: dedupe com fontes
-    dinâmicas resolvido (merge por ticker) e as globais agora têm `fonte` por
-    registro (2026-09-30). Falta ampliar cobertura (empresas ausentes relevantes).
-20. **Tradução completa do app para ES e EN — PÓS-V1** — parcial: o chrome (`i18n.ts`)
-    cobre a UI inteira incluindo Configurações e Módulo 10; o conteúdo dos
-    módulos/tours/dados segue PT-BR. Não bloqueia a V1. Grande esforço editorial: planejar pipeline
-    (dados dual-language em `src/data` vs camada de tradução).
+19. **Completar a listagem de empresas do Raio-X** — ✅ rodada de expansão concluída
+    em 2026-10-04: 497 registros totais (306 BR + 191 globais). Além das 84 brasileiras
+    curadas, o snapshot público da BRAPI adiciona 222 emissores B3 deduplicados por
+    ticker/emissor/classe representativa. A cauda longa usa market cap público e
+    premissas setoriais explicitamente marcadas com `estimate: true`; registros curados
+    e demonstrações financeiras continuam tendo precedência sobre o fallback.
+20. **Tradução completa do app para ES e EN** — ✅ concluída em 2026-10-04: chrome,
+    módulos, tours e datasets editoriais possuem seleção PT-BR/EN/ES. Textos longos
+    de fontes/empresas usam `src/data/generatedTranslations.ts`, gerado estaticamente
+    por `scripts/generate-content-i18n.ts`; não há tradução em rede no runtime.
 21. **Landing page profissional** — ✅ CONCLUÍDA (2026-09-30): página estática
     autocontida em `public/landing.html` (design system do app, hero com a
     fórmula W=c+v+m, 10 módulos, recursos, metodologia, CTA para o app).

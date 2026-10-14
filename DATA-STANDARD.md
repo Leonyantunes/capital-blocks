@@ -250,6 +250,7 @@ parênteses quando necessário: `lógica de ponta (leading-edge)`.
 | Guerras, conflitos, fornecedores e estatísticas | `src/data/wars.ts` | Cada conflito pertence a exatamente uma época. |
 | Orçamento e morte/ressurreição do capital | `src/data/debt.ts` | Percentuais do orçamento devem somar 100%. |
 | Empresas BR e globais | `src/data/companies.ts` | Schema unificado `CompanyRecord`; motor `metricsFor`. |
+| Snapshot público de emissores B3 | `src/data/b3Snapshot.ts` | Gerado por `scripts/update-b3-snapshot.mjs`; só dados públicos do catálogo, sem fundamentais inventados. |
 | Riqueza mundial | `src/data/worldWealth.ts` | Vintage distinto por item. |
 | Brasil, UFs e fluxos internos | `src/data/brazil.ts` | Distinguir valor parcial de valor anual. |
 | Salários por país | `src/data/wages.ts` | Ordem de grandeza didática; distinguir média/mediana quando possível. |
@@ -261,7 +262,7 @@ parênteses quando necessário: `lógica de ponta (leading-edge)`.
 | Concentração, top 1% e bilionários | `src/data/concentration.ts` | Safra por ponto/série. |
 | Desastres corporativos | `src/data/disasters.ts` | Separar mortos diretos, expostos e projeções. |
 | Tours e estatísticas de tour | `src/data/tour.ts`, `src/data/tours.ts` | Estatísticas de tour devem apontar para a fonte do fluxo. |
-| Premissas setoriais e decomposição | `src/lib/companyMetrics.ts` | Margem/folha são premissas, não estatísticas oficiais. |
+| Premissas setoriais e decomposição | `src/lib/companyMetrics.ts` | Margem/folha/P-S/remuneração são premissas, não estatísticas oficiais. |
 | APIs dinâmicas | `src/lib/marketApi/*` | Sempre `origem: 'api'` e `estimate: true` quando houver estimativa. |
 | Geografia, blocos e ISO | `src/lib/world.ts` | País novo: `BLOC_MEMBERS` + `countries.ts`. |
 | Registro canônico de referências | `src/data/sources.ts` | Toda fonte relevante deve ter entrada estável. |

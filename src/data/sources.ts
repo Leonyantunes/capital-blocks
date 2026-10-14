@@ -919,7 +919,7 @@ export const SOURCES: SourceRecord[] = [
     instituicao: 'BRAPI / Alpha Vantage',
     categoria: 'empresas',
     tipo: 'portal-oficial',
-    ano: 'limites verificados 2026-09',
+    ano: 'limites verificados 2026-09 · catálogo 2026-10-04',
     urls: [
       {
         rotulo: 'BRAPI — planos e limitações do plano gratuito',
@@ -930,6 +930,11 @@ export const SOURCES: SourceRecord[] = [
         rotulo: 'BRAPI — limites de requisições',
         url: 'https://brapi.dev/faq/tem-algum-limite',
         acessoEm: '2026-09-29',
+      },
+      {
+        rotulo: 'BRAPI — catálogo público de ações da B3 (snapshot do Raio-X)',
+        url: 'https://brapi.dev/api/quote/list?limit=2000',
+        acessoEm: '2026-10-04',
       },
       {
         rotulo: 'Alpha Vantage — suporte e limites',
@@ -944,8 +949,8 @@ export const SOURCES: SourceRecord[] = [
     ],
     resumoDidatico: 'Cotações opcionais que atualizam empresas na página do Raio-X.',
     resumoAvancado: 'Camada dinâmica opt-in; registros recebem origem API e badge de estimativa. BRAPI (B3, em R$): plano gratuito = 15.000 requisições/mês, 1 ação por requisição, delay ~30 min, histórico de 3 meses, sem dividendos; Startup R$ 59,99 = 150k/mês e 10 ações/req; Pro R$ 99,99 = 500k/mês e 20 ações/req. Alpha Vantage (EUA/global): 25 requisições/dia e 5/min no plano gratuito, com isenção declarada para projetos open-source ou educacionais verificados.',
-    cobre: ['Cotações, capitalização e fundamentos dinâmicos.'],
-    usadoEm: ['src/lib/marketApi/*', 'Raio-X de Empresas'],
+    cobre: ['Cotações, capitalização, fundamentos dinâmicos e catálogo público de emissores B3.'],
+    usadoEm: ['src/lib/marketApi/*', 'src/data/b3Snapshot.ts', 'Raio-X de Empresas'],
     estimate: true,
     verificacao: 'url-incluida',
     observacao:

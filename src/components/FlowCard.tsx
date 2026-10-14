@@ -1,5 +1,5 @@
 import { AnimatePresence, m } from 'framer-motion'
-import { TYPE_STYLE, type FlowDef } from '../data/flows'
+import { flowForLang, flowTypeStyleForLang, type FlowDef } from '../data/flows'
 import { BLOCS } from '../lib/world'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
@@ -7,22 +7,28 @@ import { textoPorModo } from '../lib/simples'
 /** Card flutuante do fluxo selecionado no mapa 2D — mesma estética dos painéis do mapa. */
 export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onClose: () => void }) {
   const mode = useApp((s) => s.mode)
-  const didatico = mode !== 'avancado'
+  const lang = useApp((s) => s.lang)
+  const displayFlow = flow ? flowForLang(flow, lang) : null
+  const copy = lang === 'en'
+    ? { origin: 'ORIGIN', aria: 'Flow details', close: 'Close flow details', annual: 'annual flow scale', commodities: 'What travels on this route', drain: 'Who extracts it, from where, to where', composition: 'Flow composition', sources: 'sources' }
+    : lang === 'es'
+      ? { origin: 'ORIGEN', aria: 'Detalles del flujo', close: 'Cerrar detalles del flujo', annual: 'escala anual del flujo', commodities: 'Qué viaja por esta ruta', drain: 'Quién extrae, de dónde y hacia dónde', composition: 'Composición del flujo', sources: 'fuentes' }
+      : { origin: 'ORIGEM', aria: 'Detalhes do fluxo', close: 'Fechar detalhes do fluxo', annual: 'escala anual do fluxo', commodities: 'O que viaja nessa rota', drain: 'Quem tira, de onde, para onde', composition: 'Composição do fluxo', sources: 'fontes' }
 
   const code = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {
       const b = BLOCS.find((x) => x.id === id)
       if (b) return { code: b.code, color: b.color }
     }
-    return { code: label ?? 'ORIGEM', color: '#8b949e' }
+    return { code: label ?? copy.origin, color: '#8b949e' }
   }
-  const from = flow ? code(flow.from, flow.fromLabel) : null
-  const to = flow ? code(flow.to, flow.toLabel) : null
-  const st = flow ? TYPE_STYLE[flow.type] : null
+  const from = displayFlow ? code(displayFlow.from, displayFlow.fromLabel) : null
+  const to = displayFlow ? code(displayFlow.to, displayFlow.toLabel) : null
+  const st = displayFlow ? flowTypeStyleForLang(displayFlow.type, lang) : null
 
   return (
     <AnimatePresence>
-      {flow && st && from && to && (
+      {displayFlow && st && from && to && (
         <m.div
           key="flow-card"
           initial={{ opacity: 0, y: 24, x: '-50%' }}
@@ -31,7 +37,7 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
           transition={{ type: 'spring', stiffness: 320, damping: 30 }}
           role="dialog"
           aria-modal="false"
-          aria-label="Detalhes do fluxo"
+          aria-label={copy.aria}
           className="thin-scroll absolute bottom-14 left-1/2 z-30 max-h-[54%] w-[min(94%,580px)] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 shadow-2xl backdrop-blur max-md:bottom-[5rem]"
           style={{ boxShadow: `0 0 32px ${st.color}26, 0 18px 50px rgba(0,0,0,.55)` }}
         >
@@ -46,9 +52,9 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
                     {st.label.split('(')[0].trim()}
                   </span>
                 </div>
-                <h2 className="mt-1 text-base font-bold leading-tight text-zinc-100">{flow.titulo}</h2>
+                <h2 className="mt-1 text-base font-bold leading-tight text-zinc-100">{displayFlow.titulo}</h2>
               </div>
-              <button onClick={onClose} aria-label="Fechar detalhes do fluxo"
+              <button onClick={onClose} aria-label={copy.close}
                 className="shrink-0 rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:border-zinc-500 hover:text-zinc-200">✕</button>
             </div>
           </div>
@@ -56,22 +62,22 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
           <div className="flex flex-col gap-3 px-4 py-3">
             {/* total */}
             <div className="rounded-xl border p-3" style={{ borderColor: `${st.color}55`, background: `${st.color}0a` }}>
-              <div className="text-[9.5px] uppercase tracking-widest text-zinc-500">escala anual do fluxo</div>
-              <div className="mt-0.5 font-mono text-xl font-extrabold" style={{ color: st.color }}>{flow.totalAnual}</div>
+              <div className="text-[9.5px] uppercase tracking-widest text-zinc-500">{copy.annual}</div>
+              <div className="mt-0.5 font-mono text-xl font-extrabold" style={{ color: st.color }}>{displayFlow.totalAnual}</div>
             </div>
 
             {/* mecanismo dual */}
             <p className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 text-xs leading-relaxed text-zinc-200">
-              {textoPorModo(mode, flow.did, flow.adv)}
+              {textoPorModo(mode, displayFlow.did, displayFlow.adv)}
             </p>
 
             {/* itens */}
             <section>
               <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-                {flow.type === 'commodities' ? 'O que viaja nessa rota' : flow.type === 'drain' ? 'Quem tira, de onde, para onde' : 'Composição do fluxo'}
+                {displayFlow.type === 'commodities' ? copy.commodities : displayFlow.type === 'drain' ? copy.drain : copy.composition}
               </h3>
               <div className="space-y-1.5">
-                {flow.itens.map((it) => (
+                {displayFlow.itens.map((it) => (
                   <div key={it.rotulo} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="text-[11px] font-semibold text-zinc-100">{it.rotulo}</span>
@@ -83,8 +89,8 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
               </div>
             </section>
 
-            {flow.fonte && (
-              <p className="font-mono text-[9px] leading-relaxed text-zinc-600">fontes: {flow.fonte}</p>
+            {displayFlow.fonte && (
+              <p className="font-mono text-[9px] leading-relaxed text-zinc-600">{copy.sources}: {displayFlow.fonte}</p>
             )}
           </div>
         </m.div>

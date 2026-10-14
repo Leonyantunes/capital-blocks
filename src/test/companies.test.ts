@@ -9,14 +9,45 @@
  * Rodar: `npm test`
  */
 import { describe, it, expect } from 'vitest'
-import { COMPANIES_ALL, WORLD_COMPANIES, metricsFor, brView } from '../data/companies'
+import { COMPANIES_ALL, WORLD_COMPANIES, SECTORS_BR, metricsFor, brView } from '../data/companies'
+import { B3_PUBLIC_SNAPSHOT } from '../data/b3Snapshot'
 import { FRACTION_META } from '../data/countries'
+import { B3_UNIVERSE, GLOBAL_EXTRA_UNIVERSE } from '../lib/marketApi/universe'
 
 describe('integridade do dataset do Raio-X', () => {
   it('tem cobertura relevante: BR + globais', () => {
     const br = COMPANIES_ALL.filter((c) => c.mercado === 'BR')
-    expect(br.length).toBeGreaterThanOrEqual(24)
-    expect(WORLD_COMPANIES.length).toBeGreaterThanOrEqual(137)
+    expect(B3_PUBLIC_SNAPSHOT.length).toBeGreaterThanOrEqual(200)
+    expect(COMPANIES_ALL).toHaveLength(275 + B3_PUBLIC_SNAPSHOT.length)
+    expect(br).toHaveLength(84 + B3_PUBLIC_SNAPSHOT.length)
+    expect(WORLD_COMPANIES).toHaveLength(191)
+    expect(B3_UNIVERSE).toHaveLength(75)
+    expect(GLOBAL_EXTRA_UNIVERSE).toHaveLength(49)
+  })
+
+  it('snapshot público B3 é deduplicado e gera fallbacks estimados completos', () => {
+    const tickers = B3_PUBLIC_SNAPSHOT.map((c) => c.ticker)
+    expect(new Set(tickers).size).toBe(tickers.length)
+    for (const source of B3_PUBLIC_SNAPSHOT) {
+      expect(source.marketCapBi, source.ticker).toBeGreaterThan(0)
+      const rec = COMPANIES_ALL.find((c) => c.ticker === source.ticker)
+      expect(rec, source.ticker).toBeDefined()
+      expect(rec?.estimate, source.ticker).toBe(true)
+      expect(rec?.receitaBi, source.ticker).toBeGreaterThan(0)
+      expect(rec?.funcionariosMil, source.ticker).toBeGreaterThan(0)
+      const d = metricsFor(rec!)
+      expect(d.c + d.v + d.m, source.ticker).toBeCloseTo(rec!.receitaBi, 8)
+    }
+  })
+
+  it('todo ticker do universo dinâmico já possui fallback estático no Raio-X', () => {
+    const tickers = new Set(COMPANIES_ALL.map((c) => c.ticker).filter(Boolean))
+    for (const { ticker } of B3_UNIVERSE) {
+      expect(tickers.has(ticker), `B3 ${ticker} existe só via API`).toBe(true)
+    }
+    for (const { ticker } of GLOBAL_EXTRA_UNIVERSE) {
+      expect(tickers.has(ticker), `Global ${ticker} existe só via API`).toBe(true)
+    }
   })
 
   it('todo registro tem os campos obrigatórios preenchidos', () => {
@@ -38,6 +69,25 @@ describe('integridade do dataset do Raio-X', () => {
     expect(dups).toEqual([])
   })
 
+  it('tickers estáticos e universos dinâmicos não têm duplicatas', () => {
+    const staticTickers = COMPANIES_ALL.flatMap((c) => c.ticker ? [c.ticker] : [])
+    const b3Tickers = B3_UNIVERSE.map((c) => c.ticker)
+    const globalTickers = GLOBAL_EXTRA_UNIVERSE.map((c) => c.ticker)
+    expect(new Set(staticTickers).size).toBe(staticTickers.length)
+    expect(new Set(b3Tickers).size).toBe(b3Tickers.length)
+    expect(new Set(globalTickers).size).toBe(globalTickers.length)
+  })
+
+  it('universo B3 não reintroduz tickers descontinuados ou substituídos conhecidos', () => {
+    const tickers = new Set(B3_UNIVERSE.map((c) => c.ticker))
+    const obsoletos = [
+      'BRFS3', 'MRFG3', 'ARZZ6', 'SOMA3', 'TIMP3', 'RRRP3', 'WIZS3', 'MOVV3',
+      'JBSS3', 'GOLL4', 'GOLL54', 'PETZ3', 'NTCO3', 'CRFB3', 'AZUL4', 'AZUL53', 'CCRO3',
+      'EMBR3', 'ELET3',
+    ]
+    for (const ticker of obsoletos) expect(tickers.has(ticker), ticker).toBe(false)
+  })
+
   it('capTri, quando presente, é plausível (0 < cap < 5 tri)', () => {
     for (const c of WORLD_COMPANIES) {
       if (c.capTri === undefined) continue
@@ -53,6 +103,9 @@ describe('integridade do dataset do Raio-X', () => {
          e o motor trunca em 0 — mascarando um erro de digitação) */
       const v = (c.funcionariosMil * 1000 * c.salarioMedioK * 1000) / 1e9
       expect(v, `${c.id}: folha (${v.toFixed(1)}) > receita (${c.receitaBi})`).toBeLessThanOrEqual(c.receitaBi)
+
+      const d = metricsFor(c)
+      expect(d.c + d.v + d.m, `${c.id}: W != c+v+m`).toBeCloseTo(c.receitaBi, 8)
     }
   })
 
@@ -111,6 +164,11 @@ describe('motor aplicado ao dataset (todas as empresas)', () => {
 })
 
 describe('setores', () => {
+  it('SECTORS_BR cobre todos os setores da base BR expandida', () => {
+    const actual = new Set(COMPANIES_ALL.filter((c) => c.mercado === 'BR').map((c) => c.setor))
+    expect(new Set(SECTORS_BR)).toEqual(actual)
+  })
+
   it('todo setor usado por uma empresa tem rótulo de fração conhecido ou é livre', () => {
     /* os setores são texto livre (não vocabulario fechado), mas nenhum pode
        ser vazio — a UI usa setor como filtro e cabeçalho de grupo */

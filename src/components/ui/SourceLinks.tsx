@@ -1,5 +1,6 @@
 import { sourceById } from '../../data/sources'
 import { useApp } from '../../store/useApp'
+import { pick } from '../../i18n'
 
 interface SourceLinksProps {
   sourceIds: string[]
@@ -14,6 +15,7 @@ interface SourceLinksProps {
 export default function SourceLinks({ sourceIds, className }: SourceLinksProps) {
   const showRefs = useApp((s) => s.showRefs)
   const setTab = useApp((s) => s.setTab)
+  const lang = useApp((s) => s.lang)
   const fontes = sourceIds.map(sourceById).filter((s): s is NonNullable<typeof s> => !!s)
 
   if (!fontes.length) return null
@@ -34,7 +36,9 @@ export default function SourceLinks({ sourceIds, className }: SourceLinksProps) 
         title={fontes.map((s) => s.nome).join(' · ')}
         className={`mt-1 font-mono text-[8px] uppercase tracking-wide text-zinc-600 transition-colors hover:text-sky-300 ${className ?? ''}`}
       >
-        ↗ {fontes.length === 1 ? 'fonte' : `${fontes.length} fontes`}
+        ↗ {fontes.length === 1
+          ? pick(lang, 'fonte', 'source', 'fuente')
+          : `${fontes.length} ${pick(lang, 'fontes', 'sources', 'fuentes')}`}
       </button>
     )
   }

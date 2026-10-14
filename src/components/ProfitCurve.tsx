@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { computeCircuit, profitCurve } from '../lib/marx'
+import { pick } from '../i18n'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
 
@@ -18,7 +19,8 @@ function scale(k: number, g: number, maxG: number) {
 }
 
 export default function ProfitCurve() {
-  const { k, e, mode } = useApp()
+  const { k, e, mode, lang } = useApp()
+  const tr = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
   const current = computeCircuit(k, e)
 
   const { paths, familyPaths, maxG } = useMemo(() => {
@@ -45,22 +47,22 @@ export default function ProfitCurve() {
         <h3 className="text-sm font-semibold text-zinc-200">
           {textoPorModo(
             mode,
-            'Quanto maior a automação, menor o lucro sobre o total investido',
-            'Tendência da taxa de lucro g = m/(c+v)',
-            'Como o lucro muda quando há mais máquinas por trabalhador',
+            tr('Quanto maior a automação, menor o lucro sobre o total investido', 'The greater the automation, the lower the profit on total capital invested', 'Cuanto mayor la automatización, menor el beneficio sobre el total invertido'),
+            tr('Tendência da taxa de lucro g = m/(c+v)', 'Tendency of the profit rate g = m/(c+v)', 'Tendencia de la tasa de ganancia g = m/(c+v)'),
+            tr('Como o lucro muda quando há mais máquinas por trabalhador', 'How profit changes with more machines per worker', 'Cómo cambia el beneficio con más máquinas por trabajador'),
           )}
         </h3>
         <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-zinc-400">
           {textoPorModo(
             mode,
-            'outras curvas mantêm o mesmo nível de exploração · ponto = situação atual',
-            'curvas de família para e fixo · marcador = simulação atual',
-            'linhas = outros cenários · ponto amarelo = situação atual',
+            tr('outras curvas mantêm o mesmo nível de exploração · ponto = situação atual', 'other curves keep the same exploitation level · dot = current situation', 'otras curvas mantienen el mismo nivel de explotación · punto = situación actual'),
+            tr('curvas de família para e fixo · marcador = simulação atual', 'family curves for fixed e · marker = current simulation', 'curvas de familia para e fijo · marcador = simulación actual'),
+            tr('linhas = outros cenários · ponto amarelo = situação atual', 'lines = other scenarios · yellow dot = current situation', 'líneas = otros escenarios · punto amarillo = situación actual'),
           )}
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Curva de tendência da taxa de lucro">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={tr('Curva de tendência da taxa de lucro', 'Profit-rate tendency curve', 'Curva de tendencia de la tasa de ganancia')}>
         {/* grid */}
         {yTicks.map((g) => (
           <g key={g}>
@@ -76,7 +78,10 @@ export default function ProfitCurve() {
         ))}
         <text x={(W - PAD.r + PAD.l) / 2} y={H - 4} textAnchor="middle" fontSize="10"
           className="fill-zinc-400">
-          {textoPorModo(mode, 'nível de automação →', 'composição orgânica k = c/v →', 'mais máquinas por trabalhador →')}
+          {textoPorModo(mode,
+            tr('nível de automação →', 'automation level →', 'nivel de automatización →'),
+            tr('composição orgânica k = c/v →', 'organic composition k = c/v →', 'composición orgánica k = c/v →'),
+            tr('mais máquinas por trabalhador →', 'more machines per worker →', 'más máquinas por trabajador →'))}
         </text>
 
         {/* família */}
@@ -95,33 +100,30 @@ export default function ProfitCurve() {
           className="fill-amber-300 font-mono">g = {current.profitRate.toFixed(1)}%</text>
       </svg>
 
-      <InsightNote profitRate={current.profitRate} k={k} mode={mode} />
+      <InsightNote profitRate={current.profitRate} k={k} mode={mode} lang={lang} />
     </div>
   )
 }
 
-function InsightNote({ profitRate, k, mode }: { profitRate: number; k: number; mode: 'simples' | 'didatico' | 'avancado' }) {
+function InsightNote({ profitRate, k, mode, lang }: { profitRate: number; k: number; mode: 'simples' | 'didatico' | 'avancado'; lang: 'pt' | 'en' | 'es' }) {
   const gRef = computeCircuit(K_MIN, useApp.getState().e).profitRate
   const loss = gRef - profitRate
   if (mode === 'simples') {
     return (
       <p className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950/70 p-2.5 text-xs leading-relaxed text-zinc-400">
-        Neste cenário, com <span className="font-mono text-sky-300">{k.toFixed(1)}</span> de máquinas por trabalhador,
-        o lucro sobre o total investido fica em{' '}
-        <span className="font-mono font-semibold text-emerald-300">{profitRate.toFixed(1)}%</span>. Em comparação com o
-        menor nível de máquinas do gráfico, isso representa uma queda de{' '}
-        <span className="text-zinc-200">{loss.toFixed(1)} pontos percentuais</span> neste modelo.
+        {pick(lang, 'Neste cenário, com', 'In this scenario, with', 'En este escenario, con')} <span className="font-mono text-sky-300">{k.toFixed(1)}</span> {pick(lang, 'de máquinas por trabalhador, o lucro sobre o total investido fica em', 'machines per worker, profit on total capital invested is', 'máquinas por trabajador, el beneficio sobre el total invertido es')}{' '}
+        <span className="font-mono font-semibold text-emerald-300">{profitRate.toFixed(1)}%</span>. {pick(lang, 'Em comparação com o menor nível de máquinas do gráfico, isso representa uma queda de', 'Compared with the lowest machinery level on the chart, this represents a decline of', 'Comparado con el nivel más bajo de maquinaria del gráfico, esto representa una caída de')}{' '}
+        <span className="text-zinc-200">{loss.toFixed(1)} {pick(lang, 'pontos percentuais', 'percentage points', 'puntos porcentuales')}</span> {pick(lang, 'neste modelo.', 'in this model.', 'en este modelo.')}
       </p>
     )
   }
   return (
     <p className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950/70 p-2.5 text-xs leading-relaxed text-zinc-400">
-      Com <span className="font-mono text-sky-300">k = {k.toFixed(1)}</span>, a taxa de lucro é{' '}
-      <span className="font-mono font-semibold text-emerald-300">{profitRate.toFixed(1)}%</span>. Subir k
-      (automação) eleva a produtividade, mas reduz o trabalho vivo que gera valor:{' '}
-      <span className="text-zinc-200">desde o mínimo (k={K_MIN}), g já caiu {loss.toFixed(1)} p.p.</span> — a{' '}
+      {pick(lang, 'Com', 'With', 'Con')} <span className="font-mono text-sky-300">k = {k.toFixed(1)}</span>, {pick(lang, 'a taxa de lucro é', 'the profit rate is', 'la tasa de ganancia es')}{' '}
+      <span className="font-mono font-semibold text-emerald-300">{profitRate.toFixed(1)}%</span>. {pick(lang, 'Subir k (automação) eleva a produtividade, mas reduz o trabalho vivo que gera valor:', 'Raising k (automation) increases productivity but reduces the living labor that creates value:', 'Aumentar k (automatización) eleva la productividad, pero reduce el trabajo vivo que crea valor:')}{' '}
+      <span className="text-zinc-200">{pick(lang, `desde o mínimo (k=${K_MIN}), g já caiu ${loss.toFixed(1)} p.p.`, `from the minimum (k=${K_MIN}), g has already fallen ${loss.toFixed(1)} p.p.`, `desde el mínimo (k=${K_MIN}), g ya cayó ${loss.toFixed(1)} p.p.`)}</span> — {pick(lang, 'a', 'the', 'la')}{' '}
       <em className="text-red-300 not-italic underline decoration-red-300/40 underline-offset-2">
-        tendência decrescente da taxa de lucro
+        {pick(lang, 'tendência decrescente da taxa de lucro', 'tendency of the profit rate to fall', 'tendencia decreciente de la tasa de ganancia')}
       </em>.
     </p>
   )

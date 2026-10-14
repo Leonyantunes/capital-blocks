@@ -2,18 +2,18 @@
 
 **Versão 1.0.0** — primeira versão pública estável.
 
-**A anatomia do capitalismo global** — um visualizador interativo, em português, que
+**A anatomia do capitalismo global** — um visualizador interativo trilíngue (PT-BR/EN/ES) que
 traduz categorias de *O Capital* em componentes visuais alimentados por dados
 econômicos reais.
 
 Mapa-múndi com fluxos de valor, globo 3D, um circuito do capital animado, guerra de
 capitais com as linhas de suprimento das matrizes, o mecanismo de dívida pela lente do
-MMT, um raio-X de ~160 empresas decompostas pela mesma fórmula `W = c + v + m`, e
+MMT, um raio-X de 497 empresas decompostas pela mesma fórmula `W = c + v + m`, e
 simuladores jogáveis (salário por peça, curva da taxa de lucro, curva kaleckiana).
 
-> 🇧🇷 A V1 é publicada com interface e conteúdo em **português do Brasil**. O "chrome"
-> da UI já tem tradução parcial EN/ES; a tradução completa dos módulos, dados e tours
-> fica para o ciclo pós-V1.
+> 🌐 A V1 oferece **PT-BR, inglês e espanhol** no chrome da UI, módulos, tours e dados
+> editoriais. Metadados extensos de fontes/empresas usam uma tabela estática gerada,
+> preservando a tradução completa sem dependência de rede no runtime.
 
 ---
 
@@ -115,7 +115,7 @@ outro módulo consomem o registro).
 | 02 | **O Circuito do Capital** | `M — C(L/MP) … P … C′ — M′` animado, tradutor de *horas não pagas* com relógio analógico, curva da tendência decrescente |
 | 03 | **Guerra de Capitais** (War Room) | Linha do tempo reversa 2026→1914, 5 épocas, linhas de suprimento das matrizes até as zonas de guerra, drawer "quem lucra" |
 | 04 | **Morte e Ressurreição do Capital** | Lente Ortodoxa ⇄ MMT, identidade setorial `(S−I) ≡ (G−T)+(X−M)`, simulador kaleckiano |
-| 05 | **Raio-X das Empresas** | ~160 empresas (24 BR + 137 globais) pelo mesmo motor `W = c + v + m`; formato Anuário ILAESE |
+| 05 | **Raio-X das Empresas** | 497 empresas (306 BR + 191 globais) pelo mesmo motor `W = c + v + m`; formato Anuário ILAESE |
 | 06 | **Plataformização do Trabalho** | Simulador de salário por peça, "para onde vai o bruto", taxa oculta |
 | 07 | **Quem Sustenta Quê?** | Trabalho × concentração, bilionários, distribuição da renda |
 | 08 | **Consequências Sistêmicas** | Desastres corporativos com coordenadas e mortos, países afetados |
@@ -222,7 +222,10 @@ Em 2026-10-02 não havia nenhuma entrada efetivamente marcada `revisao-pendente`
 padrão** e ficam na própria página do Módulo 05. Quando ligadas, o token é o **do
 usuário**, guardado no `localStorage` do navegador dele e enviado apenas ao endpoint do
 provedor — não há chave do maintainer no repositório. Registros vindos de API recebem
-`estimate: true` e estimativas setoriais são sinalizadas com `API·est.`.
+`estimate: true` e estimativas setoriais são sinalizadas com `API·est.`. A base estática
+mantém fallback para todos os 75 tickers do `B3_UNIVERSE` e os 49 do
+`GLOBAL_EXTRA_UNIVERSE`; tickers encerrados ficam apenas como histórico documentado e
+não entram na sincronização corrente.
 
 ## Metodologia e limites
 

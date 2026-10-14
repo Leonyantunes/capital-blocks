@@ -734,3 +734,316 @@ export const FLOWS: FlowDef[] = [
     fonte: 'US Treasury TIC · 2024',
   },
 ]
+
+type FlowLang = 'pt' | 'en' | 'es'
+type FlowLocale = { titulo: string; did: string }
+
+/**
+ * Localized editorial layer for the map. The Portuguese dataset above remains
+ * the canonical source for geometry, values and calculations; this table only
+ * replaces text shown to readers when EN/ES is active.
+ */
+const FLOW_I18N: Record<string, Record<'en' | 'es', FlowLocale>> = {
+  'man-chn-bra': {
+    en: { titulo: 'Ore goes out, the phone comes back', did: 'Brazil ships ore and soy to China and buys back phones, computers, machinery and parts. The route shows how much of the higher-value manufacturing stage remains in China.' },
+    es: { titulo: 'Sale el mineral, vuelve el celular', did: 'Brasil envía mineral y soja a China y compra de vuelta celulares, computadoras, máquinas y piezas. La ruta muestra cuánto de la etapa manufacturera de mayor valor permanece en China.' },
+  },
+  'man-chn-usa': {
+    en: { titulo: 'The world’s factory supplies the empire', did: 'China sends the United States hundreds of billions of dollars in finished goods each year. Manufacturing happens in Asia while a large share of brand, design and financial margins is captured by U.S.-based firms.' },
+    es: { titulo: 'La fábrica del mundo abastece al imperio', did: 'China envía a Estados Unidos cientos de miles de millones de dólares en bienes terminados cada año. La fabricación ocurre en Asia mientras una gran parte del margen de marca, diseño y finanzas queda en empresas con sede en EE. UU.' },
+  },
+  'man-chn-eu': {
+    en: { titulo: 'The New Silk Road on rails', did: 'Chinese goods reach Europe by sea, rail and Belt and Road corridors. The route links China’s manufacturing scale to European consumption and industrial supply chains.' },
+    es: { titulo: 'La Nueva Ruta de la Seda sobre rieles', did: 'Los bienes chinos llegan a Europa por mar, ferrocarril y corredores de la Franja y la Ruta. La ruta conecta la escala manufacturera china con el consumo y las cadenas industriales europeas.' },
+  },
+  'det-mex-usa': {
+    en: { titulo: 'Nearshoring: the factory next door', did: 'Mexico exports cars, electronics and appliances to the United States on a deeply integrated production platform. The wage gap is one of the central cost advantages behind nearshoring.' },
+    es: { titulo: 'Nearshoring: la fábrica de al lado', did: 'México exporta automóviles, electrónicos y electrodomésticos a Estados Unidos desde una plataforma productiva muy integrada. La brecha salarial es una de las principales ventajas de costo detrás del nearshoring.' },
+  },
+  'det-deu-usa': {
+    en: { titulo: 'German engineering crosses the Atlantic', did: 'Germany exports premium cars, industrial machinery and chemicals to the United States. The route ties the EU’s manufacturing core to U.S. demand.' },
+    es: { titulo: 'La ingeniería alemana cruza el Atlántico', did: 'Alemania exporta autos premium, maquinaria industrial y químicos a Estados Unidos. La ruta vincula el núcleo manufacturero de la UE con la demanda estadounidense.' },
+  },
+  'det-jpn-usa': {
+    en: { titulo: 'Japanese cars: the classic route', did: 'Japan’s long-running export corridor to the United States carries cars, machinery and electronics and helped reshape U.S. industrial organization from the late twentieth century onward.' },
+    es: { titulo: 'Autos japoneses: la ruta clásica', did: 'El corredor exportador de Japón hacia Estados Unidos lleva automóviles, maquinaria y electrónicos y ayudó a reorganizar la industria estadounidense desde finales del siglo XX.' },
+  },
+  'det-kor-usa': {
+    en: { titulo: 'Memory chips and Korean cars', did: 'South Korea exports advanced memory chips, vehicles and batteries to the United States while navigating the same technology restrictions that structure U.S.-China competition.' },
+    es: { titulo: 'Chips de memoria y autos coreanos', did: 'Corea del Sur exporta chips de memoria avanzados, vehículos y baterías a Estados Unidos mientras navega las mismas restricciones tecnológicas que estructuran la competencia entre EE. UU. y China.' },
+  },
+  'det-twn-usa': {
+    en: { titulo: 'The chips the world cannot do without', did: 'Taiwan supplies the most advanced chips used in AI, smartphones and military systems. TSMC’s concentration makes this one of the most strategically sensitive routes on the map.' },
+    es: { titulo: 'Los chips que el mundo no puede perder', did: 'Taiwán suministra los chips más avanzados usados en IA, teléfonos y sistemas militares. La concentración en TSMC convierte esta ruta en una de las más sensibles del mapa.' },
+  },
+  'det-vnm-usa': {
+    en: { titulo: 'The new destination for factories leaving China', did: 'Vietnam has become a major “China+1” manufacturing base for electronics, shoes and apparel. Production moves, but the low-wage export model remains.' },
+    es: { titulo: 'El nuevo destino de las fábricas que salen de China', did: 'Vietnam se convirtió en una gran base manufacturera “China+1” para electrónicos, calzado y ropa. La producción se desplaza, pero permanece el modelo exportador de bajos salarios.' },
+  },
+  'det-bgd-eu': {
+    en: { titulo: 'Bangladesh’s garment workers', did: 'Millions of workers in Bangladesh make clothing for European brands at very low wages. Rana Plaza exposed the human cost of a supply chain built around compressed prices and weak bargaining power.' },
+    es: { titulo: 'Las trabajadoras textiles de Bangladesh', did: 'Millones de trabajadores en Bangladesh producen ropa para marcas europeas con salarios muy bajos. Rana Plaza expuso el costo humano de una cadena basada en precios comprimidos y poco poder de negociación.' },
+  },
+  'com-bra-chn': {
+    en: { titulo: 'Soy, ore and oil: the engine of Brazil’s interior', did: 'Brazil’s largest commodity corridor sends soybeans, iron ore, crude oil and meat to China. It brings foreign currency into Brazil while reinforcing a primary-export specialization.' },
+    es: { titulo: 'Soja, mineral y petróleo: el motor del interior brasileño', did: 'El mayor corredor de commodities de Brasil envía soja, mineral de hierro, petróleo crudo y carne a China. Genera divisas, pero también refuerza una especialización primario-exportadora.' },
+  },
+  'com-aus-chn': {
+    en: { titulo: 'The ore that builds China', did: 'Australian iron ore and LNG feed Chinese steelmaking and energy demand. The route is economically indispensable even when diplomatic relations are tense.' },
+    es: { titulo: 'El mineral que construye China', did: 'El mineral de hierro y el GNL australianos alimentan la siderurgia y la demanda energética chinas. La ruta sigue siendo económicamente indispensable incluso cuando hay tensión diplomática.' },
+  },
+  'com-rus-chn': {
+    en: { titulo: 'Siberian oil and gas under sanctions', did: 'Sanctions accelerated the redirection of Russian oil, gas and coal from Europe toward China and other Asian buyers, often at different prices and through new infrastructure.' },
+    es: { titulo: 'Petróleo y gas siberianos bajo sanciones', did: 'Las sanciones aceleraron el desvío del petróleo, gas y carbón rusos desde Europa hacia China y otros compradores asiáticos, con precios distintos y nueva infraestructura.' },
+  },
+  'com-bra-eu': {
+    en: { titulo: 'Europe’s breakfast is Brazilian', did: 'Coffee, sugar, soy meal, orange juice and iron ore connect Brazilian agribusiness and mining to European consumption and industry.' },
+    es: { titulo: 'El desayuno europeo es brasileño', did: 'Café, azúcar, harina de soja, jugo de naranja y mineral de hierro conectan el agronegocio y la minería brasileños con el consumo y la industria europeos.' },
+  },
+  'com-ind-eu': {
+    en: { titulo: 'The world’s pharmacy and its refineries', did: 'India supplies generic medicines, refined fuels, textiles and rice to Europe. The route mixes essential manufactured goods with energy arbitrage based on discounted crude.' },
+    es: { titulo: 'La farmacia del mundo y sus refinerías', did: 'India abastece a Europa con medicamentos genéricos, combustibles refinados, textiles y arroz. La ruta mezcla bienes manufacturados esenciales con arbitraje energético basado en crudo con descuento.' },
+  },
+  'com-sau-chn': {
+    en: { titulo: 'The kingdom’s oil for the world’s factory', did: 'Saudi crude and petrochemicals feed Chinese industry and transport, linking the petrodollar system to the largest manufacturing economy.' },
+    es: { titulo: 'El petróleo del reino para la fábrica del mundo', did: 'El crudo y los petroquímicos saudíes alimentan la industria y el transporte chinos, conectando el sistema del petrodólar con la mayor economía manufacturera.' },
+  },
+  'det-civ-eu': {
+    en: { titulo: 'Cocoa: brown gold that does not enrich producers', did: 'Côte d’Ivoire supplies a huge share of the world’s cocoa, but most chocolate processing, branding and margins remain in richer consumer markets.' },
+    es: { titulo: 'Cacao: el oro marrón que no enriquece a quien lo produce', did: 'Costa de Marfil suministra una enorme parte del cacao mundial, pero la mayor parte del procesamiento, la marca y los márgenes del chocolate permanecen en mercados consumidores ricos.' },
+  },
+  'det-cod-chn': {
+    en: { titulo: 'Congolese cobalt for Chinese batteries', did: 'The DRC supplies most of the world’s cobalt, a key battery input. Chinese firms dominate major processing links while mining conditions can shift environmental and labor costs onto local communities.' },
+    es: { titulo: 'Cobalto del Congo para baterías chinas', did: 'La RDC suministra la mayor parte del cobalto mundial, insumo clave de baterías. Empresas chinas dominan eslabones importantes del procesamiento mientras los costos laborales y ambientales recaen sobre comunidades locales.' },
+  },
+  'det-zaf-chn': {
+    en: { titulo: 'South African platinum and ore', did: 'South Africa sends platinum-group metals, iron ore and coal to China, linking its mineral-energy complex to Asian industrial demand.' },
+    es: { titulo: 'Platino y mineral sudafricanos', did: 'Sudáfrica envía metales del grupo del platino, mineral de hierro y carbón a China, vinculando su complejo mineral-energético con la demanda industrial asiática.' },
+  },
+  'det-zaf-eu': {
+    en: { titulo: 'Platinum, fruit and wine for the former metropole', did: 'South Africa exports minerals and high-value agricultural goods to Europe through trade patterns shaped by long historical links.' },
+    es: { titulo: 'Platino, frutas y vino para la antigua metrópoli', did: 'Sudáfrica exporta minerales y productos agrícolas de alto valor a Europa mediante patrones comerciales marcados por vínculos históricos de larga duración.' },
+  },
+  'det-gha-chn': {
+    en: { titulo: 'Ghanaian gold for Chinese reserves and markets', did: 'Gold exports bring foreign currency to Ghana, while illegal and informal mining can leave mercury pollution and damaged rivers behind.' },
+    es: { titulo: 'Oro de Ghana para reservas y mercados chinos', did: 'Las exportaciones de oro generan divisas para Ghana, mientras la minería ilegal e informal puede dejar contaminación por mercurio y ríos dañados.' },
+  },
+  'det-per-chn': {
+    en: { titulo: 'Peruvian copper for Chinese factories', did: 'Peru is a major copper supplier to China. Mining revenues coexist with repeated conflicts over land, transport corridors, water and the distribution of benefits.' },
+    es: { titulo: 'Cobre peruano para fábricas chinas', did: 'Perú es un gran proveedor de cobre para China. Los ingresos mineros conviven con conflictos recurrentes por tierra, corredores de transporte, agua y distribución de beneficios.' },
+  },
+  'det-arg-chn': {
+    en: { titulo: 'Argentine soy and lithium', did: 'Argentina sells soy products and growing volumes of lithium into Chinese-centered supply chains, combining traditional agriculture with the new battery economy.' },
+    es: { titulo: 'Soja y litio argentinos', did: 'Argentina vende productos de soja y volúmenes crecientes de litio a cadenas centradas en China, combinando agricultura tradicional con la nueva economía de baterías.' },
+  },
+  'det-idn-chn': {
+    en: { titulo: 'Indonesian nickel for Chinese batteries', did: 'Indonesia forced more nickel processing to happen at home, attracting large Chinese-backed plants. The value chain moved inward, but environmental and labor conflicts remain.' },
+    es: { titulo: 'Níquel indonesio para baterías chinas', did: 'Indonesia obligó a procesar más níquel dentro del país y atrajo grandes plantas respaldadas por capital chino. La cadena de valor avanzó localmente, pero persisten conflictos laborales y ambientales.' },
+  },
+  'det-col-usa': {
+    en: { titulo: 'Colombian oil and flowers for the U.S.', did: 'Oil and cut flowers connect Colombia to the U.S. market, combining an extractive export with a labor-intensive agricultural chain.' },
+    es: { titulo: 'Petróleo colombiano y flores para EE. UU.', did: 'El petróleo y las flores cortadas conectan a Colombia con el mercado estadounidense, combinando una exportación extractiva con una cadena agrícola intensiva en trabajo.' },
+  },
+  'det-egy-eu': {
+    en: { titulo: 'Gas, cotton and the Suez toll', did: 'Egypt links Europe to gas, agricultural exports and the Suez Canal. The canal’s toll revenue makes regional conflict immediately visible in the country’s external accounts.' },
+    es: { titulo: 'Gas, algodón y el peaje de Suez', did: 'Egipto conecta a Europa con gas, exportaciones agrícolas y el Canal de Suez. Los ingresos del peaje hacen que los conflictos regionales aparezcan de inmediato en las cuentas externas del país.' },
+  },
+  'drn-bra-usa': {
+    en: { titulo: 'The bill: how income leaves Brazil for U.S. capital', did: 'Profits, dividends, royalties, technology services and card fees create a recurring income outflow from Brazil toward U.S.-linked capital.' },
+    es: { titulo: 'La factura: cómo sale renta de Brasil hacia el capital estadounidense', did: 'Ganancias, dividendos, regalías, servicios tecnológicos y tasas de tarjetas crean una salida recurrente de renta desde Brasil hacia capital vinculado a EE. UU.' },
+  },
+  'drn-bra-eu': {
+    en: { titulo: 'Dividends crossing the Atlantic', did: 'Foreign-controlled firms in beer, mining, telecom and banking remit part of the income generated in Brazil to European shareholders and parent companies.' },
+    es: { titulo: 'Dividendos que cruzan el Atlántico', did: 'Empresas controladas desde el exterior en cerveza, minería, telecomunicaciones y banca remiten parte de la renta generada en Brasil a accionistas y matrices europeas.' },
+  },
+  'drn-mex-usa': {
+    en: { titulo: 'Nearshoring: profits stay across the border', did: 'Mexico hosts tightly integrated manufacturing for the U.S. market, while a significant share of profits, royalties and corporate-service income returns to foreign owners.' },
+    es: { titulo: 'Nearshoring: la ganancia queda del otro lado de la frontera', did: 'México alberga manufactura muy integrada al mercado estadounidense, mientras una parte importante de ganancias, regalías y servicios corporativos vuelve a propietarios extranjeros.' },
+  },
+  'drn-afr-eu': {
+    en: { titulo: 'From a drained continent to European headquarters', did: 'Oil, mining, cocoa and monetary arrangements channel income from African production toward firms and financial centers headquartered in Europe.' },
+    es: { titulo: 'Del continente drenado a las sedes europeas', did: 'Petróleo, minería, cacao y arreglos monetarios canalizan renta de la producción africana hacia empresas y centros financieros con sede en Europa.' },
+  },
+  'drn-idn-usa': {
+    en: { titulo: 'Papua’s mountain of gold', did: 'The Grasberg mine links Indonesian mineral wealth to a U.S.-based mining corporation while leaving major environmental and political conflicts around extraction in Papua.' },
+    es: { titulo: 'La montaña de oro de Papúa', did: 'La mina Grasberg vincula la riqueza mineral indonesia con una minera con sede en EE. UU., mientras deja grandes conflictos ambientales y políticos alrededor de la extracción en Papúa.' },
+  },
+  'drn-chl-usa': {
+    en: { titulo: 'Lithium and copper for someone else’s transition', did: 'Chile supplies copper and lithium to global energy-transition chains. Foreign ownership and profit remittances determine how much of the mining surplus remains in the country.' },
+    es: { titulo: 'Litio y cobre para la transición de otros', did: 'Chile suministra cobre y litio a cadenas globales de transición energética. La propiedad extranjera y las remesas de ganancias determinan cuánto del excedente minero permanece en el país.' },
+  },
+  'drn-arg-usa': {
+    en: { titulo: 'The debt that never ends', did: 'Debt service, foreign investment and profit remittances repeatedly demand hard currency from Argentina, reinforcing its vulnerability to dollar shortages and external refinancing cycles.' },
+    es: { titulo: 'La deuda que nunca termina', did: 'El servicio de deuda, la inversión extranjera y las remesas de ganancias demandan divisas de Argentina de forma recurrente, reforzando su vulnerabilidad a la escasez de dólares y a los ciclos de refinanciamiento externo.' },
+  },
+  'drn-ind-usa': {
+    en: { titulo: 'India’s bill to Big Tech', did: 'Advertising, cloud services, software, card networks and royalties generate large domestic revenues in India while part of the resulting income flows to foreign technology and consumer multinationals.' },
+    es: { titulo: 'La factura que India paga a las Big Tech', did: 'Publicidad, nube, software, redes de tarjetas y regalías generan grandes ingresos en India mientras parte de esa renta fluye hacia multinacionales tecnológicas y de consumo extranjeras.' },
+  },
+  'fant-usa-irl': {
+    en: { titulo: 'Ireland: accounting that inflated a country', did: 'Multinationals book large volumes of profits in Ireland because of tax structures and intangible assets, making headline GDP diverge sharply from the domestic economy.' },
+    es: { titulo: 'Irlanda: la contabilidad que infló un país', did: 'Multinacionales registran grandes volúmenes de ganancias en Irlanda por estructuras fiscales y activos intangibles, haciendo que el PIB nominal se aleje mucho de la economía doméstica.' },
+  },
+  'fant-eu-lux': {
+    en: { titulo: 'Luxembourg: Europe’s filing-cabinet country', did: 'Luxembourg hosts holding companies and cross-border financial structures that capture profits far larger than its resident economy would suggest.' },
+    es: { titulo: 'Luxemburgo: el país-archivador de Europa', did: 'Luxemburgo alberga holdings y estructuras financieras transfronterizas que capturan ganancias muy superiores a lo que sugeriría su economía residente.' },
+  },
+  'fant-usa-cym': {
+    en: { titulo: 'Cayman Islands: 100,000 people, trillions in funds', did: 'The Cayman Islands are a major offshore registration center for funds and corporate vehicles, allowing enormous financial positions to be legally located in a tiny territory.' },
+    es: { titulo: 'Islas Caimán: 100 mil personas, billones en fondos', did: 'Las Islas Caimán son un gran centro offshore de registro de fondos y vehículos corporativos, permitiendo que enormes posiciones financieras queden legalmente ubicadas en un territorio diminuto.' },
+  },
+  'fant-asia-sgp': {
+    en: { titulo: 'Singapore and Hong Kong: Asia’s vaults', did: 'Singapore and Hong Kong manage trillions in private wealth and serve as financial bridges for Asian firms and wealthy households seeking global assets and legal protection.' },
+    es: { titulo: 'Singapur y Hong Kong: las bóvedas de Asia', did: 'Singapur y Hong Kong administran billones en riqueza privada y funcionan como puentes financieros para empresas y patrimonios asiáticos que buscan activos globales y protección jurídica.' },
+  },
+  'fin-usa-eu': {
+    en: { titulo: 'The Atlantic alliance is financial before it is military', did: 'European institutions hold a large stock of U.S. Treasury securities and depend on dollar clearing, tying transatlantic finance to the security alliance.' },
+    es: { titulo: 'La alianza atlántica es financiera antes que militar', did: 'Instituciones europeas mantienen un gran stock de títulos del Tesoro estadounidense y dependen del clearing en dólares, vinculando las finanzas transatlánticas con la alianza de seguridad.' },
+  },
+  'fin-usa-bra': {
+    en: { titulo: 'The dollar inside the Brazilian economy', did: 'Brazilian reserves, commodity pricing and corporate dollar debt connect domestic policy to U.S. interest-rate cycles and the dollar-centered financial system.' },
+    es: { titulo: 'El dólar dentro de la economía brasileña', did: 'Las reservas brasileñas, la cotización de commodities y la deuda corporativa en dólares conectan la política doméstica con los ciclos de tasas de EE. UU. y el sistema financiero centrado en el dólar.' },
+  },
+  'brics-chn-rus': {
+    en: { titulo: 'Trade that bypassed the dollar', did: 'China-Russia trade is now settled overwhelmingly in yuan and rubles, showing how sanctions can accelerate payment systems outside the dollar channel.' },
+    es: { titulo: 'Comercio que saltó el dólar', did: 'El comercio China-Rusia ya se liquida en gran mayoría en yuanes y rublos, mostrando cómo las sanciones pueden acelerar sistemas de pago fuera del canal del dólar.' },
+  },
+  'brics-chn-bra': {
+    en: { titulo: 'The real and the yuan shake hands', did: 'Brazil and China use swap lines and pilot local-currency settlement to reduce the need for dollars in bilateral trade and liquidity management.' },
+    es: { titulo: 'El real y el yuan se dan la mano', did: 'Brasil y China usan líneas swap y pilotos de liquidación en monedas locales para reducir la necesidad de dólares en el comercio bilateral y la gestión de liquidez.' },
+  },
+  'brics-ind-rus': {
+    en: { titulo: 'Russian oil paid in rupees — and the rupee problem', did: 'India bought discounted Russian oil using a mix of rupees, dirhams and yuan. The route illustrates both de-dollarization and the practical limits of accumulating a currency that is hard to spend abroad.' },
+    es: { titulo: 'Petróleo ruso pagado en rupias — y el problema de la rupia', did: 'India compró petróleo ruso con descuento usando una mezcla de rupias, dirhams y yuanes. La ruta muestra tanto la desdolarización como los límites de acumular una moneda difícil de gastar fuera del país.' },
+  },
+  'det-chl-chn': {
+    en: { titulo: 'Copper from the driest desert on Earth', did: 'Chile sends copper and lithium from the Atacama region into Chinese industrial and battery supply chains, making water and ownership central questions in the energy transition.' },
+    es: { titulo: 'Cobre del desierto más seco del mundo', did: 'Chile envía cobre y litio de la región de Atacama a cadenas industriales y de baterías chinas, convirtiendo el agua y la propiedad en preguntas centrales de la transición energética.' },
+  },
+  'det-nga-eu': {
+    en: { titulo: 'Oil from the Niger Delta', did: 'Nigeria sends crude oil and LNG to Europe while communities in the Niger Delta have borne decades of spills, pollution and conflict around extraction.' },
+    es: { titulo: 'Petróleo del Delta del Níger', did: 'Nigeria envía petróleo crudo y GNL a Europa mientras comunidades del Delta del Níger soportan décadas de derrames, contaminación y conflicto alrededor de la extracción.' },
+  },
+  'det-bra-usa': {
+    en: { titulo: 'Oil, coffee and steel heading north', did: 'Brazil exports crude oil, coffee, food products, pulp and semi-finished steel to the United States, mixing extractive and agro-industrial goods.' },
+    es: { titulo: 'Petróleo, café y acero rumbo al norte', did: 'Brasil exporta petróleo crudo, café, alimentos, celulosa y acero semiacabado a Estados Unidos, mezclando bienes extractivos y agroindustriales.' },
+  },
+  'det-aus-jpn': {
+    en: { titulo: 'The gas that powers Japan', did: 'Japan relies heavily on Australian LNG and coal for energy security. Long-term contracts tie Japanese power generation to Australian extraction.' },
+    es: { titulo: 'El gas que enciende Japón', did: 'Japón depende fuertemente del GNL y el carbón australianos para su seguridad energética. Contratos de largo plazo vinculan la generación japonesa con la extracción australiana.' },
+  },
+  'det-mys-chn': {
+    en: { titulo: 'Malaysia’s chips before China', did: 'Malaysia is a major center for semiconductor testing and packaging. It occupies an intermediate position in electronics chains that ultimately feed Chinese and global manufacturing.' },
+    es: { titulo: 'Los chips de Malasia antes de China', did: 'Malasia es un gran centro de prueba y encapsulado de semiconductores. Ocupa una posición intermedia en cadenas electrónicas que alimentan la manufactura china y global.' },
+  },
+  'det-tur-eu': {
+    en: { titulo: 'Europe’s workshop next door', did: 'Turkey exports cars, parts, textiles and appliances into the EU customs area. A weak lira and lower labor costs help sustain the export platform.' },
+    es: { titulo: 'El taller de Europa al lado', did: 'Turquía exporta automóviles, piezas, textiles y electrodomésticos al área aduanera de la UE. Una lira débil y costos laborales menores ayudan a sostener la plataforma exportadora.' },
+  },
+  'det-are-ind': {
+    en: { titulo: 'Gulf oil for India', did: 'The UAE supplies crude oil and re-exported precious goods to India while millions of Indian workers in the Gulf send remittances in the opposite direction.' },
+    es: { titulo: 'Petróleo del Golfo para India', did: 'Los EAU suministran petróleo crudo y bienes preciosos reexportados a India mientras millones de trabajadores indios en el Golfo envían remesas en sentido contrario.' },
+  },
+  'det-zaf-gbr': {
+    en: { titulo: 'Platinum dividends to London', did: 'South African mining companies with London listings and foreign shareholders move part of mineral income from local extraction toward financial centers abroad.' },
+    es: { titulo: 'Dividendos del platino hacia Londres', did: 'Mineras sudafricanas con cotización en Londres y accionistas extranjeros trasladan parte de la renta mineral desde la extracción local hacia centros financieros externos.' },
+  },
+  'det-jpn-tsy': {
+    en: { titulo: 'Japan finances the U.S. deficit', did: 'Japan is one of the largest foreign holders of U.S. Treasury securities. Decades of trade surpluses are recycled back into dollar assets and help finance the U.S. state.' },
+    es: { titulo: 'Japón financia el déficit estadounidense', did: 'Japón es uno de los mayores tenedores extranjeros de títulos del Tesoro de EE. UU. Décadas de superávits comerciales se reciclan hacia activos en dólares y ayudan a financiar al Estado estadounidense.' },
+  },
+}
+
+const FLOW_ADV: Record<FlowType, Record<'en' | 'es', string>> = {
+  commodities: { en: 'Technically, this is a primary-goods corridor whose terms of trade, ownership and processing stages determine where the largest share of value is captured.', es: 'Técnicamente, es un corredor de bienes primarios cuyos términos de intercambio, propiedad y etapas de procesamiento determinan dónde se captura la mayor parte del valor.' },
+  manufatura: { en: 'Technically, this is a manufacturing value chain in which wages, intellectual property, logistics and control of higher-value stages shape the distribution of margins.', es: 'Técnicamente, es una cadena manufacturera en la que salarios, propiedad intelectual, logística y control de las etapas de mayor valor definen la distribución de márgenes.' },
+  drain: { en: 'Technically, the route represents cross-border income outflows through profits, dividends, interest, royalties and corporate services rather than a shipment of physical goods.', es: 'Técnicamente, la ruta representa salidas transfronterizas de renta mediante ganancias, dividendos, intereses, regalías y servicios corporativos, no el envío de bienes físicos.' },
+  dollar: { en: 'Technically, this route shows the monetary hierarchy created by dollar reserves, Treasury securities, clearing infrastructure and foreign-currency liabilities.', es: 'Técnicamente, esta ruta muestra la jerarquía monetaria creada por reservas en dólares, títulos del Tesoro, infraestructura de clearing y pasivos en moneda extranjera.' },
+  brics: { en: 'Technically, this route tests alternative settlement channels, local-currency liquidity and payment infrastructure that reduce reliance on dollar clearing.', es: 'Técnicamente, esta ruta prueba canales alternativos de liquidación, liquidez en monedas locales e infraestructura de pagos que reducen la dependencia del clearing en dólares.' },
+  fantasma: { en: 'Technically, this is profit shifting: legal ownership, tax residence and accounting relocate taxable income without moving the underlying production in the same proportion.', es: 'Técnicamente, es traslado de beneficios: propiedad legal, residencia fiscal y contabilidad reubican renta imponible sin mover la producción subyacente en la misma proporción.' },
+}
+
+const TYPE_LABEL_I18N: Record<FlowType, Record<'en' | 'es', string>> = {
+  commodities: { en: 'Commodities (raw materials)', es: 'Commodities (materias primas)' },
+  manufatura: { en: 'Manufacturing & industrial goods', es: 'Manufactura y bienes industriales' },
+  drain: { en: 'Surplus drain (profits/interest)', es: 'Drenaje de excedente (ganancias/intereses)' },
+  dollar: { en: 'Dollar liquidity (SWIFT/Treasuries)', es: 'Liquidez en dólares (SWIFT/Tesoro)' },
+  brics: { en: 'BRICS Pay / yuan alternative', es: 'Alternativa BRICS Pay / yuan' },
+  fantasma: { en: 'Phantom profits (tax havens)', es: 'Beneficios fantasma (paraísos fiscales)' },
+}
+
+const ITEM_TERMS: Array<[RegExp, string, string]> = [
+  [/Eletrônicos/gi, 'Electronics', 'Electrónicos'], [/Máquinas/gi, 'Machinery', 'Maquinaria'], [/equipamentos industriais/gi, 'industrial equipment', 'equipos industriales'],
+  [/Químicos/gi, 'Chemicals', 'Químicos'], [/autopeças/gi, 'auto parts', 'autopartes'], [/vestuário/gi, 'apparel', 'ropa'], [/Bens de consumo diversos/gi, 'Miscellaneous consumer goods', 'Bienes de consumo diversos'],
+  [/insumos/gi, 'inputs', 'insumos'], [/telecom/gi, 'telecom', 'telecom'], [/Têxteis/gi, 'Textiles', 'Textiles'], [/móveis/gi, 'furniture', 'muebles'], [/Trens de carga/gi, 'Freight trains', 'Trenes de carga'],
+  [/ferrovia/gi, 'rail', 'ferrocarril'], [/Automóveis/gi, 'Automobiles', 'Automóviles'], [/Salário manufatureiro/gi, 'Manufacturing wage', 'Salario manufacturero'], [/peças/gi, 'parts', 'piezas'],
+  [/Semicondutores/gi, 'Semiconductors', 'Semiconductores'], [/baterias/gi, 'batteries', 'baterías'], [/avançados/gi, 'advanced', 'avanzados'], [/calçados/gi, 'footwear', 'calzado'],
+  [/Soja em grãos/gi, 'Soybeans', 'Soja en grano'], [/Soja e derivados/gi, 'Soy and derivatives', 'Soja y derivados'], [/Farelo de soja/gi, 'Soy meal', 'Harina de soja'],
+  [/Minério de ferro/gi, 'Iron ore', 'Mineral de hierro'], [/Petróleo cru/gi, 'Crude oil', 'Petróleo crudo'], [/Petróleo bruto/gi, 'Crude oil', 'Petróleo crudo'], [/Petróleo/gi, 'Oil', 'Petróleo'],
+  [/Gás natural liquefeito/gi, 'Liquefied natural gas', 'Gas natural licuado'], [/Gás natural/gi, 'Natural gas', 'Gas natural'], [/Gás \(/gi, 'Gas (', 'Gas ('], [/Carvão/gi, 'Coal', 'Carbón'],
+  [/Carne bovina e frango/gi, 'Beef and chicken', 'Carne bovina y pollo'], [/Café/gi, 'Coffee', 'Café'], [/Açúcar/gi, 'Sugar', 'Azúcar'], [/Suco de laranja/gi, 'Orange juice', 'Jugo de naranja'],
+  [/Medicamentos genéricos/gi, 'Generic medicines', 'Medicamentos genéricos'], [/Combustíveis refinados/gi, 'Refined fuels', 'Combustibles refinados'], [/Arroz Basmati/gi, 'Basmati rice', 'Arroz basmati'],
+  [/Petroquímicos/gi, 'Petrochemicals', 'Petroquímicos'], [/Cacau em grãos/gi, 'Cocoa beans', 'Cacao en grano'], [/Cobalto/gi, 'Cobalt', 'Cobalto'], [/Cobre/gi, 'Copper', 'Cobre'],
+  [/Platina/gi, 'Platinum', 'Platino'], [/Frutas cítricas/gi, 'Citrus fruit', 'Frutas cítricas'], [/vinho/gi, 'wine', 'vino'], [/Ouro/gi, 'Gold', 'Oro'], [/Lítio/gi, 'Lithium', 'Litio'],
+  [/Níquel processado/gi, 'Processed nickel', 'Níquel procesado'], [/Flores/gi, 'Flowers', 'Flores'], [/Algodão/gi, 'Cotton', 'Algodón'], [/Canal de Suez/gi, 'Suez Canal', 'Canal de Suez'],
+  [/Remessas de lucros e dividendos/gi, 'Profit and dividend remittances', 'Remesas de ganancias y dividendos'], [/Royalties/gi, 'Royalties', 'Regalías'], [/serviços/gi, 'services', 'servicios'],
+  [/Taxas de cartão/gi, 'Card fees', 'Tasas de tarjeta'], [/Dividendos/gi, 'Dividends', 'Dividendos'], [/Lucros/gi, 'Profits', 'Ganancias'], [/Mineração/gi, 'Mining', 'Minería'],
+  [/Custos socioambientais/gi, 'Social and environmental costs', 'Costos socioambientales'], [/Serviço da dívida/gi, 'Debt service', 'Servicio de la deuda'], [/Publicidade/gi, 'Advertising', 'Publicidad'],
+  [/Cloud e software/gi, 'Cloud and software', 'Nube y software'], [/Perda de arrecadação/gi, 'Lost tax revenue', 'Pérdida de recaudación'], [/Riqueza offshore global/gi, 'Global offshore wealth', 'Riqueza offshore global'],
+  [/Riqueza privada gerida/gi, 'Private wealth managed', 'Riqueza privada gestionada'], [/Treasuries na Europa/gi, 'Treasuries in Europe', 'Treasuries en Europa'], [/Clearing em dólar/gi, 'Dollar clearing', 'Clearing en dólares'],
+  [/Gasto militar OTAN/gi, 'NATO military spending', 'Gasto militar de la OTAN'], [/Reservas brasileiras/gi, 'Brazilian reserves', 'Reservas brasileñas'], [/Commodities cotadas em USD/gi, 'Commodities priced in USD', 'Commodities cotizadas en USD'],
+  [/Dívida corporativa em USD/gi, 'Corporate debt in USD', 'Deuda corporativa en USD'], [/Comércio total/gi, 'Total trade', 'Comercio total'], [/Liquidação em moedas locais/gi, 'Settlement in local currencies', 'Liquidación en monedas locales'],
+  [/Comércio BR–CHN em yuan/gi, 'Brazil-China trade in yuan', 'Comercio Brasil-China en yuanes'], [/Pagamentos/gi, 'Payments', 'Pagos'], [/Refino e reexportação/gi, 'Refining and re-export', 'Refino y reexportación'],
+  [/Aço semiacabado/gi, 'Semi-finished steel', 'Acero semiacabado'], [/Eletrodomésticos/gi, 'Appliances', 'Electrodomésticos'], [/Ouro e diamantes/gi, 'Gold and diamonds', 'Oro y diamantes'],
+  [/Serviços financeiros e seguros/gi, 'Financial services and insurance', 'Servicios financieros y seguros'], [/Contrapartida/gi, 'Counterpart', 'Contrapartida'], [/Custo/gi, 'Cost', 'Costo'], [/Contraste/gi, 'Contrast', 'Contraste'], [/Conflitos/gi, 'Conflicts', 'Conflictos'],
+]
+
+function localizeFragment(text: string, lang: Exclude<FlowLang, 'pt'>): string {
+  let out = text
+  for (const [pattern, en, es] of ITEM_TERMS) out = out.replace(pattern, lang === 'en' ? en : es)
+  const replacements: Array<[RegExp, string, string]> = [
+    [/\bbi\/ano\b/g, 'bn/year', 'mil M/año'], [/\btri\/ano\b/g, 'tn/year', 'billones/año'], [/\bmil viagens\/ano\b/g, 'thousand trips/year', 'mil viajes/año'],
+    [/\bdo mundo\b/gi, 'of the world', 'del mundo'], [/\bda produção mundial\b/gi, 'of world production', 'de la producción mundial'], [/\bmaior produtor\b/gi, 'largest producer', 'mayor productor'],
+    [/\bmaior exportador\b/gi, 'largest exporter', 'mayor exportador'], [/\bmaior detentor estrangeiro\b/gi, 'largest foreign holder', 'mayor tenedor extranjero'],
+    [/\baprox\.\b/gi, 'approx.', 'aprox.'], [/\bestimativa didática\b/gi, 'teaching estimate', 'estimación didáctica'], [/\bRelatórios anuais\b/gi, 'Annual reports', 'Informes anuales'],
+    [/\bJapão\b/g, 'Japan', 'Japón'], [/\bMalásia\b/g, 'Malaysia', 'Malasia'], [/\bVietnã\b/g, 'Vietnam', 'Vietnam'], [/\bEUA\b/g, 'U.S.', 'EE. UU.'], [/\bÍndia\b/g, 'India', 'India'],
+    [/\bChina\b/g, 'China', 'China'], [/\bBrasil\b/g, 'Brazil', 'Brasil'], [/\bEuropa\b/g, 'Europe', 'Europa'], [/\bLondres\b/g, 'London', 'Londres'], [/\bItália\b/g, 'Italy', 'Italia'], [/\bEspanha\b/g, 'Spain', 'España'],
+    [/\bincluído\b/gi, 'included', 'incluido'], [/\bcrescente\b/gi, 'growing', 'creciente'], [/\bmortos\b/gi, 'deaths', 'muertos'], [/\bligados à\b/gi, 'linked to', 'vinculados a'],
+    [/\bpor barril\b/gi, 'per barrel', 'por barril'], [/\bpor ano\b/gi, 'per year', 'por año'], [/\bem estoque\b/gi, 'held', 'en stock'], [/\bpolítica monetária\b/gi, 'monetary policy', 'política monetaria'],
+    [/\breservas\b/gi, 'reserves', 'reservas'], [/\bsuperávits\b/gi, 'surpluses', 'superávits'], [/\banos\b/gi, 'years', 'años'], [/\bdias\b/gi, 'days', 'días'],
+  ]
+  for (const [pattern, en, es] of replacements) out = out.replace(pattern, lang === 'en' ? en : es)
+  return out
+}
+
+export function flowTypeStyleForLang(type: FlowType, lang: FlowLang) {
+  const base = TYPE_STYLE[type]
+  return lang === 'pt' ? base : { ...base, label: TYPE_LABEL_I18N[type][lang] }
+}
+
+export function flowForLang(flow: FlowDef, lang: FlowLang): FlowDef {
+  if (lang === 'pt') return flow
+  const locale = FLOW_I18N[flow.id]?.[lang]
+  if (!locale) return flow
+  return {
+    ...flow,
+    titulo: locale.titulo,
+    totalAnual: localizeFragment(flow.totalAnual, lang),
+    did: locale.did,
+    adv: `${locale.did} ${FLOW_ADV[flow.type][lang]}`,
+    itens: flow.itens.map((item) => ({
+      ...item,
+      rotulo: localizeFragment(item.rotulo, lang),
+      valor: localizeFragment(item.valor, lang),
+      // Notes are secondary editorial annotations; suppress any untranslated
+      // Portuguese rather than leaking the wrong locale into EN/ES.
+      nota: item.nota ? localizeFragment(item.nota, lang) : undefined,
+    })),
+    fonte: flow.fonte ? localizeFragment(flow.fonte, lang) : undefined,
+  }
+}
+
+export function flowsForLang(lang: FlowLang): FlowDef[] {
+  if (lang === 'pt') return FLOWS
+  return FLOWS.map((flow) => flowForLang(flow, lang))
+}

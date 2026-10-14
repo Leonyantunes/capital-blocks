@@ -1,5 +1,5 @@
 import { useApp, type Lang, type Theme, type UIMode } from '../store/useApp'
-import { mt, t } from '../i18n'
+import { mt, pick, t } from '../i18n'
 import { NIVEIS, textoPorModo } from '../lib/simples'
 import ModeBadge from './ui/ModeBadge'
 
@@ -10,7 +10,7 @@ import ModeBadge from './ui/ModeBadge'
  * O que vive aqui:
  * • Nível de leitura (simples/didático/avançado) — cards com descrição
  * • Tema (obsidian/claro) — paleta por tokens (index.css [data-theme])
- * • Idioma do chrome (PT/EN/ES) — o conteúdo dos módulos segue PT-BR
+ * • Idioma do app (PT/EN/ES) — chrome, módulos e dados editoriais traduzidos
  * • Modo apresentação (fonte ampliada para projeção)
  * • Modo referências (fonte junto dos números exibidos)
  *
@@ -74,6 +74,20 @@ export default function SettingsModule() {
   const setPresentation = useApp((s) => s.setPresentation)
   const setLang = useApp((s) => s.setLang)
   const setTab = useApp((s) => s.setTab)
+  const levelDescription = (id: UIMode) => {
+    if (id === 'simples') return pick(lang,
+      'Para quem está começando: palavras do dia a dia, sem fórmula.',
+      'For beginners: everyday language, no formulas.',
+      'Para quien está empezando: lenguaje cotidiano, sin fórmulas.')
+    if (id === 'didatico') return pick(lang,
+      'Explicações com alguma conta e metáfora. Padrão do app.',
+      'Explanations with some calculations and metaphors. App default.',
+      'Explicaciones con algunos cálculos y metáforas. Predeterminado de la app.')
+    return pick(lang,
+      'Categorias, fórmulas e detalhes para leitura aprofundada.',
+      'Categories, formulas and details for deeper reading.',
+      'Categorías, fórmulas y detalles para una lectura más profunda.')
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -90,9 +104,18 @@ export default function SettingsModule() {
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
           {textoPorModo(
             mode,
-            'Ajuste o app do seu jeito: nível de leitura, tema, idioma e o que aparece na tela. Tudo fica salvo no seu navegador — na próxima visita, o app abre do mesmo jeito.',
-            'Centralização das preferências: nível de leitura, tema por tokens, idioma do chrome, modo de referências e modo apresentação. Estado persistido (localStorage) com validação de rehydrate.',
-            'Escolha textos mais simples, mude o tema e o idioma e decida se quer ver as fontes junto dos números. Suas escolhas ficam salvas neste navegador.',
+            pick(lang,
+              'Ajuste o app do seu jeito: nível de leitura, tema, idioma e o que aparece na tela. Tudo fica salvo no seu navegador — na próxima visita, o app abre do mesmo jeito.',
+              'Adjust the app your way: reading level, theme, language and what appears on screen. Everything is saved in your browser, so the app opens the same way next time.',
+              'Ajusta la app a tu manera: nivel de lectura, tema, idioma y lo que aparece en pantalla. Todo queda guardado en tu navegador para la próxima visita.'),
+            pick(lang,
+              'Centralização das preferências: nível de leitura, tema por tokens, idioma da interface, modo de referências e modo apresentação. Estado persistido (localStorage) com validação de rehydrate.',
+              'Centralized preferences: reading level, token-based theme, interface language, references mode and presentation mode. State persists in localStorage with rehydrate validation.',
+              'Preferencias centralizadas: nivel de lectura, tema por tokens, idioma de la interfaz, modo de referencias y modo presentación. El estado persiste en localStorage con validación de rehidratación.'),
+            pick(lang,
+              'Escolha textos mais simples, mude o tema e o idioma e decida se quer ver as fontes junto dos números. Suas escolhas ficam salvas neste navegador.',
+              'Choose simpler text, change the theme and language, and decide whether sources should appear next to figures. Your choices stay saved in this browser.',
+              'Elige textos más simples, cambia el tema y el idioma y decide si quieres ver las fuentes junto a las cifras. Tus elecciones quedan guardadas en este navegador.'),
           )}
         </p>
       </header>
@@ -115,10 +138,12 @@ export default function SettingsModule() {
               <div className="flex items-center gap-2">
                 <span className={`inline-block h-2.5 w-2.5 rounded-full ${NIVEL_DOT[n.id as UIMode]}`} />
                 <span className={`text-sm font-bold ${mode === n.id ? 'text-money' : 'text-zinc-100'}`}>
-                  {n.rotulo}
+                  {t(lang, n.id)}
                 </span>
               </div>
-              <p className="mt-1.5 text-[11.5px] leading-relaxed text-zinc-400">{n.descricao}</p>
+              <p className="mt-1.5 text-[11.5px] leading-relaxed text-zinc-400">
+                {levelDescription(n.id as UIMode)}
+              </p>
             </button>
           ))}
         </div>
@@ -160,7 +185,10 @@ export default function SettingsModule() {
             ))}
           </div>
           <p className="text-[10.5px] leading-relaxed text-zinc-600">
-            Os mapas 2D e 3D mantêm o canvas escuro (instrumento com paleta própria) nos dois temas.
+            {pick(lang,
+              'Os mapas 2D e 3D mantêm o canvas escuro (instrumento com paleta própria) nos dois temas.',
+              'The 2D and 3D maps keep a dark canvas (an instrument with its own palette) in both themes.',
+              'Los mapas 2D y 3D mantienen el lienzo oscuro (un instrumento con paleta propia) en ambos temas.')}
           </p>
         </section>
 
@@ -169,9 +197,9 @@ export default function SettingsModule() {
           <SectionTitle>{t(lang, 'idioma')}</SectionTitle>
           <div className="grid grid-cols-3 gap-2">
             {([
-              { id: 'pt', nome: 'Português', curto: 'PT' },
-              { id: 'en', nome: 'English', curto: 'EN' },
-              { id: 'es', nome: 'Español', curto: 'ES' },
+              { id: 'pt', nome: pick(lang, 'Português', 'Portuguese', 'Portugués'), curto: 'PT' },
+              { id: 'en', nome: pick(lang, 'Inglês', 'English', 'Inglés'), curto: 'EN' },
+              { id: 'es', nome: pick(lang, 'Espanhol', 'Spanish', 'Español'), curto: 'ES' },
             ] as { id: Lang; nome: string; curto: string }[]).map((l) => (
               <button
                 key={l.id}
@@ -191,7 +219,10 @@ export default function SettingsModule() {
             ))}
           </div>
           <p className="text-[10.5px] leading-relaxed text-zinc-600">
-            O chrome da interface é trilíngue; o conteúdo dos módulos segue em PT-BR até a fase de tradução integral.
+            {pick(lang,
+              'O app oferece PT-BR, inglês e espanhol em toda a interface e no conteúdo editorial; a preferência fica salva no navegador.',
+              'The app supports Brazilian Portuguese, English and Spanish across the interface and editorial content; the preference is saved in the browser.',
+              'La app ofrece portugués de Brasil, inglés y español en toda la interfaz y el contenido editorial; la preferencia queda guardada en el navegador.')}
           </p>
         </section>
       </div>
@@ -204,13 +235,19 @@ export default function SettingsModule() {
             on={showRefs}
             onChange={setShowRefs}
             label={t(lang, 'mostrarFonte')}
-            desc="Os números exibidos ganham um marcador discreto com a fonte (instituição, safra ou método) quando existe. Desligado por padrão para a aula ficar limpa."
+            desc={pick(lang,
+              'Os números exibidos ganham um marcador discreto com a fonte (instituição, safra ou método) quando existe. Desligado por padrão para a aula ficar limpa.',
+              'Displayed figures get a discreet source marker (institution, vintage or method) when available. Off by default to keep the lesson uncluttered.',
+              'Las cifras mostradas reciben un marcador discreto de fuente (institución, período o método) cuando existe. Está desactivado por defecto para mantener limpia la clase.')}
           />
           <Toggle
             on={presentation}
             onChange={setPresentation}
             label={t(lang, 'apresentacao')}
-            desc="Aumenta a fonte raiz do app para projeção em sala ou leitura à distância."
+            desc={pick(lang,
+              'Aumenta a fonte raiz do app para projeção em sala ou leitura à distância.',
+              'Increases the app’s root font size for classroom projection or reading from a distance.',
+              'Aumenta el tamaño de fuente base de la app para proyección en clase o lectura a distancia.')}
           />
         </div>
       </section>
@@ -221,16 +258,22 @@ export default function SettingsModule() {
         className="flex items-center justify-between gap-4 rounded-xl border border-dashed border-money/40 bg-money/5 p-4 text-left transition-colors hover:border-money/70"
       >
         <span>
-          <span className="block text-sm font-bold text-money">Fontes & Referências</span>
+          <span className="block text-sm font-bold text-money">{mt(lang, 'sources').title}</span>
           <span className="mt-0.5 block text-[11.5px] leading-relaxed text-zinc-400">
-            A base documental completa do app — instituições, safras, estado de verificação e links diretos — está no módulo de fontes.
+            {pick(lang,
+              'A base documental completa do app — instituições, safras, estado de verificação e links diretos — está no módulo de fontes.',
+              'The app’s complete documentation base — institutions, vintages, verification status and direct links — is in the sources module.',
+              'La base documental completa de la app — instituciones, períodos, estado de verificación y enlaces directos — está en el módulo de fuentes.')}
           </span>
         </span>
         <span className="shrink-0 text-lg text-money" aria-hidden="true">→</span>
       </button>
 
       <p className="text-[11px] leading-relaxed text-zinc-600">
-        Suas preferências ficam salvas no navegador e sobrevivem ao recarregar; JSON corrompido cai no padrão sem quebrar o app. Nada sai do seu navegador: sem backend, sem telemetria, sem rastreamento.
+        {pick(lang,
+          'Suas preferências ficam salvas no navegador e sobrevivem ao recarregar; JSON corrompido cai no padrão sem quebrar o app. Nada sai do seu navegador: sem backend, sem telemetria, sem rastreamento.',
+          'Your preferences are saved in the browser and survive reloads; corrupted JSON falls back to defaults without breaking the app. Nothing leaves your browser: no backend, telemetry or tracking.',
+          'Tus preferencias quedan guardadas en el navegador y sobreviven a las recargas; un JSON corrupto vuelve a los valores predeterminados sin romper la app. Nada sale de tu navegador: sin backend, telemetría ni rastreo.')}
       </p>
     </div>
   )

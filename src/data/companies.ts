@@ -13,7 +13,14 @@
 
 import { modRef } from './modules'
 
-import { decomposeFromParts, decomposeValue, sectorEstimate } from '../lib/companyMetrics'
+import {
+  decomposeFromParts,
+  decomposeValue,
+  sectorEstimate,
+  sectorPriceSalesEstimate,
+  sectorSalaryEstimateBRLK,
+} from '../lib/companyMetrics'
+import { B3_PUBLIC_SNAPSHOT, B3_SNAPSHOT_DATE } from './b3Snapshot'
 import { WORLD_EQUITIES_TRI, WORLD_GDP_TRI } from './worldWealth'
 
 export type Market = 'BR' | 'GLOBAL'
@@ -83,8 +90,8 @@ const BR: CompanyRecord[] = [
   },
   {
     id: 'br-jbs', nome: 'JBS', pais: 'Brasil', setor: 'Alimentos e Bebidas', mercado: 'BR', moeda: 'BRL',
-    ticker: 'JBSS3', receitaBi: 416.9, lucroBi: 9.6, funcionariosMil: 280, salarioMedioK: 55,
-    dividendosBi: 3.0, fonte: 'DFs FY2024', nota: 'Operação global: maior processadora de proteína animal do mundo',
+    ticker: 'JBSS32', receitaBi: 416.9, lucroBi: 9.6, funcionariosMil: 280, salarioMedioK: 55,
+    dividendosBi: 3.0, fonte: 'DFs FY2024', nota: 'Base FY2024 anterior à reorganização; desde jun/2025 a exposição na B3 é via BDR JBSS32 da JBS N.V.',
   },
   {
     id: 'br-gerdau', nome: 'Gerdau', pais: 'Brasil', setor: 'Siderurgia', mercado: 'BR', moeda: 'BRL',
@@ -103,8 +110,8 @@ const BR: CompanyRecord[] = [
   },
   {
     id: 'br-embraer', nome: 'Embraer', pais: 'Brasil', setor: 'Aeroindústria', mercado: 'BR', moeda: 'BRL',
-    ticker: 'EMBR3', receitaBi: 35, lucroBi: 2.7, funcionariosMil: 25, salarioMedioK: 170,
-    dividendosBi: 0.4, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+    ticker: 'EMBJ3', receitaBi: 35, lucroBi: 2.7, funcionariosMil: 25, salarioMedioK: 170,
+    dividendosBi: 0.4, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Ticker EMBJ3 desde 03/11/2025, em substituição a EMBR3.',
   },
   {
     id: 'br-magalu', nome: 'Magazine Luiza', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL',
@@ -147,9 +154,9 @@ const BR: CompanyRecord[] = [
     dividendosBi: 1.6, estimate: true, fonte: 'DFs FY2024 (aprox.)',
   },
   {
-    id: 'br-natura', nome: 'Natura &Co', pais: 'Brasil', setor: 'Cosméticos', mercado: 'BR', moeda: 'BRL',
-    ticker: 'NTCO3', receitaBi: 26.7, lucroBi: -1.2, funcionariosMil: 24, salarioMedioK: 80,
-    estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Prejuízo GAAP ligado aos problemas da Avon — até gigante queima capital',
+    id: 'br-natura', nome: 'Natura', pais: 'Brasil', setor: 'Cosméticos', mercado: 'BR', moeda: 'BRL',
+    ticker: 'NATU3', receitaBi: 26.7, lucroBi: -1.2, funcionariosMil: 24, salarioMedioK: 80,
+    estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Base FY2024 ainda reflete a Natura &Co/Avon; NTCO3 foi substituído por NATU3 em jul/2025.',
   },
   {
     id: 'br-localiza', nome: 'Localiza', pais: 'Brasil', setor: 'Locação de veículos', mercado: 'BR', moeda: 'BRL',
@@ -162,9 +169,9 @@ const BR: CompanyRecord[] = [
     dividendosBi: 2.3, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Margem líquida ~36%: aluguel sobre a infraestrutura de negociação',
   },
   {
-    id: 'br-eletrobras', nome: 'Eletrobras', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
-    ticker: 'ELET3', receitaBi: 45, lucroBi: 10.9, funcionariosMil: 4.2, salarioMedioK: 300,
-    dividendosBi: 5.5, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Renda hidrelétrica: ativo herdado gera lucro com folha mínima',
+    id: 'br-eletrobras', nome: 'AXIA Energia (ex-Eletrobras)', pais: 'Brasil', setor: 'Energia', mercado: 'BR', moeda: 'BRL',
+    ticker: 'AXIA3', receitaBi: 45, lucroBi: 10.9, funcionariosMil: 4.2, salarioMedioK: 300,
+    dividendosBi: 5.5, estimate: true, fonte: 'DFs FY2024 da Eletrobras (aprox.)', nota: 'AXIA3 substituiu ELET3 em 10/11/2025; base FY2024 preserva o exercício anterior à mudança de marca.',
   },
   {
     id: 'br-ifood', nome: 'iFood (Movile)', pais: 'Brasil', setor: 'Plataformas', mercado: 'BR', moeda: 'BRL',
@@ -188,7 +195,7 @@ const BR: CompanyRecord[] = [
   {
     id: 'br-carrefour', nome: 'Carrefour Brasil', pais: 'Brasil', setor: 'Varejo atacarejo', mercado: 'BR', moeda: 'BRL',
     ticker: 'CRFB3', receitaBi: 120.7, lucroBi: 1.2, funcionariosMil: 100, salarioMedioK: 30,
-    dividendosBi: 0.5, estimate: true, fonte: 'DFs FY2024 (aprox.)',
+    dividendosBi: 0.5, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Registro histórico FY2024; CRFB3 deixou de ser negociado após o fechamento de capital em 2025 e não integra a sincronização corrente.',
   },
   {
     id: 'br-americanas', nome: 'Americanas', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL',
@@ -251,9 +258,9 @@ const BR: CompanyRecord[] = [
     dividendosBi: 1.8, estimate: true, fonte: 'DFs FY2024 (aprox.)',
   },
   {
-    id: 'br-ccr', nome: 'CCR', pais: 'Brasil', setor: 'Logística', mercado: 'BR', moeda: 'BRL',
-    ticker: 'CCRO3', receitaBi: 12.7, lucroBi: 2.3, funcionariosMil: 7, salarioMedioK: 130,
-    dividendosBi: 1.3, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Pedágio: renda sobre a infraestrutura de rodovias e aeroportos',
+    id: 'br-ccr', nome: 'Motiva (ex-CCR)', pais: 'Brasil', setor: 'Logística', mercado: 'BR', moeda: 'BRL',
+    ticker: 'MOTV3', receitaBi: 12.7, lucroBi: 2.3, funcionariosMil: 7, salarioMedioK: 130,
+    dividendosBi: 1.3, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Base FY2024 da antiga CCR; companhia adotou a marca Motiva e o ticker MOTV3 em mai/2025. Pedágio: renda sobre infraestrutura de rodovias e aeroportos.',
   },
   {
     id: 'br-rumo', nome: 'Rumo', pais: 'Brasil', setor: 'Logística', mercado: 'BR', moeda: 'BRL',
@@ -262,7 +269,7 @@ const BR: CompanyRecord[] = [
   },
   {
     id: 'br-movida', nome: 'Movida', pais: 'Brasil', setor: 'Locação de veículos', mercado: 'BR', moeda: 'BRL',
-    ticker: 'MOVV3', receitaBi: 6.4, lucroBi: 0.8, funcionariosMil: 9, salarioMedioK: 70,
+    ticker: 'MOVI3', receitaBi: 6.4, lucroBi: 0.8, funcionariosMil: 9, salarioMedioK: 70,
     dividendosBi: 0.2, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Escândalo contábil 2023 (~R$ 5 bi): reformulada, segue na bolsa — até gigante queima capital',
   },
   {
@@ -275,6 +282,56 @@ const BR: CompanyRecord[] = [
     ticker: 'MBRF3', receitaBi: 108, lucroBi: 2.0, funcionariosMil: 100, salarioMedioK: 50,
     dividendosBi: 1.0, estimate: true, fonte: 'DFs FY2024 (aprox.)', nota: 'Marfrig + BRF: a fusão da proteína animal',
   },
+]
+
+/* ── Cobertura ampliada da B3 ─────────────────────────────────────────────
+ * Empresas do universo de sincronização que antes só apareciam quando o
+ * visitante possuía token de API. Os fundamentais são aproximações de FY2024
+ * a partir de DFs/relatórios anuais públicos; remuneração média continua sendo
+ * hipótese setorial e, por isso, TODOS os registros mantêm `estimate: true`.
+ * A finalidade é garantir que o Raio-X permaneça útil offline e que cada nome
+ * passe pelo mesmo `metricsFor()` da base principal.                         */
+const BR_SUPPLEMENT: CompanyRecord[] = [
+  { id: 'br-slc-agricola', nome: 'SLC Agrícola', pais: 'Brasil', setor: 'Agronegócio', mercado: 'BR', moeda: 'BRL', ticker: 'SLCE3', receitaBi: 7.4, lucroBi: 1.1, funcionariosMil: 5.5, salarioMedioK: 75, dividendosBi: 0.6, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-sao-martinho', nome: 'São Martinho', pais: 'Brasil', setor: 'Agronegócio / Açúcar e Etanol', mercado: 'BR', moeda: 'BRL', ticker: 'SMTO3', receitaBi: 7.2, lucroBi: 1.8, funcionariosMil: 12, salarioMedioK: 65, dividendosBi: 0.8, estimate: true, fonte: 'DFs/RI safra 2024/25 (aprox.)' },
+  { id: 'br-metalurgica-gerdau', nome: 'Metalúrgica Gerdau', pais: 'Brasil', setor: 'Siderurgia / Holding', mercado: 'BR', moeda: 'BRL', ticker: 'GOAU4', receitaBi: 67, lucroBi: 2.1, funcionariosMil: 30, salarioMedioK: 120, dividendosBi: 1.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Holding controladora da Gerdau; receita operacional consolidada sobrepõe a investida.' },
+  { id: 'br-usiminas', nome: 'Usiminas', pais: 'Brasil', setor: 'Siderurgia', mercado: 'BR', moeda: 'BRL', ticker: 'USIM5', receitaBi: 27.6, lucroBi: 0.4, funcionariosMil: 14, salarioMedioK: 105, dividendosBi: 0.3, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-azul', nome: 'Azul', pais: 'Brasil', setor: 'Aeroindústria / Aviação', mercado: 'BR', moeda: 'BRL', ticker: 'AZUL3', receitaBi: 19.4, lucroBi: -5.6, funcionariosMil: 16, salarioMedioK: 95, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Base FY2024 pré-reestruturação; AZUL4 passou por códigos operacionais transitórios durante a recapitalização e, após o grupamento de 2026, a negociação corrente usa AZUL3 (ON). Prejuízo preservado no dataset.' },
+  { id: 'br-gol', nome: 'GOL Linhas Aéreas', pais: 'Brasil', setor: 'Aeroindústria / Aviação', mercado: 'BR', moeda: 'BRL', ticker: 'GOLL54', receitaBi: 20.3, lucroBi: -6.1, funcionariosMil: 14, salarioMedioK: 90, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Registro histórico FY2024. GOLL4 foi convertido em GOLL54 em jun/2025; a B3 cancelou a listagem da GOL em abr/2026 após incorporação/extinção. Excluída da sincronização corrente.' },
+  { id: 'br-vivara', nome: 'Vivara', pais: 'Brasil', setor: 'Varejo / Luxo', mercado: 'BR', moeda: 'BRL', ticker: 'VIVA3', receitaBi: 3.1, lucroBi: 0.5, funcionariosMil: 5, salarioMedioK: 55, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-petz', nome: 'Grupo Petz Cobasi', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL', ticker: 'AUAU3', receitaBi: 3.9, lucroBi: 0.1, funcionariosMil: 7, salarioMedioK: 48, dividendosBi: 0.05, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Ticker corrente AUAU3 desde jan/2026; fundamentais ainda usam a base Petz FY2024 pré-combinação e subestimam o grupo combinado.' },
+  { id: 'br-guararapes', nome: 'Guararapes (Riachuelo)', pais: 'Brasil', setor: 'Varejo', mercado: 'BR', moeda: 'BRL', ticker: 'GUAR3', receitaBi: 9.6, lucroBi: 0.7, funcionariosMil: 30, salarioMedioK: 48, dividendosBi: 0.3, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-azzas', nome: 'Azzas 2154', pais: 'Brasil', setor: 'Varejo / Moda', mercado: 'BR', moeda: 'BRL', ticker: 'AZZA3', receitaBi: 12.1, lucroBi: 0.8, funcionariosMil: 20, salarioMedioK: 60, dividendosBi: 0.3, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Companhia resultante da combinação Arezzo&Co + Grupo Soma.' },
+  { id: 'br-prio', nome: 'PRIO', pais: 'Brasil', setor: 'Petróleo / Energia', mercado: 'BR', moeda: 'BRL', ticker: 'PRIO3', receitaBi: 14.8, lucroBi: 4.3, funcionariosMil: 1.5, salarioMedioK: 260, dividendosBi: 0.8, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-petroreconcavo', nome: 'PetroReconcavo', pais: 'Brasil', setor: 'Petróleo / Energia', mercado: 'BR', moeda: 'BRL', ticker: 'RECV3', receitaBi: 4.4, lucroBi: 1.1, funcionariosMil: 2.7, salarioMedioK: 150, dividendosBi: 0.7, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-brava', nome: 'Brava Energia', pais: 'Brasil', setor: 'Petróleo / Energia', mercado: 'BR', moeda: 'BRL', ticker: 'BRAV3', receitaBi: 11.8, lucroBi: 0.9, funcionariosMil: 3.2, salarioMedioK: 155, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024-25 (aprox.)', nota: 'Sucessora da combinação 3R Petroleum + Enauta.' },
+  { id: 'br-cemig', nome: 'Cemig', pais: 'Brasil', setor: 'Energia elétrica', mercado: 'BR', moeda: 'BRL', ticker: 'CMIG4', receitaBi: 39.2, lucroBi: 7.1, funcionariosMil: 5, salarioMedioK: 210, dividendosBi: 3.4, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-cpfl', nome: 'CPFL Energia', pais: 'Brasil', setor: 'Energia elétrica', mercado: 'BR', moeda: 'BRL', ticker: 'CPFE3', receitaBi: 41.4, lucroBi: 5.5, funcionariosMil: 14, salarioMedioK: 125, dividendosBi: 3.1, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-neoenergia', nome: 'Neoenergia', pais: 'Brasil', setor: 'Energia elétrica', mercado: 'BR', moeda: 'BRL', ticker: 'NEOE3', receitaBi: 44.0, lucroBi: 4.7, funcionariosMil: 15, salarioMedioK: 120, dividendosBi: 2.0, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-taesa', nome: 'Taesa', pais: 'Brasil', setor: 'Energia elétrica / Transmissão', mercado: 'BR', moeda: 'BRL', ticker: 'TAEE11', receitaBi: 3.2, lucroBi: 1.8, funcionariosMil: 1.5, salarioMedioK: 190, dividendosBi: 1.6, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-light', nome: 'Light', pais: 'Brasil', setor: 'Energia elétrica', mercado: 'BR', moeda: 'BRL', ticker: 'LIGT3', receitaBi: 15.8, lucroBi: -1.0, funcionariosMil: 5.5, salarioMedioK: 100, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Recuperação judicial; prejuízo preservado.' },
+  { id: 'br-eztec', nome: 'EZTec', pais: 'Brasil', setor: 'Construção Civil', mercado: 'BR', moeda: 'BRL', ticker: 'EZTC3', receitaBi: 1.8, lucroBi: 0.5, funcionariosMil: 0.9, salarioMedioK: 140, dividendosBi: 0.25, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-cury', nome: 'Cury', pais: 'Brasil', setor: 'Construção Civil', mercado: 'BR', moeda: 'BRL', ticker: 'CURY3', receitaBi: 5.0, lucroBi: 1.0, funcionariosMil: 2.5, salarioMedioK: 90, dividendosBi: 0.45, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-direcional', nome: 'Direcional', pais: 'Brasil', setor: 'Construção Civil', mercado: 'BR', moeda: 'BRL', ticker: 'DIRR3', receitaBi: 3.6, lucroBi: 0.6, funcionariosMil: 4, salarioMedioK: 70, dividendosBi: 0.3, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-jhsf', nome: 'JHSF', pais: 'Brasil', setor: 'Construção / Imobiliário', mercado: 'BR', moeda: 'BRL', ticker: 'JHSF3', receitaBi: 1.7, lucroBi: 0.7, funcionariosMil: 5, salarioMedioK: 80, dividendosBi: 0.35, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-mills', nome: 'Mills', pais: 'Brasil', setor: 'Bens de Capital / Locação', mercado: 'BR', moeda: 'BRL', ticker: 'MILS3', receitaBi: 1.6, lucroBi: 0.3, funcionariosMil: 4, salarioMedioK: 75, dividendosBi: 0.15, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-porto', nome: 'Porto', pais: 'Brasil', setor: 'Seguros', mercado: 'BR', moeda: 'BRL', ticker: 'PSSA3', receitaBi: 36.0, lucroBi: 2.8, funcionariosMil: 13, salarioMedioK: 115, dividendosBi: 1.4, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-caixa-seguridade', nome: 'Caixa Seguridade', pais: 'Brasil', setor: 'Seguros / Holding', mercado: 'BR', moeda: 'BRL', ticker: 'CXSE3', receitaBi: 5.4, lucroBi: 3.7, funcionariosMil: 0.7, salarioMedioK: 300, dividendosBi: 3.0, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)', nota: 'Holding com estrutura própria pequena; taxa de exploração deve ser lida com cautela.' },
+  { id: 'br-wiz', nome: 'Wiz Co', pais: 'Brasil', setor: 'Seguros', mercado: 'BR', moeda: 'BRL', ticker: 'WIZC3', receitaBi: 1.2, lucroBi: 0.2, funcionariosMil: 2, salarioMedioK: 90, dividendosBi: 0.1, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-fleury', nome: 'Grupo Fleury', pais: 'Brasil', setor: 'Saúde', mercado: 'BR', moeda: 'BRL', ticker: 'FLRY3', receitaBi: 7.6, lucroBi: 0.8, funcionariosMil: 16, salarioMedioK: 70, dividendosBi: 0.4, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-qualicorp', nome: 'Qualicorp', pais: 'Brasil', setor: 'Saúde / Planos', mercado: 'BR', moeda: 'BRL', ticker: 'QUAL3', receitaBi: 2.0, lucroBi: 0.1, funcionariosMil: 1.8, salarioMedioK: 105, dividendosBi: 0.05, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-smartfit', nome: 'Smart Fit', pais: 'Brasil', setor: 'Saúde / Fitness', mercado: 'BR', moeda: 'BRL', ticker: 'SMFT3', receitaBi: 6.1, lucroBi: 0.6, funcionariosMil: 15, salarioMedioK: 50, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-cogna', nome: 'Cogna Educação', pais: 'Brasil', setor: 'Educação', mercado: 'BR', moeda: 'BRL', ticker: 'COGN3', receitaBi: 7.2, lucroBi: 0.5, funcionariosMil: 23, salarioMedioK: 55, dividendosBi: 0.15, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-yduqs', nome: 'Yduqs', pais: 'Brasil', setor: 'Educação', mercado: 'BR', moeda: 'BRL', ticker: 'YDUQ3', receitaBi: 5.1, lucroBi: 0.4, funcionariosMil: 16, salarioMedioK: 60, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-cvc', nome: 'CVC Corp', pais: 'Brasil', setor: 'Turismo', mercado: 'BR', moeda: 'BRL', ticker: 'CVCB3', receitaBi: 1.6, lucroBi: 0.2, funcionariosMil: 3, salarioMedioK: 65, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-brasilagro', nome: 'BrasilAgro', pais: 'Brasil', setor: 'Agronegócio', mercado: 'BR', moeda: 'BRL', ticker: 'AGRO3', receitaBi: 1.4, lucroBi: 0.25, funcionariosMil: 1.1, salarioMedioK: 75, dividendosBi: 0.15, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-tupy', nome: 'Tupy', pais: 'Brasil', setor: 'Bens de Capital / Autopeças', mercado: 'BR', moeda: 'BRL', ticker: 'TUPY3', receitaBi: 11.5, lucroBi: 0.5, funcionariosMil: 20, salarioMedioK: 70, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-romi', nome: 'Indústrias Romi', pais: 'Brasil', setor: 'Bens de Capital', mercado: 'BR', moeda: 'BRL', ticker: 'ROMI3', receitaBi: 1.6, lucroBi: 0.2, funcionariosMil: 3.7, salarioMedioK: 80, dividendosBi: 0.12, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-aeris', nome: 'Aeris Energy', pais: 'Brasil', setor: 'Bens de Capital / Eólica', mercado: 'BR', moeda: 'BRL', ticker: 'AERI3', receitaBi: 2.2, lucroBi: -0.3, funcionariosMil: 6, salarioMedioK: 55, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-mahle', nome: 'Mahle Metal Leve', pais: 'Brasil', setor: 'Autopeças', mercado: 'BR', moeda: 'BRL', ticker: 'LEVE3', receitaBi: 4.5, lucroBi: 0.7, funcionariosMil: 8, salarioMedioK: 70, dividendosBi: 0.6, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-iochpe', nome: 'Iochpe-Maxion', pais: 'Brasil', setor: 'Autopeças', mercado: 'BR', moeda: 'BRL', ticker: 'MYPK3', receitaBi: 15.2, lucroBi: 0.6, funcionariosMil: 17, salarioMedioK: 70, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-randoncorp', nome: 'Randoncorp', pais: 'Brasil', setor: 'Autopeças', mercado: 'BR', moeda: 'BRL', ticker: 'RAPT4', receitaBi: 12.0, lucroBi: 0.6, funcionariosMil: 16, salarioMedioK: 70, dividendosBi: 0.25, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
+  { id: 'br-frasle', nome: 'Fras-le Mobility', pais: 'Brasil', setor: 'Autopeças', mercado: 'BR', moeda: 'BRL', ticker: 'FRAS3', receitaBi: 3.8, lucroBi: 0.5, funcionariosMil: 8, salarioMedioK: 65, dividendosBi: 0.2, estimate: true, fonte: 'DFs/RI FY2024 (aprox.)' },
 ]
 
 /* ═══════════════ GLOBAL — mega-corporações (FY2024/25, US$) ═══════════════
@@ -453,6 +510,69 @@ const WORLD_RAW: W[] = [
   ['Applied Materials', 'EUA', 'Semicondutores (equipamentos)', 0.14, 27.2, 7.2, 35, 160],
 ]
 
+type WG = [
+  ticker: string, nome: string, pais: string, setor: string,
+  capTri: number, receitaBi: number, lucroBi: number, funcionariosMil: number, salarioMedioUsdK: number,
+]
+
+/* Globais que antes dependiam de Alpha Vantage. A fonte dinâmica continua
+ * atualizando quando o usuário fornece chave, mas estes valores públicos
+ * aproximados de FY2024/25 garantem cobertura permanente/offline. */
+const WORLD_SUPPLEMENT: WG[] = [
+  ['GS', 'Goldman Sachs', 'EUA', 'Bancário / Mercados de capitais', 0.18, 53.5, 14.3, 46.5, 260],
+  ['MS', 'Morgan Stanley', 'EUA', 'Bancário / Mercados de capitais', 0.20, 61.8, 13.4, 80, 220],
+  ['BAC', 'Bank of America', 'EUA', 'Bancário portador de juros', 0.36, 101.9, 27.1, 213, 110],
+  ['WFC', 'Wells Fargo', 'EUA', 'Bancário portador de juros', 0.22, 82.3, 19.7, 217, 100],
+  ['C', 'Citigroup', 'EUA', 'Bancário portador de juros', 0.12, 81.1, 12.7, 229, 95],
+  ['SCHW', 'Charles Schwab', 'EUA', 'Corretora / Gestora', 0.10, 19.6, 5.9, 32, 110],
+  ['BX', 'Blackstone', 'EUA', 'Private equity', 0.15, 10.1, 2.8, 4.7, 250],
+  ['KKR', 'KKR & Co.', 'EUA', 'Private equity', 0.11, 22.0, 4.2, 4.8, 250],
+  ['SPGI', 'S&P Global', 'EUA', 'Índices / Ratings', 0.15, 14.2, 4.1, 42, 145],
+  ['MSCI', 'MSCI', 'EUA', 'Índices / Ratings', 0.04, 2.9, 1.1, 6, 160],
+  ['ICE', 'Intercontinental Exchange', 'EUA', 'Infraestrutura de mercado', 0.09, 9.9, 3.0, 13.2, 150],
+  ['NDAQ', 'Nasdaq', 'EUA', 'Infraestrutura de mercado', 0.04, 7.4, 1.1, 8.9, 145],
+  ['LIN', 'Linde', 'Irlanda', 'Gases industriais', 0.22, 33.0, 6.6, 65, 110],
+  ['HON', 'Honeywell', 'EUA', 'Indústria / Infraestrutura', 0.14, 38.5, 5.7, 95, 115],
+  ['MMM', '3M', 'EUA', 'Indústria / Infraestrutura', 0.07, 24.6, 4.2, 61.5, 95],
+  ['LRCX', 'Lam Research', 'EUA', 'Semicondutores (equipamentos)', 0.10, 16.2, 3.8, 17.5, 145],
+  ['KLAC', 'KLA', 'EUA', 'Semicondutores (equipamentos)', 0.10, 10.8, 3.0, 15, 145],
+  ['NXPI', 'NXP Semiconductors', 'Países Baixos', 'Semicondutores (móvel)', 0.07, 12.6, 2.5, 34.2, 105],
+  ['ON', 'onsemi', 'EUA', 'Semicondutores', 0.03, 7.1, 1.6, 30, 85],
+  ['GLW', 'Corning', 'EUA', 'Materiais / Fibra óptica', 0.04, 13.1, 0.5, 57.4, 80],
+  ['APH', 'Amphenol', 'EUA', 'Conectores / Componentes', 0.09, 15.2, 2.6, 95, 60],
+  ['SYK', 'Stryker', 'EUA', 'Equipamentos médicos', 0.14, 22.6, 3.0, 53, 100],
+  ['ISRG', 'Intuitive Surgical', 'EUA', 'Robótica cirúrgica', 0.17, 8.35, 2.3, 15.6, 140],
+  ['VRTX', 'Vertex Pharmaceuticals', 'EUA', 'Farmacêutica', 0.11, 11.0, -0.5, 6.1, 160],
+  ['REGN', 'Regeneron', 'EUA', 'Farmacêutica', 0.08, 14.3, 4.4, 14.5, 155],
+  ['WM', 'Waste Management', 'EUA', 'Saneamento / Resíduos', 0.09, 22.1, 2.75, 50, 80],
+  ['CTAS', 'Cintas', 'EUA', 'Serviços empresariais', 0.08, 10.3, 1.8, 46.5, 65],
+  ['ADP', 'Automatic Data Processing', 'EUA', 'Folha de pagamento / Serviços', 0.10, 20.4, 3.9, 67, 90],
+  ['ITW', 'Illinois Tool Works', 'EUA', 'Indústria / Infraestrutura', 0.08, 16.0, 3.5, 44, 100],
+  ['DEO', 'Diageo', 'Reino Unido', 'Bebidas', 0.06, 20.3, 4.2, 30, 75],
+  ['FMX', 'FEMSA', 'México', 'Consumo / Varejo LatAm', 0.035, 42.0, 1.6, 392, 20],
+  ['SE', 'Sea Limited', 'Singapura', 'Plataformas / Games', 0.07, 16.8, 0.45, 80, 45],
+  ['GRAB', 'Grab Holdings', 'Singapura', 'Plataforma de mobilidade', 0.02, 2.8, -0.16, 11, 60],
+  ['INFY', 'Infosys', 'Índia', 'TI / Terceirização global', 0.08, 18.6, 3.1, 323, 30],
+  ['WIT', 'Wipro', 'Índia', 'TI / Terceirização global', 0.03, 10.8, 1.3, 234, 25],
+  ['IBN', 'ICICI Bank', 'Índia', 'Bancário portador de juros', 0.11, 26.0, 5.4, 150, 25],
+  ['RELX', 'RELX', 'Reino Unido', 'Editoração / Dados', 0.08, 12.1, 2.4, 36.5, 85],
+  ['NIO', 'NIO', 'China', 'Automotivo / EV', 0.015, 9.1, -3.1, 31, 30],
+  ['LI', 'Li Auto', 'China', 'Automotivo / EV', 0.03, 20.2, 1.1, 31.6, 35],
+  ['XPEV', 'XPeng', 'China', 'Automotivo / EV', 0.025, 5.7, -0.8, 15.4, 35],
+  ['TCOM', 'Trip.com Group', 'China', 'Plataforma de viagens', 0.04, 7.4, 2.4, 36.8, 40],
+]
+
+const WORLD_TICKERS: Record<string, string> = {
+  BlackRock: 'BLK',
+  FedEx: 'FDX',
+  'General Motors': 'GM',
+  'Ford Motor': 'F',
+  'Applied Materials': 'AMAT',
+  Moderna: 'MRNA',
+  Unilever: 'UL',
+  'AB InBev': 'BUD',
+}
+
 /** Notas pedagógicas por nome (mantém o array de dados compacto). */
 const WORLD_NOTES: Record<string, string> = {
   Broadcom: 'GAAP FY24 deprimido pela amortização VMware',
@@ -527,18 +647,62 @@ const noteKey: Record<string, string> = {
   'Mitsubishi UFJ': 'Mitsubishi', 'Tata Consultancy Services': 'Tata',
 }
 
+/**
+ * Longa cauda da B3. O catálogo público fornece emissor, setor e market cap;
+ * os demais fundamentais abaixo são premissas pedagógicas setoriais e ficam
+ * explicitamente marcados como estimativa. Entradas curadas/DFs são removidas
+ * do snapshot no gerador e, portanto, sempre prevalecem.
+ */
+const BR_PUBLIC_EXPANSION: CompanyRecord[] = B3_PUBLIC_SNAPSHOT.map((row) => {
+  const pSales = sectorPriceSalesEstimate(row.setor)
+  const est = sectorEstimate(row.setor)
+  const receitaBi = row.marketCapBi / pSales
+  const lucroBi = receitaBi * est.margem
+  const salarioMedioK = sectorSalaryEstimateBRLK(row.setor)
+  const folhaBi = receitaBi * est.folha
+  const funcionariosMil = (folhaBi * 1000) / salarioMedioK
+  return {
+    id: `br-b3-${row.ticker.toLowerCase()}`,
+    nome: row.nome,
+    pais: 'Brasil',
+    setor: row.setor,
+    mercado: 'BR',
+    moeda: 'BRL',
+    ticker: row.ticker,
+    receitaBi,
+    lucroBi,
+    funcionariosMil,
+    salarioMedioK,
+    fonte: `BRAPI catálogo B3 ${B3_SNAPSHOT_DATE} · market cap público + premissas setoriais`,
+    nota: `Fallback amplo: receita≈market cap/P-S (${pSales.toFixed(2)}×); lucro, folha e headcount derivados de parâmetros setoriais.`,
+    estimate: true,
+  }
+})
+
 export const COMPANIES_ALL: CompanyRecord[] = [
   ...BR,
+  ...BR_SUPPLEMENT,
+  ...BR_PUBLIC_EXPANSION,
   ...WORLD_RAW
     .map(([nome, pais, setor, capTri, receitaBi, lucroBi, emp, sal]): CompanyRecord => ({
       id: `gl-${slug(nome)}`,
       nome, pais, setor,
       mercado: 'GLOBAL', moeda: 'USD',
+      ticker: WORLD_TICKERS[nome],
       receitaBi, lucroBi, funcionariosMil: emp, salarioMedioK: sal,
       capTri: capTri || undefined,
       fonte: GLOBAL_FONTE,
       nota: WORLD_NOTES[noteKey[nome] ?? nome] ?? WORLD_NOTES[nome.split(' ')[0]] ?? WORLD_NOTES[nome],
     })),
+  ...WORLD_SUPPLEMENT.map(([ticker, nome, pais, setor, capTri, receitaBi, lucroBi, emp, sal]): CompanyRecord => ({
+    id: `gl-${slug(nome)}`,
+    nome, pais, setor, ticker,
+    mercado: 'GLOBAL', moeda: 'USD',
+    receitaBi, lucroBi, funcionariosMil: emp, salarioMedioK: sal,
+    capTri,
+    fonte: '10-K/20-F/relatório anual FY2024/25 (aprox.)',
+    estimate: true,
+  })),
 ].map((c) => ({ ...c, origem: c.origem ?? ('base' as const) }))
 
 /* ═══════════════════ VISTAS DERIVADAS (compatibilidade) ═══════════════════ */
@@ -623,7 +787,9 @@ export function metricsFor(rec: CompanyRecord) {
   return decomposeFromParts(receita, v, m)
 }
 
-export const SECTORS_BR = Array.from(new Set(BR.map((c) => c.setor)))
+export const SECTORS_BR = Array.from(new Set(
+  COMPANIES_ALL.filter((c) => c.mercado === 'BR').map((c) => c.setor),
+))
 
 /** Compat: setores antigos (tabela Brasil legada). */
 export const SECTORS = SECTORS_BR

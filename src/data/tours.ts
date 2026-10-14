@@ -17,7 +17,7 @@
 import type { TabId } from '../store/useApp'
 import { FLOWS, TYPE_STYLE } from './flows'
 import { flowIsos } from '../lib/world'
-import { TOUR_STOPS, type TourStop } from './tour'
+import { TOUR_STOPS, tourStopForLang, type TourStop } from './tour'
 import { modRef, modTitle } from './modules'
 
 export interface TourDef {
@@ -384,7 +384,376 @@ export const TOURES: TourDef[] = [
       },
     ],
   },
+
+  /* ═══ AULA DE GEOGRAFIA — Divisão Internacional do Trabalho (DIT) e Cadeias Globais ═══ */
+  {
+    id: 'aula-geografia',
+    titulo: 'Aula de Geografia · DIT e Cadeias Globais',
+    descricao: 'Centro, Semiperiferia e Periferia: recursos naturais, manufatura asiática e gargalos logísticos.',
+    accent: '#38bdf8',
+    finalTab: 'home',
+    finalLabel: `explorar ${modTitle('home')} →`,
+    stops: [
+      {
+        id: 'geo-intro',
+        chapter: 'Geografia · Abertura',
+        titulo: 'A Divisão Internacional do Trabalho no século XXI',
+        lng: 10, lat: 20, k: 1.4,
+        isos: ['840', '156', '076'],
+        did: 'A Geografia Econômica explica por que o espaço mundial é desigual: países do Centro concentram comando financeiro, patentes e sedes, enquanto a Periferia fornece matérias-primas, energia e montagem barata.',
+        simples: 'No mapa do mundo, cada grupo de países cumpre um papel diferente: alguns vendem tecnologia e controlam bancos, enquanto outros fornecem matérias-primas e trabalho barato.',
+        didStats: [
+          { v: '3 polos', k: 'Centro, Semiperiferia e Periferia', sourceIds: ['unctad', 'comex-mdic'] },
+          { v: 'DIT', k: 'Divisão Internacional do Trabalho', sourceIds: ['oit-trabalho', 'ibge'] },
+        ],
+        adv: 'Divisão Internacional do Trabalho (DIT) sob o capitalismo informacional-financeirizado: hierarquia espacial entre nós de comando (tríade EUA-UE-Japão e polo chinês), semiperiferia industrial e periferia primário-exportadora.',
+        dica: 'BNCC: EF08GE05 / EF09GE11 / EM13CHS201 — observe a direção das partículas entre Sul e Norte',
+      },
+      byId('origem'),
+      byId('mina'),
+      byId('fabrica'),
+      byId('fabrica-muda'),
+      byId('chip'),
+      byId('canal'),
+      byId('salario'),
+      {
+        id: 'geo-fim',
+        chapter: 'Geografia · Fechamento',
+        titulo: 'O território como rede desigual',
+        lng: -45, lat: -10, k: 2.0,
+        isos: ['076', '156', '840'],
+        did: 'Fechando a leitura geográfica: o território mundial funciona como uma rede hierárquica onde matérias-primas e trabalho barato fluem da periferia e o comando tecnológico e financeiro permanece concentrado no centro.',
+        simples: 'O mapa mostra que os países estão conectados por redes de comércio, mas os ganhos dessas trocas ainda ficam concentrados nos países que dominam a tecnologia e as finanças.',
+        didStats: [
+          { v: 'Sul → Norte', k: 'sentido líquido da transferência de valor', sourceIds: ['unctad', 'tmd-literatura'] },
+          { v: 'BNCC', k: 'Ciências Humanas · Geografia Econômica', sourceIds: ['oit-trabalho', 'ibge'] },
+        ],
+        adv: 'Síntese geoeconômica (Milton Santos / Harvey): o espaço global combina fluidez para o capital financeiro e seletividade produtiva, reproduzindo o desenvolvimento geograficamente desigual entre Norte e Sul.',
+        dica: 'experimente clicar no botão BR para ver a divisão regional dentro do Brasil',
+      },
+    ],
+  },
+
+  /* ═══ AULA DE HISTÓRIA — Hegemonias, Bretton Woods, Choque de 1971 e Multipolaridade ═══ */
+  {
+    id: 'aula-historia',
+    titulo: 'Aula de História · Hegemonias e Dólar',
+    descricao: 'Da partilha colonial e Bretton Woods (1944) ao fim do padrão-ouro (1971) e à disputa EUA × China.',
+    accent: '#fb7185',
+    finalTab: 'war',
+    finalLabel: `ir ao ${modTitle('war')} →`,
+    stops: [
+      {
+        id: 'hist-intro',
+        chapter: 'História · Abertura',
+        titulo: 'Ciclos hegemônicos da economia-mundo',
+        lng: -10, lat: 35, k: 1.5,
+        isos: ['826', '840', '156'],
+        did: 'A história do capitalismo é uma sucessão de potências que lideraram o comércio, a indústria e a moeda: do Império Britânico no século XIX aos Estados Unidos pós-1945 e à disputa atual com a China.',
+        simples: 'Ao longo da história, diferentes países lideraram a economia mundial: primeiro o Reino Unido, depois os Estados Unidos e, hoje, há uma forte disputa com a China.',
+        didStats: [
+          { v: '1944', k: 'Acordo de Bretton Woods (dólar-ouro)', sourceIds: ['vitimas-pesquisa-historica', 'imf-weo'] },
+          { v: '56,8%', k: 'peso atual do dólar nas reservas', sourceIds: ['imf-cofer', 'sipri-milex'] },
+        ],
+        adv: 'Ciclos sistêmicos de acumulação (Arrighi / Braudel): cada hegemonia articula expansão material (comercial-industrial) seguida de hipertrofia financeira na fase de maturidade e transição geopolítica.',
+        dica: 'BNCC: EF09HI10 / EF09HI32 / EM13CHS102 — acompanhe a mudança do centro do mundo',
+      },
+      byId('tecnologia'),
+      {
+        id: 'hist-1971',
+        chapter: 'História · 1971–1979',
+        titulo: 'O Choque de 1971 e o nascimento do dólar flexível',
+        lng: -40, lat: 35, k: 2.0,
+        flowId: 'fin-usa-eu',
+        isos: ['840', '276'],
+        did: 'Em 1971, os Estados Unidos encerraram a conversão do dólar em ouro. O dólar passou a valer pelo poder político, militar e pelo comércio de petróleo, abrindo a era das finanças desreguladas e da dívida global.',
+        simples: 'Em 1971, o dólar deixou de ser trocado por ouro. Mesmo assim, continuou sendo a principal moeda usada no comércio de petróleo e nas reservas dos países.',
+        didStats: [
+          { v: 'ago/1971', k: 'fim da conversibilidade dólar-ouro', sourceIds: ['imf-cofer', 'us-treasury-tic'] },
+          { v: '> US$ 1 tri', k: 'juros anuais da dívida dos EUA hoje', sourceIds: ['imf-fiscal-monitor', 'tesouro-eua-cbo'] },
+        ],
+        adv: 'Choque Nixon (1971) e Choque Volcker (1979): ruptura do padrão dólar-ouro de Bretton Woods e transição para o padrão dólar-flexível ancorado em Treasuries, petrodólar e livre mobilidade de capitais.',
+        dica: 'clique na linha amarela para ver o papel dos títulos do Tesouro dos EUA',
+      },
+      byId('credor'),
+      byId('divida'),
+      byId('fantasma'),
+      byId('saida'),
+      {
+        id: 'hist-fim',
+        chapter: 'História · Fechamento',
+        titulo: 'Transição hegemônica no século XXI',
+        lng: 60, lat: 30, k: 1.6,
+        isos: ['840', '156', '643'],
+        did: 'Olhando o século inteiro, vemos que as regras da economia mundial mudam após grandes crises e guerras. Hoje, a ascensão asiática e os acordos fora do dólar abrem uma nova transição histórica.',
+        simples: 'A história mostra que a liderança econômica muda com o tempo. Hoje, novos blocos como o BRICS+ tentam criar alternativas ao domínio exclusivo do dólar.',
+        didStats: [
+          { v: '~40% PIB', k: 'peso do BRICS+ em paridade de compra', sourceIds: ['imf-cofer', 'pboc-cips'] },
+          { v: '1914 a 2026', k: 'linha do tempo completa no Módulo 03', sourceIds: ['bcb-brics', 'imf-weo'] },
+        ],
+        adv: 'Balanço histórico-estrutural: da Pax Britannica à crise da globalização neoliberal, a transição hegemônica contemporânea opõe o rentismo financeiro dolarizado à capacidade industrial-estatal sino-asiática.',
+        dica: `finalize para abrir o ${modRef('war')} e explorar a linha do tempo de 1914 a 2026`,
+      },
+    ],
+  },
+
+  /* ═══ AULA DE ECONOMIA POLÍTICA — Marx, Kalecki, MMT e TMD ═══ */
+  {
+    id: 'aula-economia',
+    titulo: 'Economia Política · Marx, Kalecki, MMT e TMD',
+    descricao: 'Roteiro universitário: extração de valor, demanda efetiva, moeda soberana e transferência Sul→Norte.',
+    accent: '#a855f7',
+    finalTab: 'debt',
+    finalLabel: `ir ao ${modTitle('debt')} →`,
+    stops: [
+      {
+        id: 'eco-intro',
+        chapter: 'Economia Política · Abertura',
+        titulo: 'Quatro lentes para a mesma anatomia',
+        lng: 0, lat: 20, k: 1.4,
+        isos: ['840', '156', '076', '276'],
+        did: 'Quatro lentes explicam este mapa: Marx mostra como o trabalho gera o lucro; Kalecki explica como o gasto sustenta as vendas; a MMT revela o poder de quem emite a moeda; e a TMD mostra como o Sul transfere riqueza ao Norte.',
+        simples: 'Este tour junta quatro ideias econômicas para mostrar como o trabalho cria riqueza, como o governo usa a moeda e por que alguns países acumulam mais que outros.',
+        didStats: [
+          { v: 'W = c+v+m', k: 'decomposição marxista do valor', sourceIds: ['marx-capital', 'heterodox-macro'] },
+          { v: '4 pilares', k: 'Marx · Kalecki · MMT · TMD', sourceIds: ['mmt-literatura', 'tmd-literatura'] },
+        ],
+        adv: 'Integração analítica dos 4 pilares: lei do valor e composição orgânica (Marx), princípio da demanda efetiva (Kalecki), hierarquia e soberania monetária (MMT) e superexploração com transferência de valor (TMD).',
+        dica: 'ative o nível Avançado no topo do card para ler as identidades macroeconômicas completas',
+      },
+      byId('fabrica'),
+      byId('vaza'),
+      byId('dolar'),
+      byId('fantasma'),
+      byId('salario'),
+      byId('agora'),
+      {
+        id: 'eco-fim',
+        chapter: 'Economia Política · Fechamento',
+        titulo: 'A síntese macroeconômica crítica',
+        lng: -53, lat: -10, k: 2.2,
+        isos: ['076', '840', '392'],
+        did: 'Unindo as quatro escolas, fica claro que produção, moeda, orçamento público e comércio internacional formam uma única engrenagem. Mudar o resultado exige atuar sobre a propriedade, o trabalho e a soberania.',
+        simples: 'Juntando todas as partes, vemos que produção, salários, impostos e comércio mundial estão conectados e dependem de escolhas políticas e econômicas.',
+        didStats: [
+          { v: 'g = e/(k+1)', k: 'taxa de lucro sobre o capital adiantado', sourceIds: ['marx-capital', 'tmd-literatura'] },
+          { v: '(S−I)≡(G−T)+NX', k: 'identidade dos balanços setoriais', sourceIds: ['mmt-literatura', 'heterodox-macro'] },
+        ],
+        adv: 'Síntese de economia política: a reprodução ampliada em escala mundial articula extração de mais-valia (Pilar 1), realização kaleckiana (Pilar 2), moeda estatal/fictícia (Pilar 3) e drenagem centro-periferia (Pilar 4).',
+        dica: `finalize para abrir o ${modRef('debt')} com o simulador de Kalecki e os balanços da MMT`,
+      },
+    ],
+  },
 ]
 
 export const getTour = (id: string): TourDef =>
   TOURES.find((t) => t.id === id) ?? TOURES[0]
+
+type TourLang = 'pt' | 'en' | 'es'
+type CustomStopLocale = {
+  chapter: string
+  titulo: string
+  did: string
+  simples: string
+  adv: string
+  stats: string[]
+  dica?: string
+}
+
+const TOUR_META_I18N: Record<string, Record<'en' | 'es', Pick<TourDef, 'titulo' | 'descricao'>>> = {
+  principal: {
+    en: { titulo: 'How capitalism works', descricao: 'The full tour: from the ground to money, from profit to social cost.' },
+    es: { titulo: 'Cómo funciona el capitalismo', descricao: 'El tour completo: de la tierra a la moneda, de la ganancia al costo social.' },
+  },
+  guerra: {
+    en: { titulo: 'Wars and capital flows', descricao: 'How wars redraw routes, redistribute income and change who pays.' },
+    es: { titulo: 'Guerras y flujos de capital', descricao: 'Cómo las guerras redibujan rutas, redistribuyen renta y cambian quién paga.' },
+  },
+  'guerra-semis': {
+    en: { titulo: 'The Semiconductor War', descricao: 'United States × China over the brain of modern production.' },
+    es: { titulo: 'La guerra de los semiconductores', descricao: 'Estados Unidos × China por el cerebro de la producción moderna.' },
+  },
+  'guerra-energia': {
+    en: { titulo: 'Energy War and Sanctions', descricao: 'Russia × NATO/EU over gas, oil and routes.' },
+    es: { titulo: 'Guerra energética y sanciones', descricao: 'Rusia × OTAN/UE por gas, petróleo y rutas.' },
+  },
+  'guerra-reprimaria': {
+    en: { titulo: 'Brazil’s Reprimarization', descricao: 'The slow conflict: grain and ore displacing industrial weight.' },
+    es: { titulo: 'Reprimarización de Brasil', descricao: 'El conflicto lento: granos y mineral desplazando peso industrial.' },
+  },
+  mortes: {
+    en: { titulo: 'Deaths of Capitalism', descricao: 'Corporate disasters and work-related deaths, country by country.' },
+    es: { titulo: 'Muertes del capitalismo', descricao: 'Desastres corporativos y muertes laborales, país por país.' },
+  },
+  'aula-geografia': {
+    en: { titulo: 'Geography Lesson · IDL & Global Chains', descricao: 'Core, Semiperiphery and Periphery: natural resources, Asian manufacturing and logistical bottlenecks.' },
+    es: { titulo: 'Clase de Geografía · DIT y Cadenas Globales', descricao: 'Centro, Semiperiferia y Periferia: recursos naturales, manufactura asiática y cuellos de botella logísticos.' },
+  },
+  'aula-historia': {
+    en: { titulo: 'History Lesson · Hegemonies & The Dollar', descricao: 'From colonial division and Bretton Woods (1944) to the end of the gold standard (1971) and US × China rivalry.' },
+    es: { titulo: 'Clase de Historia · Hegemonías y el Dólar', descricao: 'Del reparto colonial y Bretton Woods (1944) al fin del patrón oro (1971) y la disputa EE. UU. × China.' },
+  },
+  'aula-economia': {
+    en: { titulo: 'Political Economy · Marx, Kalecki, MMT & TMD', descricao: 'University itinerary: value extraction, effective demand, sovereign currency and South→North transfers.' },
+    es: { titulo: 'Economía Política · Marx, Kalecki, MMT y TMD', descricao: 'Recorrido universitario: extracción de valor, demanda efectiva, moneda soberana y transferencia Sur→Norte.' },
+  },
+}
+
+const CUSTOM_STOP_I18N: Record<string, Record<'en' | 'es', CustomStopLocale>> = {
+  'w-intro': {
+    en: { chapter: 'War · Opening', titulo: 'When war redraws the map', did: 'Wars do more than destroy cities: they reroute pipelines, shipping, public budgets and trade. This tour follows the money through those changes.', simples: 'Wars change routes, public spending and prices. This tour shows how conflict also changes where money goes.', adv: 'War reallocates surplus through sanctions, chokepoints, military budgets and strategic procurement. The military-industrial complex becomes a durable destination for public and private income.', stats: ['NATO military spending per year', 'of global military spending'], dica: 'watch the highlighted countries and compare this stop with the previous one' },
+    es: { chapter: 'Guerra · Apertura', titulo: 'Cuando la guerra redibuja el mapa', did: 'Las guerras hacen más que destruir ciudades: redirigen ductos, transporte, presupuestos públicos y comercio. Este tour sigue el dinero a través de esos cambios.', simples: 'Las guerras cambian rutas, gasto público y precios. Este tour muestra cómo el conflicto también cambia el camino del dinero.', adv: 'La guerra reasigna excedente mediante sanciones, cuellos de botella, presupuestos militares y compras estratégicas. El complejo militar-industrial se vuelve un destino permanente de renta pública y privada.', stats: ['gasto militar de la OTAN por año', 'del gasto militar mundial'], dica: 'observa los países destacados y compara esta parada con la anterior' },
+  },
+  'w-suez': {
+    en: { chapter: 'War · Chokepoints', titulo: 'The canal in the crosshairs', did: 'Around 12% of world trade normally passes through Suez. Red Sea conflict reduced traffic, pushed ships around Africa and sharply cut Egypt’s toll revenue.', simples: 'Suez is an important shortcut for ships. When conflict reduces traffic, Egypt loses revenue and transport can become more expensive.', adv: 'Suez and Bab el-Mandeb are strategic chokepoints: rerouting through the Cape raises freight and insurance costs while turning transit income into a geopolitical vulnerability.', stats: ['of world trade passes through Suez', 'decline in Egypt’s canal revenue'], dica: 'click or tap the highlighted route to open flow details' },
+    es: { chapter: 'Guerra · Cuellos de botella', titulo: 'El canal bajo fuego', did: 'Cerca del 12% del comercio mundial suele pasar por Suez. El conflicto del Mar Rojo redujo el tráfico, desvió barcos por África y recortó fuertemente los ingresos de peaje de Egipto.', simples: 'Suez es un atajo importante para barcos. Cuando el conflicto reduce el tráfico, Egipto pierde ingresos y el transporte puede encarecerse.', adv: 'Suez y Bab el-Mandeb son cuellos de botella estratégicos: desviar barcos por el Cabo eleva fletes y seguros y convierte la renta de tránsito en vulnerabilidad geopolítica.', stats: ['del comercio mundial pasa por Suez', 'caída de los ingresos del canal de Egipto'], dica: 'haz clic o toca la ruta destacada para abrir los detalles del flujo' },
+  },
+  'w-dolar': {
+    en: { chapter: 'War · Weapons', titulo: 'The dollar as a weapon', did: 'Financial sanctions can freeze reserves and cut banks off from payment networks. Because dollar finance is global, the effects also reach allies and third countries.', simples: 'Sanctions can block reserves and international payments. Because the dollar is widely used, U.S. decisions also affect other countries.', adv: 'Extraterritorial dollar clearing, reserve freezes and financial-network access turn monetary hierarchy into a geopolitical instrument with costs that spread through exchange rates, energy and trade.', stats: ['European holdings of U.S. securities', 'reserves of sanctioned states'], dica: 'click or tap the highlighted route to open flow details' },
+    es: { chapter: 'Guerra · Armas', titulo: 'El dólar como arma', did: 'Las sanciones financieras pueden congelar reservas y excluir bancos de redes de pago. Como las finanzas en dólares son globales, sus efectos también alcanzan a aliados y terceros países.', simples: 'Las sanciones pueden bloquear reservas y pagos internacionales. Como el dólar se usa mucho, decisiones de EE. UU. también afectan a otros países.', adv: 'El clearing extraterritorial en dólares, el congelamiento de reservas y el acceso a redes financieras convierten la jerarquía monetaria en instrumento geopolítico con costos que se transmiten por tipo de cambio, energía y comercio.', stats: ['tenencias europeas de títulos de EE. UU.', 'reservas de Estados sancionados'], dica: 'haz clic o toca la ruta destacada para abrir los detalles del flujo' },
+  },
+  'w-fim': {
+    en: { chapter: 'War · Closing', titulo: 'Who gained?', did: 'Conflict creates winners and losers: arms makers, energy firms and traders can gain revenue while households, workers and governments absorb higher energy, transport and fiscal costs.', simples: 'Conflicts create economic winners and losers. Arms and energy companies can earn more while families and governments face higher costs.', adv: 'The class balance of conflict shifts extraordinary rents toward military and energy capital while wage earners and import-dependent economies absorb shocks through prices and fiscal adjustment.', stats: ['arms + energy', 'who pays'], dica: 'finish to open the war module with each front in detail' },
+    es: { chapter: 'Guerra · Cierre', titulo: '¿Quién ganó?', did: 'El conflicto crea ganadores y perdedores: fabricantes de armas, empresas energéticas y traders pueden aumentar ingresos mientras hogares, trabajadores y gobiernos absorben mayores costos de energía, transporte y presupuesto.', simples: 'Los conflictos crean ganadores y perdedores económicos. Empresas de armas y energía pueden ganar más mientras familias y gobiernos enfrentan costos mayores.', adv: 'El balance de clase del conflicto desplaza rentas extraordinarias hacia capital militar y energético mientras asalariados y economías dependientes de importaciones absorben shocks mediante precios y ajuste fiscal.', stats: ['armas + energía', 'quién paga'], dica: 'termina para abrir el módulo de guerra con cada frente en detalle' },
+  },
+  'ws-intro': {
+    en: { chapter: 'Semiconductors', titulo: 'The war over the brain', did: 'Phones, vehicles, missiles and AI all depend on advanced chips. The United States restricts some technology exports to China while China invests heavily in domestic capacity.', simples: 'Advanced chips are essential to phones, cars, AI and weapons. The United States and China dispute who can make and buy these technologies.', adv: 'Export controls on lithography, advanced accelerators and manufacturing equipment target the most advanced fixed capital in the semiconductor chain while industrial subsidies seek to relocate strategic capacity.', stats: ['of leading-edge logic: TSMC, approx.', 'the U.S. tool'], dica: 'watch the highlighted countries and continue to see how the dispute changes flows' },
+    es: { chapter: 'Semiconductores', titulo: 'La guerra por el cerebro', did: 'Teléfonos, vehículos, misiles e IA dependen de chips avanzados. Estados Unidos restringe ciertas exportaciones tecnológicas a China mientras China invierte fuertemente en capacidad doméstica.', simples: 'Los chips avanzados son esenciales para teléfonos, autos, IA y armas. Estados Unidos y China disputan quién puede fabricar y comprar esas tecnologías.', adv: 'Controles de exportación sobre litografía, aceleradores avanzados y equipos de fabricación apuntan al capital fijo más avanzado de la cadena, mientras subsidios industriales intentan relocalizar capacidad estratégica.', stats: ['de la lógica de vanguardia: TSMC, aprox.', 'la herramienta estadounidense'], dica: 'observa los países destacados y continúa para ver cómo cambia los flujos la disputa' },
+  },
+  'ws-fim': {
+    en: { chapter: 'Semiconductors', titulo: 'Where does Brazil fit?', did: 'Brazil remains dependent on imported leading-edge chips embedded in phones, machines and industrial systems. That limits bargaining power in a technology conflict centered elsewhere.', simples: 'Brazil still depends on advanced chips made abroad. That leaves the country more exposed to external prices and decisions.', adv: 'Peripheral technology dependence means limited foundry capacity, intellectual property and bargaining power; Brazil enters the chip conflict mainly as a market and importer.', stats: ['leading-edge chip fabs', 'imported inside devices'], dica: 'finish to open the war module' },
+    es: { chapter: 'Semiconductores', titulo: '¿Y Brasil dónde queda?', did: 'Brasil sigue dependiendo de chips de vanguardia importados dentro de teléfonos, máquinas y sistemas industriales. Eso limita su poder de negociación en una disputa tecnológica cuyo centro está fuera.', simples: 'Brasil todavía depende de chips avanzados fabricados en el exterior. Eso lo deja más expuesto a precios y decisiones externas.', adv: 'La dependencia tecnológica periférica implica capacidad de foundry, propiedad intelectual y poder de negociación limitados; Brasil entra en la guerra de chips principalmente como mercado e importador.', stats: ['fábricas de chips de vanguardia', 'importados dentro de dispositivos'], dica: 'termina para abrir el módulo de guerra' },
+  },
+  'we-intro': {
+    en: { chapter: 'Energy', titulo: 'The pipeline war', did: 'Before the war, large pipelines carried Russian gas toward Europe. Sanctions and political rupture redirected more Russian energy toward Asia while Europe sought other, often more expensive, suppliers.', simples: 'Before the war, Europe bought a lot of Russian pipeline gas. After sanctions, Russia sold more to Asia and Europe found other suppliers.', adv: 'Forced energy decoupling combines new Asian pipeline and shipping routes with higher European input costs and investment in alternative LNG infrastructure.', stats: ['new direction of Russian gas', 'to redraw the map'], dica: 'watch the highlighted countries and continue to see how the dispute changes flows' },
+    es: { chapter: 'Energía', titulo: 'La guerra de los ductos', did: 'Antes de la guerra, grandes ductos llevaban gas ruso hacia Europa. Las sanciones y la ruptura política redirigieron más energía rusa hacia Asia mientras Europa buscó otros proveedores, a menudo más caros.', simples: 'Antes de la guerra, Europa compraba mucho gas ruso por ductos. Después de las sanciones, Rusia vendió más a Asia y Europa buscó otros proveedores.', adv: 'El desacople energético forzado combina nuevas rutas asiáticas por ductos y mar con mayores costos de insumos europeos e inversión en infraestructura alternativa de GNL.', stats: ['nuevo rumbo del gas ruso', 'para redibujar el mapa'], dica: 'observa los países destacados y continúa para ver cómo cambia los flujos la disputa' },
+  },
+  'we-fim': {
+    en: { chapter: 'Energy', titulo: 'Who got the bill?', did: 'Russia sells some energy at a discount, China and India buy cheaper barrels, and Europe pays more for alternative supply. Sanctions redistribute income as well as trade routes.', simples: 'Russia sells some energy at a discount while other suppliers charge Europe more. Costs move as routes change.', adv: 'The sanctions balance combines discounted Urals crude, elevated European energy prices and trading spreads. Producers and intermediaries can capture rents while industry and wage earners absorb higher costs.', stats: ['for buyers of Russian energy', 'for European industry'], dica: 'finish to open the war module' },
+    es: { chapter: 'Energía', titulo: '¿Quién recibió la factura?', did: 'Rusia vende parte de su energía con descuento, China e India compran barriles más baratos y Europa paga más por proveedores alternativos. Las sanciones redistribuyen renta además de rutas comerciales.', simples: 'Rusia vende parte de la energía con descuento mientras otros proveedores cobran más a Europa. Los costos cambian de lugar junto con las rutas.', adv: 'El balance de sanciones combina crudo Urals con descuento, precios energéticos europeos elevados y márgenes de intermediación. Productores y traders pueden capturar rentas mientras industria y asalariados absorben mayores costos.', stats: ['para compradores de energía rusa', 'para la industria europea'], dica: 'termina para abrir el módulo de guerra' },
+  },
+  'wr-intro': {
+    en: { chapter: 'Reprimarization', titulo: 'The slow conflict', did: 'Brazil’s industrial share fell sharply from the 1980s while grain, mining and other primary exports gained importance. This tour treats that structural change as a slow economic conflict.', simples: 'Industry lost weight in Brazil’s economy from the 1980s onward while grain and minerals became more important in exports.', adv: 'Early deindustrialization and a large reserve workforce combine with commodity specialization to create a dependency pattern in which productive complexity and bargaining power weaken.', stats: ['industry share of GDP since 1985', 'outside or on the edge of employment'], dica: 'watch the highlighted countries and compare this stop with the previous one' },
+    es: { chapter: 'Reprimarización', titulo: 'El conflicto lento', did: 'La participación industrial de Brasil cayó fuertemente desde los años 1980 mientras granos, minería y otras exportaciones primarias ganaron importancia. Este tour trata ese cambio estructural como un conflicto económico lento.', simples: 'La industria perdió peso en la economía brasileña desde los años 1980 mientras granos y minerales ganaron importancia en las exportaciones.', adv: 'La desindustrialización temprana y una gran reserva laboral se combinan con especialización en commodities para crear un patrón de dependencia donde complejidad productiva y poder de negociación se debilitan.', stats: ['participación industrial en el PIB desde 1985', 'fuera o en el borde del empleo'], dica: 'observa los países destacados y compara esta parada con la anterior' },
+  },
+  'wr-fim': {
+    en: { chapter: 'Reprimarization', titulo: 'Can it be reversed?', did: 'Reversal would require industrial capability, technology, infrastructure, formal employment and mechanisms that retain more value inside the country.', simples: 'Increasing industrial production would require investment in technology, jobs, infrastructure and firms capable of producing more domestically.', adv: 'Reindustrialization requires productive-complexity policy, local linkages, technological learning, long-term credit and management of the external constraint. Exchange-rate, capital-flow and tax policy affect how much surplus can finance that transition.', stats: ['what lost weight', 'more surplus at home'], dica: 'finish to open the war module' },
+    es: { chapter: 'Reprimarización', titulo: '¿Se puede revertir?', did: 'Revertirla exigiría capacidad industrial, tecnología, infraestructura, empleo formal y mecanismos que retengan más valor dentro del país.', simples: 'Aumentar la producción industrial exigiría inversión en tecnología, empleos, infraestructura y empresas capaces de producir más dentro del país.', adv: 'La reindustrialización exige política de complejidad productiva, encadenamientos locales, aprendizaje tecnológico, crédito de largo plazo y gestión de la restricción externa. Tipo de cambio, flujos de capital y política tributaria influyen en cuánto excedente puede financiar la transición.', stats: ['lo que perdió peso', 'más excedente dentro del país'], dica: 'termina para abrir el módulo de guerra' },
+  },
+  'm-intro': {
+    en: { chapter: 'Deaths · Opening', titulo: 'The price in lives', did: 'This tour visits major corporate and industrial disasters and compares how costs were distributed between companies, workers, communities and states.', simples: 'This tour shows accidents and corporate failures that caused deaths and illness. We compare what happened and which protections failed.', adv: 'Corporate harm can be analyzed as externalization under regulatory and legal asymmetry: firms capture revenue while environmental, health and labor risk is transferred to workers, communities and the public sector.', stats: ['documented cases', 'work-related deaths per year'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Apertura', titulo: 'El precio en vidas', did: 'Este tour visita grandes desastres corporativos e industriales y compara cómo se distribuyeron los costos entre empresas, trabajadores, comunidades y Estados.', simples: 'Este tour muestra accidentes y fallas empresariales que causaron muertes y enfermedades. Comparamos qué ocurrió y qué protecciones fallaron.', adv: 'El daño corporativo puede analizarse como externalización bajo asimetría regulatoria y jurídica: empresas capturan ingresos mientras riesgo ambiental, sanitario y laboral se transfiere a trabajadores, comunidades y sector público.', stats: ['casos documentados', 'muertes relacionadas con el trabajo por año'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-bhopal': {
+    en: { chapter: 'Deaths · India', titulo: 'Bhopal: the night of gas', did: 'In 1984, toxic gas leaked over Bhopal and exposed hundreds of thousands of people. Health effects, contamination and compensation disputes continued for decades.', simples: 'In 1984, a toxic-gas leak in Bhopal, India, affected hundreds of thousands of people. Contamination and compensation disputes continued for decades.', adv: 'Bhopal combined maintenance failures, cost reduction, weak safeguards and enormous legal asymmetry between a multinational parent and the exposed population. Long-term contamination illustrates intergenerational externalization.', stats: ['people exposed or poisoned', 'Union Carbide settlement'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · India', titulo: 'Bhopal: la noche del gas', did: 'En 1984, gas tóxico escapó sobre Bhopal y expuso a cientos de miles de personas. Efectos de salud, contaminación y disputas por reparación continuaron durante décadas.', simples: 'En 1984, una fuga de gas tóxico en Bhopal, India, afectó a cientos de miles de personas. La contaminación y las disputas por reparación continuaron por décadas.', adv: 'Bhopal combinó fallas de mantenimiento, reducción de costos, protecciones débiles y enorme asimetría jurídica entre una matriz multinacional y la población expuesta. La contaminación persistente ilustra externalización intergeneracional.', stats: ['personas expuestas o intoxicadas', 'acuerdo con Union Carbide'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-vilasoco': {
+    en: { chapter: 'Deaths · Brazil', titulo: 'Cubatão: the neighborhood that exploded', did: 'In 1984, a fuel leak caused a huge fire in Vila Socó, Cubatão. Official and community death counts differ, illustrating how industrial risk and vulnerable urban territory can overlap.', simples: 'In 1984, a fuel leak caused a major fire in Vila Socó, Cubatão. Different sources still disagree on the death toll.', adv: 'Vila Socó shows how hazardous infrastructure crossing precarious settlements turns territorial inequality into industrial risk. Political repression and weak protection also limited prevention and accountability.', stats: ['deaths in 1984', 'political context'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Brasil', titulo: 'Cubatão: el barrio que explotó', did: 'En 1984, una fuga de combustible provocó un enorme incendio en Vila Socó, Cubatão. Las cifras oficiales y comunitarias difieren, mostrando cómo riesgo industrial y territorio urbano vulnerable pueden superponerse.', simples: 'En 1984, una fuga de combustible provocó un gran incendio en Vila Socó, Cubatão. Distintas fuentes todavía discrepan sobre el número de muertos.', adv: 'Vila Socó muestra cómo infraestructura peligrosa atravesando asentamientos precarios convierte desigualdad territorial en riesgo industrial. Represión política y protección débil también limitaron prevención y responsabilización.', stats: ['muertos en 1984', 'contexto político'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-vale': {
+    en: { chapter: 'Deaths · Brazil', titulo: 'Vale and two rivers of mud', did: 'The Mariana and Brumadinho dam failures killed 289 people and caused long-lasting river and community damage. Both disasters came from the same mining system within a few years.', simples: 'The Mariana and Brumadinho dams failed in 2015 and 2019. Hundreds died and rivers and towns were hit by mining waste.', adv: 'The disasters exposed tailings-dam governance, monitoring failures and cost incentives in a highly profitable mineral chain. Private operating revenue coexisted with decades of public and community repair costs.', stats: ['deaths in the two dam failures', 'of the Doce River affected'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Brasil', titulo: 'Vale y dos ríos de lodo', did: 'Los colapsos de Mariana y Brumadinho mataron a 289 personas y causaron daños de larga duración en ríos y comunidades. Ambos desastres provinieron del mismo sistema minero en pocos años.', simples: 'Las represas de Mariana y Brumadinho colapsaron en 2015 y 2019. Cientos murieron y ríos y ciudades fueron alcanzados por residuos mineros.', adv: 'Los desastres expusieron gobernanza de relaves, fallas de monitoreo e incentivos de costos en una cadena mineral muy rentable. Ingresos privados de operación coexistieron con décadas de costos públicos y comunitarios de reparación.', stats: ['muertos en los dos colapsos', 'del río Doce afectados'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-rana': {
+    en: { chapter: 'Deaths · Bangladesh', titulo: 'The garment workers in the collapse', did: 'Rana Plaza collapsed in 2013 with thousands of garment workers inside, killing 1,134 people. The disaster exposed how global brand pressure and weak local safety can interact.', simples: 'Rana Plaza collapsed in Bangladesh in 2013. More than a thousand garment workers died.', adv: 'Rana Plaza made fragmented supply-chain governance visible: brands control price and deadlines, suppliers face cost pressure, and workers often have limited bargaining power. The post-disaster Accord showed how transnational rules can improve safety.', stats: ['garment workers killed', 'monthly wage'], dica: 'click or tap the highlighted route to open flow details' },
+    es: { chapter: 'Muertes · Bangladesh', titulo: 'Las trabajadoras del derrumbe', did: 'Rana Plaza colapsó en 2013 con miles de trabajadores textiles dentro y mató a 1.134 personas. El desastre expuso cómo presión de marcas globales y seguridad local débil pueden interactuar.', simples: 'Rana Plaza colapsó en Bangladesh en 2013. Murieron más de mil trabajadores de la industria textil.', adv: 'Rana Plaza hizo visible la gobernanza fragmentada de la cadena: marcas controlan precios y plazos, proveedores enfrentan presión de costos y trabajadores suelen tener poco poder de negociación. El Accord posterior mostró cómo reglas transnacionales pueden mejorar seguridad.', stats: ['trabajadores textiles muertos', 'salario mensual'], dica: 'haz clic o toca la ruta destacada para abrir los detalles del flujo' },
+  },
+  'm-deepwater': {
+    en: { chapter: 'Deaths · U.S.', titulo: 'The sea that caught fire', did: 'Deepwater Horizon exploded in 2010 and released nearly 5 million barrels of oil over 87 days in the Gulf of Mexico. The spill caused enormous ecological and economic damage.', simples: 'In 2010, Deepwater Horizon exploded in the Gulf of Mexico. The oil spill lasted 87 days and caused major damage.', adv: 'Macondo linked documented cost and process decisions to a catastrophic offshore failure. The multibillion-dollar settlement shows how severe externalized harm can later return as a corporate liability.', stats: ['barrels spilled', 'days of uncontrolled flow'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · EE. UU.', titulo: 'El mar que se incendió', did: 'Deepwater Horizon explotó en 2010 y liberó casi 5 millones de barriles de petróleo durante 87 días en el Golfo de México. El derrame causó enormes daños ecológicos y económicos.', simples: 'En 2010, Deepwater Horizon explotó en el Golfo de México. El derrame duró 87 días y causó grandes daños.', adv: 'Macondo vinculó decisiones documentadas de costos y procesos con una falla offshore catastrófica. El acuerdo multimillonario muestra cómo daño externalizado grave puede volver después como pasivo corporativo.', stats: ['barriles derramados', 'días de flujo sin control'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-opioides': {
+    en: { chapter: 'Deaths · U.S.', titulo: 'The prescribed epidemic', did: 'For years, opioid risks were aggressively minimized in marketing and prescribing systems. The resulting crisis contributed to hundreds of thousands of deaths and enormous public-health costs.', simples: 'In the U.S., opioid medicines were sold for years while addiction risks were minimized. The crisis caused hundreds of thousands of deaths.', adv: 'The opioid crisis combined aggressive pharmaceutical marketing, prescribing incentives, information asymmetry and regulatory failure. Bankruptcy and asset protection exposed the gap between corporate liability and private wealth.', stats: ['deaths associated with the crisis', 'family owners imprisoned'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · EE. UU.', titulo: 'La epidemia recetada', did: 'Durante años, riesgos de opioides fueron minimizados agresivamente en marketing y sistemas de prescripción. La crisis resultante contribuyó a cientos de miles de muertes y enormes costos de salud pública.', simples: 'En EE. UU., medicamentos opioides se vendieron durante años mientras se minimizaban riesgos de adicción. La crisis causó cientos de miles de muertes.', adv: 'La crisis de opioides combinó marketing farmacéutico agresivo, incentivos de prescripción, asimetría de información y fallas regulatorias. Quiebra y protección patrimonial expusieron la brecha entre responsabilidad corporativa y riqueza privada.', stats: ['muertes asociadas a la crisis', 'miembros de la familia propietaria presos'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-piper': {
+    en: { chapter: 'Deaths · United Kingdom', titulo: 'The most profitable platform', did: 'Piper Alpha burned in the North Sea in 1988 and killed 167 workers. The inquiry found failures in maintenance, permit-to-work systems and shift communication.', simples: 'In 1988, a fire destroyed Piper Alpha in the North Sea. 167 workers died.', adv: 'The Cullen Inquiry showed how maintenance organization, communication and pressure for continuity can turn technical risk into systemic risk, leading to major regulatory reform.', stats: ['deaths in 1988', 'operational continuity pressure'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Reino Unido', titulo: 'La plataforma más rentable', did: 'Piper Alpha ardió en el Mar del Norte en 1988 y mató a 167 trabajadores. La investigación encontró fallas de mantenimiento, permisos de trabajo y comunicación entre turnos.', simples: 'En 1988, un incendio destruyó Piper Alpha en el Mar del Norte. Murieron 167 trabajadores.', adv: 'La investigación Cullen mostró cómo organización del mantenimiento, comunicación y presión por continuidad pueden convertir riesgo técnico en riesgo sistémico, llevando a importantes reformas regulatorias.', stats: ['muertos en 1988', 'presión por continuidad operativa'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-minamata': {
+    en: { chapter: 'Deaths · Japan', titulo: '36 years of mercury', did: 'Industrial mercury pollution in Minamata contaminated fish and caused severe neurological illness over many years. Recognition and compensation took decades.', simples: 'A factory discharged mercury into Minamata Bay for many years. The poison contaminated fish and caused severe disease among residents.', adv: 'Minamata is a classic case of cumulative chemical externalization: methylmercury bioaccumulated through the food chain while causal recognition and compensation lagged far behind the damage.', stats: ['years of mercury discharge', 'official apology milestone'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Japón', titulo: '36 años de mercurio', did: 'La contaminación industrial por mercurio en Minamata contaminó peces y causó graves enfermedades neurológicas durante muchos años. El reconocimiento y la reparación tardaron décadas.', simples: 'Una fábrica descargó mercurio en la bahía de Minamata durante muchos años. El veneno contaminó peces y causó enfermedades graves entre residentes.', adv: 'Minamata es un caso clásico de externalización química acumulativa: metilmercurio se bioacumuló en la cadena alimentaria mientras reconocimiento causal y compensación quedaron muy por detrás del daño.', stats: ['años de vertido de mercurio', 'hito de disculpa oficial'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-kader': {
+    en: { chapter: 'Deaths · Thailand', titulo: 'The locked exits', did: 'The Kader toy-factory fire in Thailand killed 188 workers in 1993. The disaster exposed severe problems with construction, fire load and emergency exits in an export supply chain.', simples: 'In 1993, a fire at the Kader factory in Thailand killed 188 workers. The case exposed major safety and emergency-exit failures.', adv: 'Kader linked cost arbitrage and fragmented responsibility between global buyers and a local factory. Safety standards in export production can fall below those expected in buyer markets without enforceable rules.', stats: ['workers killed', 'exit doors'], dica: 'watch the highlighted cases and continue to compare places' },
+    es: { chapter: 'Muertes · Tailandia', titulo: 'Las salidas cerradas', did: 'El incendio de la fábrica de juguetes Kader en Tailandia mató a 188 trabajadores en 1993. El desastre expuso graves problemas de construcción, carga inflamable y salidas de emergencia en una cadena exportadora.', simples: 'En 1993, un incendio en la fábrica Kader en Tailandia mató a 188 trabajadores. El caso mostró graves fallas de seguridad y salidas de emergencia.', adv: 'Kader conectó arbitraje de costos y responsabilidad fragmentada entre compradores globales y una fábrica local. Sin reglas exigibles, estándares de seguridad en producción exportadora pueden quedar por debajo de los esperados en mercados compradores.', stats: ['trabajadores muertos', 'puertas de salida'], dica: 'observa los casos destacados y continúa para comparar lugares' },
+  },
+  'm-fim': {
+    en: { chapter: 'Deaths · Closing', titulo: 'The pattern', did: 'The cases differ, but a common pattern appears: firms can capture returns quickly while workers, communities and ecosystems absorb costs that emerge over years or decades.', simples: 'The cases are different, but they share something: corporate decisions and weak oversight can leave enormous costs for workers, families and cities.', adv: 'Across the cases, private appropriation of surplus is separated from the social distribution of risk. Regulation, unions, transparency and repair capacity determine how much mortality, illness and environmental damage remains externalized.', stats: ['returns now', 'weak accountability'], dica: 'finish to open the consequences module with all cases' },
+    es: { chapter: 'Muertes · Cierre', titulo: 'El patrón', did: 'Los casos son distintos, pero aparece un patrón común: empresas pueden capturar retornos rápidamente mientras trabajadores, comunidades y ecosistemas absorben costos que aparecen durante años o décadas.', simples: 'Los casos son diferentes, pero comparten algo: decisiones empresariales y fiscalización débil pueden dejar costos enormes para trabajadores, familias y ciudades.', adv: 'En todos los casos, apropiación privada del excedente se separa de distribución social del riesgo. Regulación, sindicatos, transparencia y capacidad de reparación determinan cuánto de mortalidad, enfermedad y daño ambiental permanece externalizado.', stats: ['retornos ahora', 'responsabilización débil'], dica: 'termina para abrir el módulo de consecuencias con todos los casos' },
+  },
+  'geo-intro': {
+    en: { chapter: 'Geography · Opening', titulo: 'The International Division of Labor in the 21st Century', did: 'Economic Geography explains why world space is unequal: Core countries concentrate financial command, patents and headquarters, while Periphery supplies raw materials, energy and cheap assembly.', simples: 'On the world map, each group of countries plays a different role: some sell technology and control banks, while others supply raw materials and cheap labor.', adv: 'International Division of Labor under informational-financialized capitalism: spatial hierarchy among command nodes (US-EU-Japan triad and Chinese pole), industrial semi-periphery and primary-export periphery.', stats: ['Core, Semiperiphery and Periphery', 'International Division of Labor'], dica: 'observe the direction of particles between South and North' },
+    es: { chapter: 'Geografía · Apertura', titulo: 'La División Internacional del Trabajo en el siglo XXI', did: 'La Geografía Económica explica por qué el espacio mundial es desigual: los países del Centro concentran comando financiero, patentes e sedes, mientras la Periferia aporta materias primas, energía y ensamblaje barato.', simples: 'En el mapa mundial, cada grupo de países cumple un papel distinto: algunos venden tecnología y controlan bancos, mientras otros aportan materias primas y trabajo barato.', adv: 'División Internacional del Trabajo bajo el capitalismo informacional-financiarizado: jerarquía espacial entre nodos de comando (tríada EE. UU.-UE-Japón y polo chino), semiperiferia industrial y periferia primario-exportadora.', stats: ['Centro, Semiperiferia y Periferia', 'División Internacional del Trabajo'], dica: 'observa la dirección de las partículas entre Sur y Norte' },
+  },
+  'geo-fim': {
+    en: { chapter: 'Geography · Closing', titulo: 'Territory as an unequal network', did: 'Closing the geographic reading: world territory functions as a hierarchical network where raw materials and cheap labor flow from the periphery while technological and financial command remains concentrated in the core.', simples: 'The map shows that countries are connected through trade networks, but gains from these exchanges remain concentrated in countries dominating technology and finance.', adv: 'Geoeconomic synthesis: global space combines fluidity for financial capital and productive selectivity, reproducing geographically uneven development between North and South.', stats: ['net direction of value transfer', 'Human Sciences · Economic Geography'], dica: 'try clicking the BR button to see regional division within Brazil' },
+    es: { chapter: 'Geografía · Cierre', titulo: 'El territorio como red desigual', did: 'Cerrando la lectura geográfica: el territorio mundial funciona como una red jerárquica donde materias primas y trabajo barato fluyen de la periferia y el comando tecnológico y financiero permanece concentrado en el centro.', simples: 'El mapa muestra que los países están conectados por redes comerciales, pero las ganancias de estos intercambios siguen concentradas en los países que dominan tecnología y finanzas.', adv: 'Síntesis geoeconómica: el espacio global combina fluidez para el capital financiero y selectividad productiva, reproduciendo el desarrollo geográficamente desigual entre Norte y Sur.', stats: ['sentido neto de transferencia de valor', 'Ciencias Humanas · Geografía Económica'], dica: 'prueba hacer clic en el botón BR para ver la división regional dentro de Brasil' },
+  },
+  'hist-intro': {
+    en: { chapter: 'History · Opening', titulo: 'Hegemonic cycles of the world-economy', did: 'The history of capitalism is a succession of powers leading trade, industry and currency: from the 19th-century British Empire to the post-1945 United States and today’s rivalry with China.', simples: 'Throughout history, different countries led the world economy: first the United Kingdom, then the United States, and today there is strong competition with China.', adv: 'Systemic cycles of accumulation: each hegemony articulates material expansion followed by financial expansion during maturity and geopolitical transition.', stats: ['Bretton Woods Agreement (dollar-gold)', 'current dollar share in reserves'], dica: 'follow the shift in the center of the world' },
+    es: { chapter: 'Historia · Apertura', titulo: 'Ciclos hegemónicos de la economía-mundo', did: 'La historia del capitalismo es una sucesión de potencias que lideraron comercio, industria y moneda: del Imperio Británico en el siglo XIX a los Estados Unidos pos-1945 y la disputa actual con China.', simples: 'A lo largo de la historia, distintos países lideraron la economía mundial: primero el Reino Unido, luego Estados Unidos y hoy existe una fuerte disputa con China.', adv: 'Ciclos sistémicos de acumulación: cada hegemonía articula expansión material seguida de hipertrofia financiera en la madurez y transición geopolítica.', stats: ['Acuerdo de Bretton Woods (dólar-oro)', 'peso actual del dólar en reservas'], dica: 'sigue el cambio del centro del mundo' },
+  },
+  'hist-1971': {
+    en: { chapter: 'History · 1971–1979', titulo: 'The 1971 Shock and the birth of the flexible dollar', did: 'In 1971, the United States ended the conversion of dollars into gold. The dollar continued to derive value from political, military power and oil trade, opening an era of deregulated finance and global debt.', simples: 'In 1971, the dollar stopped being exchanged for gold. Even so, it continued being the main currency in oil trade and foreign reserves.', adv: 'Nixon Shock (1971) and Volcker Shock (1979): rupture of the Bretton Woods dollar-gold standard and transition to the flexible dollar anchored in Treasuries, petrodollars and free capital mobility.', stats: ['end of dollar-gold convertibility', 'annual interest on US debt today'], dica: 'click the yellow line to see the role of US Treasury bonds' },
+    es: { chapter: 'Historia · 1971–1979', titulo: 'El Shock de 1971 y el nacimiento del dólar flexible', did: 'En 1971, Estados Unidos puso fin a la conversión del dólar en oro. El dólar pasó a valer por poder político, militar y comercio de petróleo, abriendo la era de finanzas desreguladas y deuda global.', simples: 'En 1971, el dólar dejó de canjearse por oro. Aun así, continuó siendo la principal moneda en el comercio de petróleo y reservas.', adv: 'Shock de Nixon (1971) y Shock de Volcker (1979): ruptura del patrón dólar-oro de Bretton Woods y transición al patrón dólar flexible anclado en Treasuries, petrodólares y libre movilidad de capitales.', stats: ['fin de convertibilidad dólar-oro', 'intereses anuales de la deuda de EE. UU. hoy'], dica: 'haz clic en la línea amarilla para ver el papel de los bonos del Tesoro de EE. UU.' },
+  },
+  'hist-fim': {
+    en: { chapter: 'History · Closing', titulo: 'Hegemonic transition in the 21st century', did: 'Looking across the century, the rules of the world economy change after major crises and wars. Today, Asian rise and non-dollar settlements open a new historic transition.', simples: 'History shows economic leadership changes over time. Today, new blocs like BRICS+ try to build alternatives to exclusive dollar dominance.', adv: 'Historical-structural balance: from Pax Britannica to the crisis of neoliberal globalization, contemporary hegemonic transition opposes financialized dollar rentierism to Sino-Asian industrial-state capacity.', stats: ['BRICS+ share in purchasing power parity', 'complete timeline in Module 03'], dica: 'finish to open the war module and explore the timeline from 1914 to 2026' },
+    es: { chapter: 'Historia · Cierre', titulo: 'Transición hegemónica en el siglo XXI', did: 'Mirando el siglo entero, las reglas de la economía mundial cambian tras grandes crisis y guerras. Hoy, el ascenso asiático y acuerdos fuera del dólar abren una nueva transición histórica.', simples: 'La historia muestra que el liderazgo económico cambia con el tiempo. Hoy, nuevos bloques como BRICS+ intentan crear alternativas al dominio exclusivo del dólar.', adv: 'Balance histórico-estructural: de la Pax Britannica a la crisis de la globalización neoliberal, la transición hegemónica contemporánea opone el rentismo financiero dolarizado a la capacidad industrial-estatal sinoasiática.', stats: ['peso de BRICS+ en paridad de compra', 'línea de tiempo completa en el Módulo 03'], dica: 'termina para abrir el módulo de guerra y explorar la línea de tiempo de 1914 a 2026' },
+  },
+  'eco-intro': {
+    en: { chapter: 'Political Economy · Opening', titulo: 'Four lenses for the same anatomy', did: 'Four lenses explain this map: Marx shows how labor generates profit; Kalecki explains how spending sustains sales; MMT reveals sovereign money power; and TMD shows how the South transfers wealth to the North.', simples: 'This tour brings together four economic ideas to show how work creates wealth, how government uses currency and why some countries accumulate more than others.', adv: 'Analytical integration of 4 pillars: law of value and organic composition (Marx), effective demand (Kalecki), monetary hierarchy and sovereignty (MMT), and super-exploitation with value transfer (TMD).', stats: ['Marxian decomposition of value', 'Marx · Kalecki · MMT · TMD'], dica: 'activate Advanced level at the top of the card to read complete macroeconomic identities' },
+    es: { chapter: 'Economía Política · Apertura', titulo: 'Cuatro lentes para la misma anatomía', did: 'Cuatro lentes explican este mapa: Marx muestra cómo el trabajo genera ganancia; Kalecki explica cómo el gasto sostiene ventas; MMT revela el poder de emitir moneda; y TMD muestra cómo el Sur transfiere riqueza al Norte.', simples: 'Este tour une cuatro ideas económicas para mostrar cómo el trabajo crea riqueza, cómo el gobierno usa la moneda y por qué algunos países acumulan más que otros.', adv: 'Integración analítica de los 4 pilares: ley del valor y composición orgánica (Marx), demanda efectiva (Kalecki), jerarquía y soberanía monetaria (MMT) y superexplotación con transferencia de valor (TMD).', stats: ['descomposición marxista del valor', 'Marx · Kalecki · MMT · TMD'], dica: 'activa el nivel Avanzado arriba en la tarjeta para leer identidades macroeconómicas completas' },
+  },
+  'eco-fim': {
+    en: { chapter: 'Political Economy · Closing', titulo: 'The critical macroeconomic synthesis', did: 'Uniting all four schools, production, currency, public budgets and international trade form a single system. Changing outcomes requires acting on property, labor and sovereignty.', simples: 'Putting all parts together, production, wages, taxes and world trade are connected and depend on political and economic choices.', adv: 'Political economy synthesis: expanded reproduction globally articulates surplus-value extraction (Pillar 1), Kaleckian realization (Pillar 2), state/fictitious money (Pillar 3) and core-periphery drain (Pillar 4).', stats: ['profit rate on advanced capital', 'sectoral balances identity'], dica: 'finish to open the debt module with Kalecki simulator and MMT balances' },
+    es: { chapter: 'Economía Política · Cierre', titulo: 'La síntesis macroeconómica crítica', did: 'Uniendo las cuatro escuelas, producción, moneda, presupuesto público y comercio internacional forman un único engranaje. Cambiar el resultado exige actuar sobre propiedad, trabajo y soberanía.', simples: 'Juntando todas las partes, vemos que producción, salarios, impuestos y comercio mundial están conectados y dependen de decisiones políticas y económicas.', adv: 'Síntesis de economía política: la reproducción ampliada a escala mundial articula extracción de plusvalía (Pilar 1), realización kaleckiana (Pilar 2), moneda estatal/ficticia (Pilar 3) y drenaje centro-periferia (Pilar 4).', stats: ['tasa de ganancia sobre capital adelantado', 'identidad de balances sectoriales'], dica: 'termina para abrir el módulo de deuda con el simulador de Kalecki y balances MMT' },
+  },
+}
+
+function customStopForLang(stop: TourStop, lang: Exclude<TourLang, 'pt'>): TourStop {
+  const shared = tourStopForLang(stop, lang)
+  if (shared !== stop) return shared
+  const locale = CUSTOM_STOP_I18N[stop.id]?.[lang]
+  if (!locale) return stop
+  return {
+    ...stop,
+    chapter: locale.chapter,
+    titulo: locale.titulo,
+    did: locale.did,
+    simples: locale.simples,
+    adv: locale.adv,
+    dica: locale.dica,
+    didStats: stop.didStats.map((stat, index) => ({ ...stat, k: locale.stats[index] ?? stat.k })),
+  }
+}
+
+export function toursForLang(lang: TourLang): TourDef[] {
+  if (lang === 'pt') return TOURES
+  return TOURES.map((tour) => {
+    const meta = TOUR_META_I18N[tour.id]?.[lang] ?? { titulo: tour.titulo, descricao: tour.descricao }
+    const finalLabel = tour.finalTab === 'war'
+      ? (lang === 'en' ? `go to ${modTitle('war', lang)} →` : `ir a ${modTitle('war', lang)} →`)
+      : tour.finalTab === 'alternatives'
+        ? (lang === 'en' ? `go to ${modTitle('alternatives', lang)} →` : `ir a ${modTitle('alternatives', lang)} →`)
+        : tour.finalTab === 'home'
+          ? (lang === 'en' ? `explore ${modTitle('home', lang)} →` : `explorar ${modTitle('home', lang)} →`)
+          : tour.finalTab === 'debt'
+            ? (lang === 'en' ? `go to ${modTitle('debt', lang)} →` : `ir a ${modTitle('debt', lang)} →`)
+            : (lang === 'en' ? `go to ${modTitle('consequences', lang)} →` : `ir a ${modTitle('consequences', lang)} →`)
+    return {
+      ...tour,
+      ...meta,
+      finalLabel,
+      stops: tour.stops.map((stop) => customStopForLang(stop, lang)),
+    }
+  })
+}
+
+export const getTourForLang = (id: string, lang: TourLang): TourDef => {
+  const tours = toursForLang(lang)
+  return tours.find((tour) => tour.id === id) ?? tours[0]
+}

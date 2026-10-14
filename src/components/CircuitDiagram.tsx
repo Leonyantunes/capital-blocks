@@ -1,6 +1,6 @@
 import { computeCircuit, units } from '../lib/marx'
 import { useApp } from '../store/useApp'
-import { termoSimples } from '../lib/simples'
+import { pick } from '../i18n'
 
 function Arrow({ x1, x2, y = 165, dotted = false, slow = false }: { x1: number; x2: number; y?: number; dotted?: boolean; slow?: boolean }) {
   return (
@@ -16,7 +16,7 @@ function Arrow({ x1, x2, y = 165, dotted = false, slow = false }: { x1: number; 
 }
 
 export default function CircuitDiagram() {
-  const { k, e } = useApp()
+  const { k, e, lang } = useApp()
   const r = computeCircuit(k, e)
   const cShare = (r.c / r.M) * 100
   const vShare = (r.v / r.M) * 100
@@ -24,11 +24,32 @@ export default function CircuitDiagram() {
      curtos — o SVG tem largura fixa) e as fórmulas somem; letras M/C/P/M′
      ficam como âncoras visuais */
   const simples = useApp((s) => s.mode) !== 'avancado'
-  const rot = (t: string): string => (simples ? termoSimples(t) : t)
+  const rot = (t: string): string => {
+    switch (t) {
+      case 'capital-dinheiro':
+        return simples
+          ? pick(lang, 'dinheiro investido', 'invested money', 'dinero invertido')
+          : pick(lang, 'capital-dinheiro', 'money capital', 'capital-dinero')
+      case 'extração de mais-valia':
+        return simples
+          ? pick(lang, 'trabalho não pago', 'unpaid labor', 'trabajo no pagado')
+          : pick(lang, 'extração de mais-valia', 'surplus-value extraction', 'extracción de plusvalía')
+      case 'realização':
+        return simples
+          ? pick(lang, 'venda', 'sale', 'venta')
+          : pick(lang, 'realização', 'realization', 'realización')
+      case 'valor expandido':
+        return simples
+          ? pick(lang, 'valor que cresceu', 'value after growth', 'valor tras crecer')
+          : pick(lang, 'valor expandido', 'expanded value', 'valor expandido')
+      default:
+        return t
+    }
+  }
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-      <svg viewBox="0 0 1000 330" className="h-auto w-full" role="img" aria-label="Diagrama do circuito do capital">
+      <svg viewBox="0 0 1000 330" className="h-auto w-full" role="img" aria-label={pick(lang, 'Diagrama do circuito do capital', 'Capital circuit diagram', 'Diagrama del circuito del capital')}>
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#a1a1aa" />
@@ -43,18 +64,18 @@ export default function CircuitDiagram() {
 
         {/* M —> C */}
         <Arrow x1={128} x2={198} />
-        <text x={163} y={150} textAnchor="middle" fontSize="10" className="fill-zinc-500 font-mono">{simples ? 'compra' : 'D—M · compra'}</text>
+        <text x={163} y={150} textAnchor="middle" fontSize="10" className="fill-zinc-500 font-mono">{simples ? pick(lang, 'compra', 'purchase', 'compra') : pick(lang, 'D—M · compra', 'M—C · purchase', 'D—M · compra')}</text>
 
         {/* ---------- C (L / MP) ---------- */}
         <rect x={206} y={100} width={158} height={130} rx={14} fill="#18181b" stroke="#52525b" strokeWidth="1.5" />
         <text x={285} y={122} textAnchor="middle" fontSize="15" fontWeight="700" className="fill-zinc-200 font-mono">C</text>
 
         <rect x={220} y={133} width={130} height={40} rx={8} fill="#f8717114" stroke="#f87171" strokeOpacity="0.55" />
-        <text x={230} y={150} fontSize="9.5" className="fill-red-200/80">{simples ? 'salários' : 'L — força de trabalho'}</text>
+        <text x={230} y={150} fontSize="9.5" className="fill-red-200/80">{simples ? pick(lang, 'salários', 'wages', 'salarios') : pick(lang, 'L — força de trabalho', 'L — labor power', 'L — fuerza de trabajo')}</text>
         <text x={230} y={165} fontSize="11" fontWeight="700" className="fill-red-300 font-mono">v = {units(r.v)}</text>
 
         <rect x={220} y={181} width={130} height={40} rx={8} fill="#38bdf814" stroke="#38bdf8" strokeOpacity="0.55" />
-        <text x={230} y={198} fontSize="9.5" className="fill-sky-200/80">{simples ? 'máquinas/insumos' : 'MP — meios de produção'}</text>
+        <text x={230} y={198} fontSize="9.5" className="fill-sky-200/80">{simples ? pick(lang, 'máquinas/insumos', 'machines/inputs', 'máquinas/insumos') : pick(lang, 'MP — meios de produção', 'MP — means of production', 'MP — medios de producción')}</text>
         <text x={230} y={213} fontSize="11" fontWeight="700" className="fill-sky-300 font-mono">c = {units(r.c)}</text>
 
         {/* C …> P */}
@@ -93,16 +114,16 @@ export default function CircuitDiagram() {
 
         {/* ---------- composição do capital adiantado ---------- */}
         <text x={332} y={304} textAnchor="end" fontSize="10" className="fill-zinc-500 font-mono">
-          {simples ? 'do que o dinheiro é feito' : 'M = c + v'}
+          {simples ? pick(lang, 'do que o dinheiro é feito', 'what the money buys', 'en qué se usa el dinero') : 'M = c + v'}
         </text>
         <rect x={344} y={295} width={(cShare / 100) * 320} height={12} rx={3} fill="#38bdf8" opacity={0.85} />
         <rect x={344 + (cShare / 100) * 320} y={295} width={(vShare / 100) * 320} height={12} rx={3} fill="#f87171" opacity={0.85} />
         <text x={344 + 320 + 12} y={304} fontSize="10" className="fill-zinc-500">
           {simples ? (
             <>
-              <tspan className="fill-sky-300">máquinas {cShare.toFixed(0)}%</tspan>
+              <tspan className="fill-sky-300">{pick(lang, 'máquinas', 'machines', 'máquinas')} {cShare.toFixed(0)}%</tspan>
               <tspan className="fill-zinc-600"> · </tspan>
-              <tspan className="fill-red-300">salários {vShare.toFixed(0)}%</tspan>
+              <tspan className="fill-red-300">{pick(lang, 'salários', 'wages', 'salarios')} {vShare.toFixed(0)}%</tspan>
             </>
           ) : (
             <>

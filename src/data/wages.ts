@@ -40,3 +40,11 @@ export function wageBucketLabel(usd: number): string {
   const b = WAGE_BUCKETS.find((x) => usd <= x.max)
   return b ? b.label : '> US$ 3.000'
 }
+
+export function wageBucketLabelForLang(usd: number, lang: 'pt' | 'en' | 'es'): string {
+  if (lang === 'pt') return wageBucketLabel(usd)
+  const bucket = WAGE_BUCKETS.findIndex((x) => usd <= x.max)
+  const en = ['< US$ 300/month', 'US$ 300–700', 'US$ 700–1,500', 'US$ 1,500–3,000', '> US$ 3,000']
+  const es = ['< US$ 300/mes', 'US$ 300–700', 'US$ 700–1.500', 'US$ 1.500–3.000', '> US$ 3.000']
+  return (lang === 'en' ? en : es)[bucket < 0 ? 4 : bucket]
+}

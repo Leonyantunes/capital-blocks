@@ -1,26 +1,58 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { useApp, type TabId, type UIMode } from '../store/useApp'
-import { t } from '../i18n'
-import { MODULES, MAP_TAB_TOOLTIP, TABS, modTitle } from '../data/modules'
+import { mt, pick, t, type Lang } from '../i18n'
+import { MODULES, MAP_TAB_TOOLTIP, TABS } from '../data/modules'
 
 const GlossaryDrawer = lazy(() => import('./GlossaryDrawer'))
 
 /* A lista de abas e a numeração vêm de `data/modules.ts` (registro canônico).
    Aqui só acrescentamos o complemento editorial de cada módulo — o número nunca
    é escrito à mão, vem de `modTitle(id)` (ver TODO P2-24). */
-const TITLES: Record<TabId, string> = {
-  home: MAP_TAB_TOOLTIP.pt,
-  globe3d: MAP_TAB_TOOLTIP.pt,
-  circuit: `${modTitle('circuit')} — composição orgânica, exploração e tendência decrescente`,
-  war: `${modTitle('war')} — linha do tempo reversa, matriz militar e quem lucra`,
-  debt: `${modTitle('debt')} — lente monetária, identidade setorial e simulador kaleckiano`,
-  companies: `${modTitle('companies')} — ILAESE + maiores do mundo, decompostos em c·v·m`,
-  platform: `${modTitle('platform')} — salário por peça e transferência de capital constante`,
-  wealth: `${modTitle('wealth')} — Concentração, bilionários e o que sustenta o quê`,
-  consequences: `${modTitle('consequences')} — massacres, territórios e custos deslocados`,
-  alternatives: `${modTitle('alternatives')} — cooperativas, orçamento democrático e garantia de emprego`,
-  sources: `${modTitle('sources')} — busca, filtros, estado de verificação e links diretos`,
-  settings: 'Configurações — nível de leitura, tema, idioma, referências e apresentação',
+function navTitle(lang: Lang, id: TabId): string {
+  if (id === 'home' || id === 'globe3d') return MAP_TAB_TOOLTIP[lang]
+  const detail: Record<Exclude<TabId, 'home' | 'globe3d'>, string> = {
+    circuit: pick(lang,
+      'composição orgânica, exploração e tendência decrescente',
+      'organic composition, exploitation and the falling-rate tendency',
+      'composición orgánica, explotación y tendencia decreciente'),
+    war: pick(lang,
+      'linha do tempo reversa, matriz militar e quem lucra',
+      'reverse timeline, military matrix and who profits',
+      'cronología inversa, matriz militar y quién se beneficia'),
+    debt: pick(lang,
+      'lente monetária, identidade setorial e simulador kaleckiano',
+      'monetary lens, sectoral identity and Kaleckian simulator',
+      'lente monetaria, identidad sectorial y simulador kaleckiano'),
+    companies: pick(lang,
+      'ILAESE + maiores do mundo, decompostos em c·v·m',
+      'ILAESE + the world’s largest companies, decomposed into c·v·m',
+      'ILAESE + las mayores del mundo, descompuestas en c·v·m'),
+    platform: pick(lang,
+      'salário por peça e transferência de capital constante',
+      'piece wages and transfer of constant capital',
+      'salario por pieza y transferencia de capital constante'),
+    wealth: pick(lang,
+      'concentração, bilionários e o que sustenta o quê',
+      'concentration, billionaires and what sustains what',
+      'concentración, multimillonarios y qué sostiene a qué'),
+    consequences: pick(lang,
+      'massacres, territórios e custos deslocados',
+      'massacres, territories and displaced costs',
+      'masacres, territorios y costos desplazados'),
+    alternatives: pick(lang,
+      'cooperativas, orçamento democrático e garantia de emprego',
+      'cooperatives, democratic budgeting and job guarantees',
+      'cooperativas, presupuesto democrático y garantía de empleo'),
+    sources: pick(lang,
+      'busca, filtros, estado de verificação e links diretos',
+      'search, filters, verification status and direct links',
+      'búsqueda, filtros, estado de verificación y enlaces directos'),
+    settings: pick(lang,
+      'nível de leitura, tema, idioma, referências e apresentação',
+      'reading level, theme, language, references and presentation',
+      'nivel de lectura, tema, idioma, referencias y presentación'),
+  }
+  return `${mt(lang, id).title} — ${detail[id]}`
 }
 
 /* Abas numeradas na ordem de navegação, derivadas do registro canônico.
@@ -48,27 +80,34 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
   const lang = useApp((s) => s.lang)
   const setLang = useApp((s) => s.setLang)
 
-  const MODOS: { id: UIMode; pt: string }[] = [
-    { id: 'simples', pt: 'Simples' },
-    { id: 'didatico', pt: 'Didático' },
-    { id: 'avancado', pt: 'Avançado' },
-  ]
+  const MODOS: UIMode[] = ['simples', 'didatico', 'avancado']
+  const modeTip = (id: UIMode, detailed = false) => {
+    if (id === 'simples') return pick(lang,
+      detailed ? 'Para quem está começando: sem fórmula' : 'Para quem está começando',
+      detailed ? 'For beginners: no formulas' : 'For beginners',
+      detailed ? 'Para quien está empezando: sin fórmulas' : 'Para quien está empezando')
+    if (id === 'didatico') return pick(lang, 'Padrão do app', 'App default', 'Predeterminado de la app')
+    return pick(lang,
+      detailed ? 'Com fórmulas e categorias marxistas' : 'Com fórmulas e categorias',
+      detailed ? 'With formulas and Marxist categories' : 'With formulas and categories',
+      detailed ? 'Con fórmulas y categorías marxistas' : 'Con fórmulas y categorías')
+  }
 
   if (stacked) {
     return (
       <div className="space-y-2.5">
         <div>
           <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-            Nível de leitura
+            {t(lang, 'nivelLeitura')}
           </div>
           <div className="inline-flex w-full items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-            {MODOS.map((m) => (
-              <button key={m.id} onClick={() => setMode(m.id)}
-                title={m.id === 'simples' ? 'Para quem está começando' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias'}
+            {MODOS.map((id) => (
+              <button key={id} onClick={() => setMode(id)}
+                title={modeTip(id)}
                 className={`flex-1 rounded-md px-2 py-2 text-[11px] font-semibold transition-colors ${
-                  mode === m.id ? 'bg-money text-onaccent' : 'text-zinc-400'
+                  mode === id ? 'bg-money text-onaccent' : 'text-zinc-400'
                 }`}>
-                {m.pt}
+                {t(lang, id)}
               </button>
             ))}
           </div>
@@ -82,7 +121,8 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
             }`}>
             Aa
           </button>
-          <select value={lang} onChange={(e) => setLang(e.target.value as 'pt' | 'en' | 'es')} aria-label="Idioma da interface"
+          <select value={lang} onChange={(e) => setLang(e.target.value as Lang)}
+            aria-label={pick(lang, 'Idioma da interface', 'Interface language', 'Idioma de la interfaz')}
             className="h-[38px] flex-1 cursor-pointer rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs font-bold text-zinc-400">
             <option value="pt">Português</option>
             <option value="en">English</option>
@@ -110,13 +150,13 @@ function ModeControls({ stacked = false }: { stacked?: boolean }) {
         <option value="es">ES</option>
       </select>
       <div className="inline-flex shrink-0 items-center rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-        {MODOS.map((m) => (
-          <button key={m.id} onClick={() => setMode(m.id)}
-            title={m.id === 'simples' ? 'Para quem está começando: sem fórmula' : m.id === 'didatico' ? 'Padrão do app' : 'Com fórmulas e categorias marxistas'}
+        {MODOS.map((id) => (
+          <button key={id} onClick={() => setMode(id)}
+            title={modeTip(id, true)}
             className={`rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors ${
-              mode === m.id ? 'bg-money text-onaccent' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
+              mode === id ? 'bg-money text-onaccent' : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
             }`}>
-            {m.pt}
+            {t(lang, id)}
           </button>
         ))}
       </div>
@@ -178,14 +218,16 @@ export default function Navbar() {
             onMouseEnter={() => setShowName(true)}
             onMouseLeave={() => setShowName(false)}
             className="group flex shrink-0 items-center gap-2.5"
-            aria-label="Capital Blocks — Início">
+            aria-label={pick(lang, 'Capital Blocks — Início', 'Capital Blocks — Home', 'Capital Blocks — Inicio')}>
             <Logo />
             <span
               className={`hidden overflow-hidden leading-tight transition-all duration-700 ease-out sm:block ${
                 showName ? 'max-w-[240px] opacity-100' : 'max-w-0 opacity-0'
               } group-hover:max-w-[240px] group-hover:opacity-100`}>
               <span className="block whitespace-nowrap text-sm font-extrabold tracking-wide text-zinc-100">CAPITAL BLOCKS</span>
-              <span className="block whitespace-nowrap text-[10px] tracking-wider text-zinc-500">A ANATOMIA DO CAPITALISMO GLOBAL</span>
+              <span className="block whitespace-nowrap text-[10px] tracking-wider text-zinc-500">
+                {pick(lang, 'A ANATOMIA DO CAPITALISMO GLOBAL', 'THE ANATOMY OF GLOBAL CAPITALISM', 'LA ANATOMÍA DEL CAPITALISMO GLOBAL')}
+              </span>
             </span>
           </button>
 
@@ -197,7 +239,7 @@ export default function Navbar() {
               const active = isMap ? tab === 'home' || is3D : tab === id
               const show3D = isMap && is3D
               return (
-                <button key={id} onClick={() => pressTab(id)} title={TITLES[id]}
+                <button key={id} onClick={() => pressTab(id)} title={navTitle(lang, id)}
                   aria-pressed={isMap ? is3D : undefined}
                   className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
                     active
@@ -218,14 +260,20 @@ export default function Navbar() {
           <div className="hidden shrink-0 items-center gap-1.5 md:flex">
             <button
               onClick={() => setGlossaryOpen(true)}
-              title="Glossário: os conceitos do site explicados nos dois níveis"
+              title={pick(lang,
+                'Glossário: os conceitos do site explicados nos níveis de leitura',
+                'Glossary: site concepts explained for the reading levels',
+                'Glosario: conceptos del sitio explicados para los niveles de lectura')}
               className="rounded-lg border border-zinc-800 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 transition-colors hover:border-money/60 hover:text-money"
             >
               {t(lang, 'glossario')}
             </button>
             <button
               onClick={() => setTab('settings')}
-              title="Configurações: nível de leitura, tema, idioma e referências"
+              title={pick(lang,
+                'Configurações: nível de leitura, tema, idioma e referências',
+                'Settings: reading level, theme, language and references',
+                'Configuración: nivel de lectura, tema, idioma y referencias')}
               aria-label={t(lang, 'configuracoes')}
               className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
                 tab === 'settings'
@@ -242,7 +290,7 @@ export default function Navbar() {
           <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
             <button
               onClick={() => setGlossaryOpen(true)}
-              aria-label="Abrir glossário"
+              aria-label={pick(lang, 'Abrir glossário', 'Open glossary', 'Abrir glosario')}
               className="rounded-lg border border-zinc-800 px-2.5 py-2 text-[11px] font-bold text-zinc-400"
             >
               A-Z
@@ -260,7 +308,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setMenuOpen(true)}
-              aria-label="Abrir menu de módulos"
+              aria-label={pick(lang, 'Abrir menu de módulos', 'Open modules menu', 'Abrir menú de módulos')}
               aria-expanded={menuOpen}
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-money/50 bg-money/10 text-lg text-money"
             >
@@ -272,7 +320,8 @@ export default function Navbar() {
 
       {/* ── gaveta lateral de módulos (mobile) ── */}
       {menuOpen && (
-        <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true" aria-label="Menu de módulos">
+        <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true"
+          aria-label={pick(lang, 'Menu de módulos', 'Modules menu', 'Menú de módulos')}>
           <div className="absolute inset-0 bg-black/60" onClick={() => setMenuOpen(false)} />
           <aside className="thin-scroll absolute inset-y-0 left-0 flex w-[300px] max-w-[85vw] flex-col overflow-y-auto border-r border-zinc-800 bg-zinc-950 shadow-2xl"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -281,7 +330,8 @@ export default function Navbar() {
                 <Logo />
                 <span className="text-sm font-extrabold tracking-wide text-zinc-100">CAPITAL BLOCKS</span>
               </span>
-              <button onClick={() => setMenuOpen(false)} aria-label="Fechar menu"
+              <button onClick={() => setMenuOpen(false)}
+                aria-label={pick(lang, 'Fechar menu', 'Close menu', 'Cerrar menú')}
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400">✕</button>
             </div>
 
@@ -292,7 +342,7 @@ export default function Navbar() {
                 const active = isMap ? tab === 'home' || is3D : tab === id
                 const show3D = isMap && is3D
                 return (
-                  <button key={id} onClick={() => go(id)} title={TITLES[id]}
+                  <button key={id} onClick={() => go(id)} title={navTitle(lang, id)}
                     className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors ${
                       active
                         ? show3D
@@ -304,7 +354,9 @@ export default function Navbar() {
                       active ? (show3D ? 'bg-sky-400 text-onaccent' : 'bg-money text-onaccent') : 'bg-zinc-800 text-zinc-400'
                     }`}>{show3D ? '3D' : m.num}</span>
                     <span className="text-[13px] font-medium leading-tight">
-                      {show3D ? `🌍 ${t(lang, m.labelKey)} · toque p/ 2D` : t(lang, m.labelKey)}
+                      {show3D
+                        ? `🌍 ${t(lang, m.labelKey)} · ${pick(lang, 'toque p/ 2D', 'tap for 2D', 'toca para 2D')}`
+                        : t(lang, m.labelKey)}
                     </span>
                   </button>
                 )

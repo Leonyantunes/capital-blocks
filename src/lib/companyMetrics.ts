@@ -174,3 +174,36 @@ export function sectorEstimate(setor?: string): SectorEstimate {
   for (const [key, est] of SECTOR_TABLE_EN) if (s.includes(key)) return est
   return DEFAULT_ESTIMATE
 }
+
+export function sectorPriceSalesEstimate(setor?: string): number {
+  const s = (setor ?? '').toLowerCase()
+  const table: [string, number][] = [
+    ['software', 3.5], ['tecnolog', 3.0], ['informát', 3.0],
+    ['banc', 2.8], ['finance', 2.8], ['seguro', 2.2],
+    ['farmac', 2.2], ['saúde', 1.8], ['saneament', 1.6],
+    ['elétric', 1.5], ['energia', 1.0], ['petróleo', 0.9],
+    ['minera', 1.2], ['agro', 1.1], ['varejo', 0.8], ['atacarejo', 0.55],
+    ['telecom', 1.2], ['logíst', 1.0], ['transport', 0.9],
+    ['imobili', 1.5], ['constru', 1.0], ['siderurg', 0.8], ['autopeç', 0.9],
+    ['indústri', 1.1], ['bens de capital', 1.2],
+  ]
+  for (const [key, value] of table) if (s.includes(key)) return value
+  return 1.2
+}
+
+export function sectorSalaryEstimateBRLK(setor?: string): number {
+  const s = (setor ?? '').toLowerCase()
+  const table: [string, number][] = [
+    ['banc', 180], ['finance', 170], ['seguro', 135],
+    ['software', 165], ['tecnolog', 150], ['informát', 145],
+    ['petróleo', 165], ['minera', 135], ['energia', 125], ['elétric', 120],
+    ['telecom', 115], ['farmac', 115], ['saúde', 70],
+    ['bens de capital', 105], ['indústri', 90], ['siderurg', 90],
+    ['automotiv', 85], ['autopeç', 75], ['logíst', 80], ['transport', 75],
+    ['imobili', 95], ['constru', 70], ['saneament', 95],
+    ['varejo', 48], ['atacarejo', 42], ['aliment', 58], ['bebida', 70],
+    ['educaç', 62], ['agro', 68], ['celulose', 85], ['papel', 75],
+  ]
+  for (const [key, value] of table) if (s.includes(key)) return value
+  return 80
+}

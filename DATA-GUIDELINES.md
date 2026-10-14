@@ -119,9 +119,10 @@ bend e dur escolhidos para legibilidade. Máx. 3 partículas por rota.
 - [ ] Se é dívida/fiscal: passou pelo §3 (dual-lens)?
 - [ ] `npm run build` verde?
 
-## 9. Modelo de decomposição corporativa (Raio-X Global)
+## 9. Modelo de decomposição corporativa (Raio-X BR + Global)
 
-Para cada empresa do Raio-X Global (`WORLD_COMPANIES`), o valor anual produzido é
+Para cada empresa do Raio-X (`COMPANIES_ALL`; globais expostas também em
+`WORLD_COMPANIES`), o valor anual produzido é
 decomposto em runtime (`src/lib/companyMetrics.ts`) pela trinômia **W = c + v + m**:
 
 ```
@@ -142,6 +143,10 @@ Regras:
 4. Métricas derivadas exibidas: `% do market cap mundial` (÷ US$124 tri, WFE),
    `% do PIB mundial` (÷ US$115 tri, IMF WEO) e `Mercado ÷ Receita` (“anos de produção”
    precificados) — proxy didático do fictício embutido no preço.
+5. `ticker` usado por sincronização deve ser o código corrente. Código descontinuado
+   pode permanecer apenas em registro histórico com `nota` explícita e fora de
+   `B3_UNIVERSE`/`GLOBAL_EXTRA_UNIVERSE`. Reorganizações que trocam o código devem
+   atualizar o fallback estático e o universo no mesmo PR.
 
 ### 9.1 — Modelo UNIFICADO (BR + Global) e registros dinâmicos de API
 
@@ -152,6 +157,20 @@ Regras:
 * **Fontes dinâmicas** (`lib/marketApi/`): DESLIGADAS por padrão; ativadas só na
   página do Raio-X. Adaptadores: BRAPI/B3 (cotações em lote) e Alpha Vantage
   (fundamentais completos). Cache local 24 h; nada sai do navegador.
+* **Cobertura estática (2026-10-04):** 497 empresas (306 BR + 191 globais). Além das
+  84 brasileiras curadas, `src/data/b3Snapshot.ts` acrescenta 222 emissores correntes
+  do catálogo público da B3 (snapshot BRAPI), deduplicados por emissor e classe de ação.
+  Todo ticker dos universos dinâmicos continua com fallback local: 75/75 em
+  `B3_UNIVERSE` e 49/49 em `GLOBAL_EXTRA_UNIVERSE`.
+* **Suplementos editoriais:** os registros adicionados para cobertura offline usam
+  fundamentais FY2024/25 aproximados e `estimate: true`. Em reorganizações (ex.: grupo
+  combinado com ticker novo), a `nota` deve dizer quando a base financeira ainda
+  representa a entidade pré-combinação.
+* **Longa cauda B3:** o snapshot persiste somente ticker, emissor, setor e market cap
+  públicos. `companies.ts` deriva `receita ≈ market cap/P-S`; `companyMetrics.ts`
+  fornece P/S, margem, share de folha e remuneração setoriais; headcount é obtido da
+  folha estimada. Esses registros são sempre `estimate: true`, exibem a premissa na
+  fonte/nota e jamais substituem uma entrada curada por DFs.
 * Escada de estimativa para registros `origem: 'api'` (sempre badge `API·est.`):
   1. fundamentais completos da API → caminho normal (v = empregados × salário);
   2. só cotação → `receita ≈ cap ÷ P/S (2,5)` → `lucro ≈ margem setorial × receita`

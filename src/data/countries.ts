@@ -573,3 +573,324 @@ export function getCountry(id: string | null): Country | null {
 export function fmtTri(t: number): string {
   return `$${t.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tri`
 }
+
+type CountryLang = 'pt' | 'en' | 'es'
+type FactionLocale = Pick<Faction, 'name' | 'thesis'>
+type CountryLocale = Pick<Country, 'name' | 'region' | 'profile'> & {
+  factions: FactionLocale[]
+  tmd?: TmdStats
+}
+
+const COUNTRY_I18N: Record<string, Record<'en' | 'es', CountryLocale>> = {
+  usa: {
+    en: { name: 'United States', region: 'North America', profile: 'Technology finance, military-industrial complex and the hegemonic dollar.', factions: [
+      { name: 'Bloc A — Neoliberal-Globalist', thesis: 'Globalized supply chains, ESG and software services; politically aligned with the Democratic Party.' },
+      { name: 'Bloc B — National-Industrial', thesis: 'Fossil energy, domestic reindustrialization and protectionist tariffs; politically aligned with the Republican Party.' },
+    ] },
+    es: { name: 'Estados Unidos', region: 'América del Norte', profile: 'Finanzas tecnológicas, complejo militar-industrial y dólar hegemónico.', factions: [
+      { name: 'Bloque A — Neoliberal-globalista', thesis: 'Cadenas globalizadas, ESG y servicios de software; alineamiento político con el Partido Demócrata.' },
+      { name: 'Bloque B — Nacional-industrial', thesis: 'Energía fósil, reindustrialización doméstica y aranceles proteccionistas; alineamiento político con el Partido Republicano.' },
+    ] },
+  },
+  eu: {
+    en: { name: 'European Union', region: 'Europe', profile: 'Export manufacturing (Germany) and financial services (France/Luxembourg).', factions: [
+      { name: 'German Export Core', thesis: 'Trade surpluses through capital-intensive manufacturing, dependent on external demand and relatively cheap energy.' },
+      { name: 'Franco-Parisian Services Complex', thesis: 'Financial and pharmaceutical rentier interests pressing for deeper capital-market integration.' },
+    ] },
+    es: { name: 'Unión Europea', region: 'Europa', profile: 'Industria exportadora (Alemania) y servicios financieros (Francia/Luxemburgo).', factions: [
+      { name: 'Núcleo exportador alemán', thesis: 'Superávits comerciales mediante manufactura intensiva en capital, dependiente de demanda externa y energía relativamente barata.' },
+      { name: 'Complejo franco-parisino de servicios', thesis: 'Intereses rentistas financieros y farmacéuticos que presionan por una mayor integración de mercados de capital.' },
+    ] },
+  },
+  china: {
+    en: { name: 'China', region: 'East Asia', profile: 'Large-scale state capital, infrastructure manufacturing and export technology.', factions: [
+      { name: 'State-SOE Bloc', thesis: 'Five-year planning, directed credit, infrastructure and energy form the backbone of the party-state economy.' },
+      { name: 'Coastal Private Tech', thesis: 'Platforms and semiconductors operate under state oversight, balancing innovation with political control.' },
+    ] },
+    es: { name: 'China', region: 'Asia Oriental', profile: 'Capital estatal a gran escala, manufactura de infraestructura y tecnología exportadora.', factions: [
+      { name: 'Bloque estatal-SOE', thesis: 'Planificación quinquenal, crédito dirigido, infraestructura y energía forman la columna vertebral de la economía partido-Estado.' },
+      { name: 'Tecnología privada costera', thesis: 'Plataformas y semiconductores bajo supervisión estatal, con tensión entre innovación y control político.' },
+    ] },
+  },
+  india: {
+    en: { name: 'India', region: 'South Asia', profile: 'IT services, family industrial conglomerates and domestic finance.', factions: [
+      { name: 'Family Conglomerates', thesis: 'Vertical diversification across ports, energy and media, with strong proximity to the state.' },
+      { name: 'Global IT Services', thesis: 'Exports relatively low-cost skilled labor through outsourcing and integrates with Anglo-American corporate circuits.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Services + agrarian periphery · subcontracted into the Anglo-American circuit',
+      superexploracao: 'IT outsourcing pays engineers a fraction of U.S. costs while massive informal agricultural and urban work remains below a fully secure reproduction standard.',
+      trocaDesigual: 'Exports labor-intensive services and commodities while importing technology-intensive capital goods and defense equipment, leaving a structural technology gap with China and the West.',
+      vazaRendas: 'Profit repatriation by foreign technology and industrial firms plus external-debt service drains reserves accumulated through exports.',
+      gargaloCambial: 'The rupee is pressured during Fed tightening cycles; reserve defense can come at the cost of tighter domestic demand and essential imports.',
+    } },
+    es: { name: 'India', region: 'Asia Meridional', profile: 'Servicios de TI, conglomerados industriales familiares y finanzas domésticas.', factions: [
+      { name: 'Conglomerados familiares', thesis: 'Diversificación vertical en puertos, energía y medios, con fuerte proximidad al Estado.' },
+      { name: 'Servicios globales de TI', thesis: 'Exporta trabajo calificado de costo relativamente bajo mediante tercerización y se integra al circuito corporativo angloestadounidense.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Periferia de servicios + agro · subcontratada del circuito angloestadounidense',
+      superexploracao: 'La tercerización de TI paga a ingenieros una fracción del costo estadounidense, mientras el trabajo informal agrícola y urbano masivo permanece por debajo de un estándar seguro de reproducción.',
+      trocaDesigual: 'Exporta servicios intensivos en trabajo y commodities e importa bienes de capital tecnológicos y defensa, manteniendo una brecha tecnológica estructural con China y Occidente.',
+      vazaRendas: 'La repatriación de ganancias de tecnológicas e industriales extranjeras y el servicio de deuda externa drenan reservas acumuladas mediante exportaciones.',
+      gargaloCambial: 'La rupia sufre presión en ciclos de endurecimiento de la Fed; defender reservas puede exigir menor demanda doméstica y restricciones sobre importaciones esenciales.',
+    } },
+  },
+  jpn: {
+    en: { name: 'Japan', region: 'East Asia', profile: 'Industrial keiretsu, exporter of capital goods and gradual rearmament under the U.S. security umbrella.', factions: [
+      { name: 'Industrial Keiretsu', thesis: 'Vertically linked export conglomerates in autos, electronics and robotics, supported by cross-shareholding and group finance.' },
+      { name: 'Developmental State & Defense', thesis: 'Legacy METI bureaucracy plus accelerated rearmament aligned with China-containment strategy.' },
+    ] },
+    es: { name: 'Japón', region: 'Asia Oriental', profile: 'Keiretsu industriales, exportador de bienes de capital y rearme gradual bajo el paraguas de seguridad de EE. UU.', factions: [
+      { name: 'Keiretsu industriales', thesis: 'Conglomerados exportadores integrados en autos, electrónica y robótica, apoyados por participaciones cruzadas y finanzas de grupo.' },
+      { name: 'Estado desarrollista y defensa', thesis: 'Herencia burocrática del METI más rearme acelerado alineado con la estrategia de contención de China.' },
+    ] },
+  },
+  gbr: {
+    en: { name: 'United Kingdom', region: 'Western Europe', profile: 'The City of London as a global offshore financial center, declining North Sea fossil production and Atlanticist militarism.', factions: [
+      { name: 'City of London', thesis: 'Global rentier finance across FX, derivatives and associated offshore jurisdictions, with strong lobbying against post-Brexit regulation.' },
+      { name: 'Fossil Capital & Defense', thesis: 'BP/Shell and BAE connect North Sea energy and arms exports to Atlanticist geopolitical influence.' },
+    ] },
+    es: { name: 'Reino Unido', region: 'Europa Occidental', profile: 'La City de Londres como plaza financiera offshore global, fósiles del Mar del Norte en declive y militarismo atlantista.', factions: [
+      { name: 'City of London', thesis: 'Finanzas rentistas globales en divisas, derivados y jurisdicciones offshore asociadas, con fuerte lobby contra regulación pos-Brexit.' },
+      { name: 'Capital fósil y defensa', thesis: 'BP/Shell y BAE conectan energía del Mar del Norte y exportaciones de armas con influencia geopolítica atlantista.' },
+    ] },
+  },
+  kor: {
+    en: { name: 'South Korea', region: 'East Asia', profile: 'Vertically integrated chaebols in semiconductors, batteries and shipbuilding, economically tied to both the U.S. and China.', factions: [
+      { name: 'Chaebols', thesis: 'Samsung, Hyundai and SK are family-controlled conglomerates built with historical state support and export dominance.' },
+      { name: 'Semiconductors & Batteries Bloc', thesis: 'Memory/HBM and EV batteries face U.S. technology restrictions while remaining deeply exposed to Chinese demand.' },
+    ] },
+    es: { name: 'Corea del Sur', region: 'Asia Oriental', profile: 'Chaebols verticales en semiconductores, baterías y astilleros, vinculados económicamente tanto a EE. UU. como a China.', factions: [
+      { name: 'Chaebols', thesis: 'Samsung, Hyundai y SK son conglomerados familiares construidos con apoyo estatal histórico y dominio exportador.' },
+      { name: 'Bloque de semiconductores y baterías', thesis: 'Memoria/HBM y baterías de vehículos eléctricos enfrentan restricciones tecnológicas de EE. UU. y gran exposición a la demanda china.' },
+    ] },
+  },
+  can: {
+    en: { name: 'Canada', region: 'North America', profile: 'Resource extraction plus finance and real estate in an economy tightly integrated with the United States through USMCA.', factions: [
+      { name: 'Resource Capital', thesis: 'Oil sands, mining and agribusiness are deeply linked to U.S. ownership structures and markets.' },
+      { name: 'Finance & Real Estate', thesis: 'The Big Six banks and Brookfield connect mortgage finance and construction to a major non-oil growth engine.' },
+    ] },
+    es: { name: 'Canadá', region: 'América del Norte', profile: 'Extracción de recursos más finanzas e inmobiliario en una economía fuertemente integrada con EE. UU. por el T-MEC.', factions: [
+      { name: 'Capital de recursos', thesis: 'Arenas petrolíferas, minería y agronegocio están profundamente vinculados a estructuras de propiedad y mercados estadounidenses.' },
+      { name: 'Finanzas e inmobiliario', thesis: 'Los seis grandes bancos y Brookfield conectan hipotecas y construcción con un importante motor de crecimiento no petrolero.' },
+    ] },
+  },
+  aus: {
+    en: { name: 'Australia', region: 'Oceania', profile: 'Mineral superpower supplying iron ore and LNG to Chinese industry under a U.S.-centered security alliance.', factions: [
+      { name: 'Mining Capital', thesis: 'Iron ore exports to China create structural surpluses that survive recurring diplomatic tensions.' },
+      { name: 'Fossil / LNG Capital', thesis: 'One of the world’s largest LNG export sectors, with strong lobbying against stricter climate constraints.' },
+    ] },
+    es: { name: 'Australia', region: 'Oceanía', profile: 'Superpotencia mineral que suministra mineral de hierro y GNL a la industria china bajo una alianza de seguridad centrada en EE. UU.', factions: [
+      { name: 'Capital minero', thesis: 'Las exportaciones de mineral de hierro a China generan superávits estructurales que sobreviven a tensiones diplomáticas recurrentes.' },
+      { name: 'Capital fósil / GNL', thesis: 'Uno de los mayores sectores exportadores de GNL del mundo, con fuerte lobby contra restricciones climáticas más estrictas.' },
+    ] },
+  },
+  mex: {
+    en: { name: 'Mexico', region: 'North America', profile: 'Nearshoring maquila platform: lower-cost manufacturing for the U.S. market under USMCA.', factions: [
+      { name: 'Maquiladoras / Nearshoring', thesis: 'Foreign-owned automotive and electronics plants combine low domestic value added with compressed wages.' },
+      { name: 'Concentrated Telecom & Finance', thesis: 'Private monopolies inherited from privatization capture infrastructure rents and consumer-credit income.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Manufacturing-platform periphery · subcontracted to North American capital under USMCA',
+      superexploracao: 'Manufacturing wages around one eighth of U.S. levels sustain part of the nearshoring cost advantage alongside historically employer-friendly labor relations.',
+      trocaDesigual: 'Exports assembly with limited domestic content while importing machinery, inputs and basic foods, leaving technology and food-system dependence.',
+      vazaRendas: 'Parent-company profits, royalties and dollarized corporate debt payments transmit income outward and amplify Fed cycles.',
+      gargaloCambial: 'The peso can move sharply during global risk episodes, changing real wages in dollar terms and the price of imported inputs.',
+    } },
+    es: { name: 'México', region: 'América del Norte', profile: 'Plataforma maquiladora del nearshoring: manufactura de menor costo para el mercado estadounidense bajo el T-MEC.', factions: [
+      { name: 'Maquiladoras / Nearshoring', thesis: 'Plantas automotrices y electrónicas de capital extranjero combinan bajo valor agregado doméstico con salarios comprimidos.' },
+      { name: 'Telecom y finanzas concentradas', thesis: 'Monopolios privados heredados de las privatizaciones capturan rentas de infraestructura e ingresos de crédito al consumo.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Periferia de plataforma manufacturera · subcontratada del capital norteamericano bajo el T-MEC',
+      superexploracao: 'Salarios manufactureros cercanos a una octava parte de los estadounidenses sostienen parte de la ventaja de costos del nearshoring junto con relaciones laborales históricamente favorables al empleador.',
+      trocaDesigual: 'Exporta ensamblaje con contenido doméstico limitado e importa maquinaria, insumos y alimentos básicos, manteniendo dependencia tecnológica y alimentaria.',
+      vazaRendas: 'Ganancias de matrices, regalías y pagos de deuda corporativa dolarizada trasladan renta hacia fuera y amplifican los ciclos de la Fed.',
+      gargaloCambial: 'El peso puede moverse con fuerza en episodios globales de riesgo, modificando salarios reales en dólares y el precio de insumos importados.',
+    } },
+  },
+  sau: {
+    en: { name: 'Saudi Arabia', region: 'Middle East', profile: 'Petrodollar core: Aramco and the PIF recycle oil income into global assets.', factions: [
+      { name: 'State Petrodollar Bloc (Aramco/PIF)', thesis: 'State oil monopoly plus the Public Investment Fund use hydrocarbon income to acquire technology, infrastructure and global assets.' },
+      { name: 'Dynastic Real-Estate Holdings', thesis: 'Megaprojects and Gulf real estate absorb part of the oil surplus inside the region.' },
+    ] },
+    es: { name: 'Arabia Saudita', region: 'Oriente Medio', profile: 'Núcleo del petrodólar: Aramco y el PIF reciclan renta petrolera en activos globales.', factions: [
+      { name: 'Bloque estatal del petrodólar (Aramco/PIF)', thesis: 'El monopolio petrolero estatal y el Public Investment Fund usan renta de hidrocarburos para adquirir tecnología, infraestructura y activos globales.' },
+      { name: 'Holdings dinásticos inmobiliarios', thesis: 'Megaproyectos e inmobiliario del Golfo absorben internamente parte del excedente petrolero.' },
+    ] },
+  },
+  idn: {
+    en: { name: 'Indonesia', region: 'Southeast Asia', profile: 'BRICS+ member using nickel and coal to enter China-centered energy-transition chains through domestic-processing requirements.', factions: [
+      { name: 'Coal-Nickel Oligarchy', thesis: 'Coal magnates moved into battery nickel through joint ventures with Chinese capital in Halmahera and Sulawesi.' },
+      { name: 'Historic Conglomerates', thesis: 'Salim and Sinar Mas groups span agribusiness, palm oil and media, bridging political ties with Beijing and Washington.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Mineral semi-periphery of the energy transition · nickel under Chinese technological leadership',
+      superexploracao: 'Nickel mining and processing on island sites combines long shifts, chronic accidents and displaced communities in supply chains marketed as green.',
+      trocaDesigual: 'Exports processed nickel and coal while importing equipment and technology, leaving higher-value EV-chain knowledge outside the country.',
+      vazaRendas: 'Dividends from foreign joint ventures and project-finance debt service move part of the generated surplus abroad.',
+      gargaloCambial: 'The rupiah is sensitive to portfolio outflows; defending reserves can require bond sales and higher interest rates that slow domestic growth.',
+    } },
+    es: { name: 'Indonesia', region: 'Sudeste Asiático', profile: 'Miembro BRICS+ que usa níquel y carbón para entrar en cadenas de transición energética centradas en China mediante requisitos de procesamiento doméstico.', factions: [
+      { name: 'Oligarquía carbón-níquel', thesis: 'Magnates del carbón pasaron al níquel para baterías mediante joint ventures con capital chino en Halmahera y Sulawesi.' },
+      { name: 'Conglomerados históricos', thesis: 'Los grupos Salim y Sinar Mas abarcan agronegocio, aceite de palma y medios, conectando relaciones políticas con Pekín y Washington.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Semiperiferia mineral de la transición energética · níquel bajo liderazgo tecnológico chino',
+      superexploracao: 'La minería y el procesamiento de níquel en islas combinan jornadas largas, accidentes crónicos y comunidades desplazadas en cadenas comercializadas como verdes.',
+      trocaDesigual: 'Exporta níquel procesado y carbón e importa equipos y tecnología, dejando fuera del país conocimiento de mayor valor de la cadena EV.',
+      vazaRendas: 'Dividendos de joint ventures extranjeras y servicio de deuda de project finance trasladan al exterior parte del excedente generado.',
+      gargaloCambial: 'La rupia es sensible a salidas de cartera; defender reservas puede exigir ventas de bonos y tasas más altas que frenan el crecimiento doméstico.',
+    } },
+  },
+  twn: {
+    en: { name: 'Taiwan', region: 'East Asia', profile: 'The silicon shield: roughly 90% of the world’s leading-edge logic chips are tied to a territory at the center of U.S.-China rivalry.', factions: [
+      { name: 'TSMC-Centered Complex', thesis: 'The dominant foundry acts as an existential strategic asset: global supply chains cannot easily absorb disruption on the island.' },
+      { name: 'Export Electronics Assembly', thesis: 'EMS/OEM groups such as Foxconn organize major parts of the global assembly chain for Apple and other brands.' },
+    ] },
+    es: { name: 'Taiwán', region: 'Asia Oriental', profile: 'El escudo de silicio: cerca del 90% de la lógica de vanguardia mundial está vinculada a un territorio en el centro de la rivalidad EE. UU.-China.', factions: [
+      { name: 'Complejo centrado en TSMC', thesis: 'La foundry dominante funciona como activo estratégico existencial: las cadenas globales no pueden absorber fácilmente una interrupción en la isla.' },
+      { name: 'Ensamblaje electrónico exportador', thesis: 'Grupos EMS/OEM como Foxconn organizan grandes partes de la cadena global de ensamblaje de Apple y otras marcas.' },
+    ] },
+  },
+  tur: {
+    en: { name: 'Türkiye', region: 'Eurasia / NATO', profile: 'Construction and mid-tech industry between Europe and Asia, with a chronically inflationary lira.', factions: [
+      { name: 'Construction Conglomerates', thesis: 'Koç and Sabancı link public works, energy and auto parts to EU export markets.' },
+      { name: 'Anatolian Protectionist Capital', thesis: 'Government-aligned Anatolian firms combine state contracts, defense production and markets across Muslim-majority economies.' },
+    ] },
+    es: { name: 'Turquía', region: 'Eurasia / OTAN', profile: 'Construcción e industria de tecnología media entre Europa y Asia, con una lira crónicamente inflacionaria.', factions: [
+      { name: 'Conglomerados de construcción', thesis: 'Koç y Sabancı vinculan obras públicas, energía y autopartes con mercados de exportación de la UE.' },
+      { name: 'Capital proteccionista anatolio', thesis: 'Empresas anatolias alineadas con el gobierno combinan contratos estatales, producción de defensa y mercados en economías de mayoría musulmana.' },
+    ] },
+  },
+  zaf: {
+    en: { name: 'South Africa', region: 'Southern Africa', profile: 'BRICS+ · mineral-energy complex inherited from apartheid and extremely high structural unemployment.', factions: [
+      { name: 'Mineral-Energy Complex', thesis: 'Platinum, gold and coal groups inherited infrastructure built around segregated extraction and export.' },
+      { name: 'Anglophone Finance', thesis: 'Banks linked to London and Johannesburg manage the continent’s largest stock exchange and regional savings.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Mineral periphery · mineral-energy complex with historically racialized super-exploitation',
+      superexploracao: 'Very high unemployment and precarious migrant mine labor create a large reserve workforce that weakens wage bargaining in deep mining.',
+      trocaDesigual: 'Exports raw platinum, gold and coal while importing manufactures and refined fuels, leaving limited domestic processing.',
+      vazaRendas: 'Cross-listed parent companies remit dividends while high domestic energy costs and infrastructure burdens are socialized unevenly.',
+      gargaloCambial: 'The rand behaves as a high-beta emerging-market currency: global shocks can quickly pass into depreciation and imported inflation.',
+    } },
+    es: { name: 'Sudáfrica', region: 'África Austral', profile: 'BRICS+ · complejo mineral-energético heredado del apartheid y desempleo estructural extremadamente alto.', factions: [
+      { name: 'Complejo mineral-energético', thesis: 'Grupos de platino, oro y carbón heredaron infraestructura organizada alrededor de extracción segregada y exportación.' },
+      { name: 'Finanzas anglófonas', thesis: 'Bancos vinculados a Londres y Johannesburgo administran la mayor bolsa del continente y ahorro regional.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Periferia mineral · complejo mineral-energético con superexplotación históricamente racializada',
+      superexploracao: 'El desempleo muy alto y el trabajo minero migrante precario crean una gran reserva laboral que debilita la negociación salarial en la minería profunda.',
+      trocaDesigual: 'Exporta platino, oro y carbón en bruto e importa manufacturas y combustibles refinados, con procesamiento doméstico limitado.',
+      vazaRendas: 'Matrices con cotización cruzada remiten dividendos mientras costos energéticos e infraestructura se socializan de manera desigual.',
+      gargaloCambial: 'El rand funciona como moneda emergente de beta alta: shocks globales pueden transformarse rápidamente en depreciación e inflación importada.',
+    } },
+  },
+  are: {
+    en: { name: 'United Arab Emirates', region: 'Persian Gulf', profile: 'BRICS+ · re-export hub, ADNOC oil and a financial bridge between sanctioned and Western-centered capital circuits.', factions: [
+      { name: 'State Energy-Logistics Holdings', thesis: 'ADNOC, DP World and Emirates connect energy, ports, aviation and container trade from Hormuz to global markets.' },
+      { name: 'Dubai Real Estate & Finance', thesis: 'Free zones, gold and crypto create a liquidity interface between sanctioned blocs and the dollar system.' },
+    ] },
+    es: { name: 'Emiratos Árabes Unidos', region: 'Golfo Pérsico', profile: 'BRICS+ · hub de reexportación, petróleo de ADNOC y puente financiero entre circuitos sancionados y capital centrado en Occidente.', factions: [
+      { name: 'Holdings estatales de energía y logística', thesis: 'ADNOC, DP World y Emirates conectan energía, puertos, aviación y comercio de contenedores desde Ormuz hasta mercados globales.' },
+      { name: 'Inmobiliario y finanzas de Dubái', thesis: 'Zonas francas, oro y cripto crean una interfaz de liquidez entre bloques sancionados y el sistema del dólar.' },
+    ] },
+  },
+  irn: {
+    en: { name: 'Iran', region: 'West Asia', profile: 'BRICS+ · heavily sanctioned economy selling oil to China through shadow fleets and parallel state-linked networks.', factions: [
+      { name: 'Foundations (Bonyads)', thesis: 'Parafiscal-religious conglomerates control imports and heavy industry outside ordinary public-budget channels.' },
+      { name: 'Revolutionary Guard Conglomerates', thesis: 'IRGC-linked groups operate in construction, petrochemicals and fuel trade under a sanctions-driven war economy.' },
+    ] },
+    es: { name: 'Irán', region: 'Asia Occidental', profile: 'BRICS+ · economía fuertemente sancionada que vende petróleo a China mediante flotas fantasma y redes paralelas vinculadas al Estado.', factions: [
+      { name: 'Fundaciones (Bonyads)', thesis: 'Conglomerados parafiscales-religiosos controlan importaciones e industria pesada fuera de los canales presupuestarios ordinarios.' },
+      { name: 'Conglomerados de la Guardia Revolucionaria', thesis: 'Grupos ligados al IRGC operan en construcción, petroquímica y comercio de combustibles bajo una economía de guerra condicionada por sanciones.' },
+    ] },
+  },
+  russia: {
+    en: { name: 'Russia', region: 'Eurasia', profile: 'State-centered commodities and energy, defense industry and mining.', factions: [
+      { name: 'State Energy', thesis: 'Oil and gas rents are used as geopolitical power while flows are redirected from Europe toward Asia.' },
+      { name: 'Defense / Military-Industrial Complex', thesis: 'War production acts as a major demand engine and receives budget priority during conflict.' },
+    ] },
+    es: { name: 'Rusia', region: 'Eurasia', profile: 'Commodities y energía centradas en el Estado, industria de defensa y minería.', factions: [
+      { name: 'Energía estatal', thesis: 'Las rentas de petróleo y gas se usan como poder geopolítico mientras los flujos se redirigen de Europa hacia Asia.' },
+      { name: 'Complejo de defensa / militar-industrial', thesis: 'La producción bélica funciona como gran motor de demanda y recibe prioridad presupuestaria durante el conflicto.' },
+    ] },
+  },
+  brasil: {
+    en: { name: 'Brazil', region: 'South America', profile: 'Export-oriented agritech, concentrated finance and energy extraction led by Petrobras.', factions: [
+      { name: 'Agro-Export Bloc', thesis: 'Commodity exports to China and the U.S.; pushes for low export taxation and expansion of the agricultural frontier.' },
+      { name: 'Financial Bloc', thesis: 'Captures income through high interest rates and public-debt rollover, strengthening interest-bearing capital.' },
+      { name: 'State / Productive Bloc', thesis: 'Tension between privatization pressures and long-term strategic investment through state-linked productive capacity.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Extractive-agro-export periphery · associated and subordinated to dollar-centered imperial power',
+      superexploracao: 'Lower wages plus longer or more intense work compensate for unequal exchange and sustain commodity competitiveness. A reserve workforce of 92.1 million weakens labor bargaining power in this dataset.',
+      trocaDesigual: 'Exports low-value-added ore, grains and protein while importing manufactures, pharmaceuticals and technology. Industrial share fell from 27% (1985) to 11.3% (2020) of GDP in the series used here.',
+      vazaRendas: 'Profit and dividend remittances of R$195–294 bn/year plus royalties and foreign-currency debt service move domestically generated surplus abroad.',
+      gargaloCambial: 'Dependence on foreign currency for critical imports means Fed cycles and capital flight can drive depreciation, reduce real wages and cheapen local assets in foreign-currency terms.',
+    } },
+    es: { name: 'Brasil', region: 'América del Sur', profile: 'Agrotecnología exportadora, finanzas concentradas y extracción energética liderada por Petrobras.', factions: [
+      { name: 'Bloque agroexportador', thesis: 'Exporta commodities a China y EE. UU.; presiona por baja tributación de exportaciones y expansión de la frontera agrícola.' },
+      { name: 'Bloque financiero', thesis: 'Captura renta mediante tasas altas y refinanciamiento de la deuda pública, fortaleciendo el capital portador de interés.' },
+      { name: 'Bloque estatal / productivo', thesis: 'Tensión entre presiones privatizadoras e inversión estratégica de largo plazo mediante capacidad productiva vinculada al Estado.' },
+    ], tmd: {
+      posicaoNaHierarquia: 'Periferia extractivo-agroexportadora · asociada y subordinada al poder imperial centrado en el dólar',
+      superexploracao: 'Salarios menores junto con jornadas más largas o intensas compensan el intercambio desigual y sostienen competitividad de commodities. Una reserva laboral de 92,1 millones debilita el poder de negociación del trabajo en este conjunto de datos.',
+      trocaDesigual: 'Exporta mineral, granos y proteína de bajo valor agregado e importa manufacturas, fármacos y tecnología. La participación industrial cayó de 27% (1985) a 11,3% (2020) del PIB en la serie usada aquí.',
+      vazaRendas: 'Remesas de ganancias y dividendos de R$195–294 mil M/año más regalías y servicio de deuda en divisas trasladan al exterior excedente generado internamente.',
+      gargaloCambial: 'La dependencia de divisas para importaciones críticas hace que ciclos de la Fed y fuga de capitales puedan provocar depreciación, reducir salarios reales y abaratar activos locales medidos en moneda extranjera.',
+    } },
+  },
+}
+
+const FRACTION_I18N: Record<FractionKey, Record<'en' | 'es', { label: string; desc: string; simpleLabel: string; simpleDesc: string }>> = {
+  produtivo: {
+    en: { label: 'Productive Capital', desc: 'Industry, infrastructure, agriculture and manufacturing — passes through P.', simpleLabel: 'Factories and machinery', simpleDesc: 'Companies that make goods, build infrastructure and produce food.' },
+    es: { label: 'Capital productivo', desc: 'Industria, infraestructura, agro y manufactura — pasa por P.', simpleLabel: 'Fábricas y máquinas', simpleDesc: 'Empresas que producen bienes, construyen infraestructura y producen alimentos.' },
+  },
+  financeiro: {
+    en: { label: 'Financial Capital', desc: 'Banks, funds and interest-bearing capital (M—M′).', simpleLabel: 'Banks and interest', simpleDesc: 'Banks, funds, loans and investments that earn financial income.' },
+    es: { label: 'Capital financiero', desc: 'Bancos, fondos y capital portador de interés (M—M′).', simpleLabel: 'Bancos e intereses', simpleDesc: 'Bancos, fondos, préstamos e inversiones que reciben renta financiera.' },
+  },
+  comercial: {
+    en: { label: 'Commercial Capital', desc: 'Trade, logistics and retail — realizes value in M—C—M.', simpleLabel: 'Stores and trade', simpleDesc: 'Retail, logistics and foreign trade that move and sell goods.' },
+    es: { label: 'Capital comercial', desc: 'Comercio, logística y minoristas — realiza valor en M—C—M.', simpleLabel: 'Tiendas y comercio', simpleDesc: 'Venta, logística y comercio exterior que mueven y venden bienes.' },
+  },
+  ficticio: {
+    en: { label: 'Fictitious Capital', desc: 'Stocks, public debt and derivatives — claims on future income.', simpleLabel: 'Claims on future gains', simpleDesc: 'Financial assets whose price depends on income expected in the future.' },
+    es: { label: 'Capital ficticio', desc: 'Acciones, deuda pública y derivados — derechos sobre renta futura.', simpleLabel: 'Derechos sobre ganancias futuras', simpleDesc: 'Activos financieros cuyo precio depende de ingresos esperados en el futuro.' },
+  },
+  estatal: {
+    en: { label: 'State Capital', desc: 'SOEs and public infrastructure — general conditions for accumulation.', simpleLabel: 'Government and public companies', simpleDesc: 'Public companies and infrastructure funded or controlled by the state.' },
+    es: { label: 'Capital estatal', desc: 'Empresas estatales e infraestructura pública — condiciones generales de acumulación.', simpleLabel: 'Gobierno y empresas públicas', simpleDesc: 'Empresas públicas e infraestructura financiada o controlada por el Estado.' },
+  },
+}
+
+export function fractionMetaForLang(key: FractionKey, lang: CountryLang, simple = false) {
+  const base = FRACTION_META[key]
+  if (lang === 'pt') return base
+  const locale = FRACTION_I18N[key][lang]
+  return { ...base, label: simple ? locale.simpleLabel : locale.label, desc: simple ? locale.simpleDesc : locale.desc }
+}
+
+export function countryForLang(country: Country, lang: CountryLang): Country {
+  if (lang === 'pt') return country
+  const locale = COUNTRY_I18N[country.id]?.[lang]
+  if (!locale) return country
+  return {
+    ...country,
+    name: locale.name,
+    region: locale.region,
+    profile: locale.profile,
+    factions: country.factions.map((faction, index) => ({ ...faction, ...(locale.factions[index] ?? {}) })),
+    tmd: country.tmd && locale.tmd ? { ...country.tmd, ...locale.tmd } : country.tmd,
+    ilaese: country.ilaese
+      ? { ...country.ilaese, remessasLucros: lang === 'en' ? 'R$ 195–294 bn/year' : 'R$ 195–294 mil M/año' }
+      : undefined,
+  }
+}
+
+export function countriesForLang(lang: CountryLang): Country[] {
+  if (lang === 'pt') return COUNTRIES
+  return COUNTRIES.map((country) => countryForLang(country, lang))
+}
+
+export function fmtTriLang(t: number, lang: CountryLang): string {
+  if (lang === 'pt') return fmtTri(t)
+  const locale = lang === 'en' ? 'en-US' : 'es-ES'
+  const suffix = lang === 'en' ? 'tn' : 'bill.'
+  return `$${t.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${suffix}`
+}

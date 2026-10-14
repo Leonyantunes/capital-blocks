@@ -7,8 +7,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Globe3DCanvas, { type GlobeFocus } from './Globe3DCanvas'
 import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
-import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
-import { TOURES, getTour, stopColor, stopIsos } from '../../data/tours'
+import { FLOWS, TYPE_STYLE, flowForLang, flowTypeStyleForLang, flowsForLang, type FlowDef, type FlowType } from '../../data/flows'
+import { getTourForLang, stopColor, stopIsos, toursForLang } from '../../data/tours'
 import { distFromK } from '../../data/tour'
 import { NIVEIS, textoPorModo } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
@@ -34,15 +34,74 @@ const GLOBE_CONFLICTS: { id: 'semis' | 'energia' | 'reprimaria'; chip: string; t
   },
 ]
 
+type Lang = 'pt' | 'en' | 'es'
+
+function globeConflictsForLang(lang: Lang) {
+  if (lang === 'pt') return GLOBE_CONFLICTS
+  const locale = {
+    semis: {
+      en: { chip: 'Semiconductor War', title: 'U.S. × China — Semiconductor War', didatico: 'The United States restricts access to the most advanced chips and manufacturing equipment as part of its competition with China. TSMC produces more than 90% of the world’s leading-edge logic chips.', avancado: 'Export controls on the most advanced fixed capital in the semiconductor chain constrain Chinese technological upgrading while protecting strategic rents and production capacity.' },
+      es: { chip: 'Guerra de semiconductores', title: 'EE. UU. × China — Guerra de semiconductores', didatico: 'Estados Unidos restringe el acceso a chips y equipos de fabricación avanzados como parte de su competencia con China. TSMC produce más del 90% de la lógica de vanguardia mundial.', avancado: 'Los controles de exportación sobre el capital fijo más avanzado de la cadena limitan la modernización tecnológica china mientras protegen rentas estratégicas y capacidad productiva.' },
+    },
+    energia: {
+      en: { chip: 'Energy & Sanctions (RUS × EU)', title: 'Russia × NATO/EU — Energy and Sanctions', didatico: 'Sanctions and political rupture cut major pipeline links to Europe. Russian oil and gas shifted toward Asia while European industry faced more expensive alternative supplies.', avancado: 'Russian energy capital was redirected toward Asia while higher input costs affected European productive capital and reinforced relative deindustrialization pressure.' },
+      es: { chip: 'Energía y sanciones (RUS × UE)', title: 'Rusia × OTAN/UE — Energía y sanciones', didatico: 'Las sanciones y la ruptura política cortaron importantes conexiones por ductos con Europa. Petróleo y gas rusos se desviaron hacia Asia mientras la industria europea enfrentó suministros alternativos más caros.', avancado: 'El capital energético ruso fue redirigido hacia Asia mientras mayores costos de insumos afectaron el capital productivo europeo y reforzaron la presión de desindustrialización relativa.' },
+    },
+    reprimaria: {
+      en: { chip: 'Brazil’s Reprimarization', title: 'Brazil — Reprimarization & Reserve Army of Labor', didatico: 'Brazil became more dependent on grain and mineral exports while about 92 million people remain outside or at the edge of the labor market.', avancado: 'Regressive specialization plus a reserve workforce of 92.1 million reinforces structural labor super-exploitation and an extractive-export model.' },
+      es: { chip: 'Reprimarización de Brasil', title: 'Brasil — Reprimarización y ejército de reserva', didatico: 'Brasil pasó a depender más de exportaciones de granos y minerales mientras unos 92 millones de personas permanecen fuera o en el borde del mercado laboral.', avancado: 'La especialización regresiva más una reserva laboral de 92,1 millones refuerza la superexplotación estructural del trabajo y un modelo extractivo-exportador.' },
+    },
+  } as const
+  return GLOBE_CONFLICTS.map((conflict) => ({ ...conflict, ...locale[conflict.id][lang] }))
+}
+
+const GLOBE_UI = {
+  pt: {
+    details: 'Detalhes do fluxo', closeDetails: 'Fechar detalhes do fluxo', annualScale: 'escala anual do fluxo', sources: 'fontes',
+    eyebrow: 'Mapa 3D · Segunda versão', title: 'O planeta do capital em 3D', intro: 'O mesmo tabuleiro do mapa 2D — fluxos, blocos e guerras de capitais — sobre um globo vivo.', guide: 'Arraste para orbitar, scroll/pinch para zoom, clique num arco para voar até a rota, clique num país para abrir o bloco. Base do futuro tour 3D.', back2d: '← Mapa 2D', tour3d: '▶ Tour 3D', fullscreen: 'Tela cheia', fullscreenTitle: 'Ver o mapa 3D em tela cheia', panel: 'Painel', visual: 'Visual', closePanel: 'Fechar painel', flows: 'fluxos', flowRoute: 'roteiro 3D · clique voa até a rota',
+    radar: 'VARREDURA RADAR', active360: '360° ATIVO', shield: 'INTEGRIDADE DO ESCUDO', pointsMatrix: 'MATRIZ DE PONTOS', orbitHint: 'ARRASTE PARA ORBITAR · SCROLL PARA ZOOM · CLIQUE NUM ARCO = VOO + DETALHES · CLIQUE NUM PAÍS = BLOCO',
+    capitalFlows: 'FLUXOS DE CAPITAL', mappedBlocs: 'BLOCOS MAPEADOS', globePoints: 'PONTOS DO GLOBO', fpsNow: 'FPS AGORA', activeRoute: 'ROTA ATIVA · GIRO PAUSADO', releaseRoute: '✕ soltar rota e retomar o giro', clickArc: 'Clique num arco', clickArcRest: 'para voar até a rota e abrir o card — o giro pausa sozinho.', flowLayers: 'Camadas de fluxo', flowRoadmap: '☰ Roteiro de fluxos', howExplore: 'como explorar', explore: ['Arraste para orbitar · scroll/pinch para zoom', 'Passe o mouse nos países para ver nomes e fronteiras', 'Clique num país para abrir a anatomia do bloco', 'Use as guerras de blocos abaixo para acender frentes'],
+    globalTheme: '🌐 Tema Global', planetaryTheme: '(Tema Planetário)', customColor: 'Cor personalizada:', customColorAria: 'Cor personalizada do tema', regionalHighlight: '📍 Destaque Regional', bordersPoints: '(Fronteiras e Pontos)', selectedRegion: 'Região selecionada:', innerPointColor: 'Cor dos pontos internos:', bloom: '✨ Efeito Bloom', neonGlow: '(Brilho Neon)', intensity: 'Intensidade:', atmosphere: '🌫 Brilho da Atmosfera', glowColor: 'Cor do brilho:', glowAria: 'Brilho', automatic: 'auto', dynamics: '⚙ Dinâmica e Pontos', autoRotation: 'Rotação automática:', rotationSpeed: 'Velocidade de rotação:', flowSpeed: 'Velocidade dos fluxos:', pointSize: 'Tamanho dos pontos:', layers3d: '🛰 Camadas 3D', arcLayer: 'Arcos de fluxo', arrows: 'Setas de direção', borders: 'Fronteiras dos países', countryTip: 'Dica de país no hover', blocMarkers: 'Marcadores de blocos', labels: 'Rótulos', graticule: 'Grade (graticule)', stars: 'Estrelas', thematicLayer: '🌡 Camada temática do globo', theme: 'Tema', wages: 'Salários', deaths: 'Mortes', restore: '⟲ restaurar visual padrão', rotation: 'Giro',
+    step: 'passo', chooseTour: 'Escolher tour', previousStep: 'Passo anterior', endTour: 'Encerrar tour', goStep: 'Ir ao passo', next: 'próximo →', finish: 'finalizar ✓', toggleLayer: 'Ligar/desligar camada', footerHint: 'clique num arco = zoom + detalhes do fluxo · clique num país = anatomia do bloco', warsAria: 'Guerras de blocos no 3D', warsTitle: 'Guerras de blocos & proxy wars — no globo 3D',
+    levels: { simples: ['simples', 'Explicação direta'], didatico: ['didático', 'Leitura didática'], avancado: ['avançado', 'Leitura técnica'] } as const,
+    themes: { cyber: ['Ciano Matrix', 'Cyan Matrix'], quantum: ['Azul Quântico', 'Quantum Blue'], emerald: ['Verde Esmeralda', 'Emerald Tech'], nebula: ['Violeta Nebulosa', 'Nebula Violet'], solar: ['Ouro Solar', 'Solar Gold'], crimson: ['Núcleo Carmesim', 'Crimson Core'], hyper: ['Branco Híper', 'Hyper White'] } as Record<string, [string, string]>,
+    regions: { none: 'Nenhuma', brics: 'BRICS+ (10 membros)', china: 'China', usa: 'Estados Unidos', ue: 'União Europeia', sul: 'Sul Global (BRA+IND+ZAF)' } as Record<string, string>,
+  },
+  en: {
+    details: 'Flow details', closeDetails: 'Close flow details', annualScale: 'annual flow scale', sources: 'sources',
+    eyebrow: '3D Map · Second version', title: 'The planet of capital in 3D', intro: 'The same board as the 2D map — capital flows, blocs and capital conflicts — on a living globe.', guide: 'Drag to orbit, scroll/pinch to zoom, click an arc to fly to its route, and click a country to open its bloc. This is the base of the 3D guided tour.', back2d: '← 2D Map', tour3d: '▶ 3D Tour', fullscreen: 'Fullscreen', fullscreenTitle: 'View the 3D map fullscreen', panel: 'Panel', visual: 'Visual', closePanel: 'Close panel', flows: 'flows', flowRoute: '3D route guide · click to fly to a route',
+    radar: 'RADAR SCAN', active360: '360° ACTIVE', shield: 'SHIELD INTEGRITY', pointsMatrix: 'POINT MATRIX', orbitHint: 'DRAG TO ORBIT · SCROLL TO ZOOM · CLICK AN ARC = FLY + DETAILS · CLICK A COUNTRY = BLOC',
+    capitalFlows: 'CAPITAL FLOWS', mappedBlocs: 'MAPPED BLOCS', globePoints: 'GLOBE POINTS', fpsNow: 'FPS NOW', activeRoute: 'ACTIVE ROUTE · ROTATION PAUSED', releaseRoute: '✕ release route and resume rotation', clickArc: 'Click an arc', clickArcRest: 'to fly to the route and open its card — rotation pauses automatically.', flowLayers: 'Flow layers', flowRoadmap: '☰ Flow guide', howExplore: 'how to explore', explore: ['Drag to orbit · scroll/pinch to zoom', 'Hover countries to see names and borders', 'Click a country to open the bloc anatomy', 'Use the bloc conflicts below to light up fronts'],
+    globalTheme: '🌐 Global Theme', planetaryTheme: '(Planet Theme)', customColor: 'Custom color:', customColorAria: 'Custom theme color', regionalHighlight: '📍 Regional Highlight', bordersPoints: '(Borders and Points)', selectedRegion: 'Selected region:', innerPointColor: 'Internal point color:', bloom: '✨ Bloom Effect', neonGlow: '(Neon Glow)', intensity: 'Intensity:', atmosphere: '🌫 Atmosphere Glow', glowColor: 'Glow color:', glowAria: 'Glow', automatic: 'auto', dynamics: '⚙ Motion and Points', autoRotation: 'Auto rotation:', rotationSpeed: 'Rotation speed:', flowSpeed: 'Flow speed:', pointSize: 'Point size:', layers3d: '🛰 3D Layers', arcLayer: 'Flow arcs', arrows: 'Direction arrows', borders: 'Country borders', countryTip: 'Country hover hint', blocMarkers: 'Bloc markers', labels: 'Labels', graticule: 'Grid (graticule)', stars: 'Stars', thematicLayer: '🌡 Globe thematic layer', theme: 'Theme', wages: 'Wages', deaths: 'Deaths', restore: '⟲ restore default visual', rotation: 'Rotation',
+    step: 'step', chooseTour: 'Choose tour', previousStep: 'Previous step', endTour: 'End tour', goStep: 'Go to step', next: 'next →', finish: 'finish ✓', toggleLayer: 'Toggle layer', footerHint: 'click an arc = zoom + flow details · click a country = bloc anatomy', warsAria: 'Bloc conflicts in 3D', warsTitle: 'Bloc conflicts & proxy wars — on the 3D globe',
+    levels: { simples: ['simple', 'Direct explanation'], didatico: ['guided', 'Guided reading'], avancado: ['advanced', 'Technical reading'] } as const,
+    themes: { cyber: ['Cyan Matrix', 'Cyan Matrix'], quantum: ['Quantum Blue', 'Quantum Blue'], emerald: ['Emerald Green', 'Emerald Tech'], nebula: ['Nebula Violet', 'Nebula Violet'], solar: ['Solar Gold', 'Solar Gold'], crimson: ['Crimson Core', 'Crimson Core'], hyper: ['Hyper White', 'Hyper White'] } as Record<string, [string, string]>,
+    regions: { none: 'None', brics: 'BRICS+ (10 members)', china: 'China', usa: 'United States', ue: 'European Union', sul: 'Global South (BRA+IND+ZAF)' } as Record<string, string>,
+  },
+  es: {
+    details: 'Detalles del flujo', closeDetails: 'Cerrar detalles del flujo', annualScale: 'escala anual del flujo', sources: 'fuentes',
+    eyebrow: 'Mapa 3D · Segunda versión', title: 'El planeta del capital en 3D', intro: 'El mismo tablero del mapa 2D — flujos, bloques y conflictos de capital — sobre un globo vivo.', guide: 'Arrastra para orbitar, usa scroll/pinch para hacer zoom, haz clic en un arco para volar a la ruta y en un país para abrir el bloque. Esta es la base del tour 3D.', back2d: '← Mapa 2D', tour3d: '▶ Tour 3D', fullscreen: 'Pantalla completa', fullscreenTitle: 'Ver el mapa 3D en pantalla completa', panel: 'Panel', visual: 'Visual', closePanel: 'Cerrar panel', flows: 'flujos', flowRoute: 'guía 3D · clic para volar a una ruta',
+    radar: 'BARRIDO DE RADAR', active360: '360° ACTIVO', shield: 'INTEGRIDAD DEL ESCUDO', pointsMatrix: 'MATRIZ DE PUNTOS', orbitHint: 'ARRASTRA PARA ORBITAR · SCROLL PARA ZOOM · CLIC EN UN ARCO = VUELO + DETALLES · CLIC EN UN PAÍS = BLOQUE',
+    capitalFlows: 'FLUJOS DE CAPITAL', mappedBlocs: 'BLOQUES MAPEADOS', globePoints: 'PUNTOS DEL GLOBO', fpsNow: 'FPS AHORA', activeRoute: 'RUTA ACTIVA · GIRO PAUSADO', releaseRoute: '✕ soltar ruta y reanudar el giro', clickArc: 'Haz clic en un arco', clickArcRest: 'para volar a la ruta y abrir su tarjeta — el giro se pausa automáticamente.', flowLayers: 'Capas de flujo', flowRoadmap: '☰ Guía de flujos', howExplore: 'cómo explorar', explore: ['Arrastra para orbitar · scroll/pinch para zoom', 'Pasa el cursor sobre los países para ver nombres y fronteras', 'Haz clic en un país para abrir la anatomía del bloque', 'Usa los conflictos de bloques abajo para iluminar frentes'],
+    globalTheme: '🌐 Tema Global', planetaryTheme: '(Tema Planetario)', customColor: 'Color personalizado:', customColorAria: 'Color personalizado del tema', regionalHighlight: '📍 Resaltado regional', bordersPoints: '(Fronteras y Puntos)', selectedRegion: 'Región seleccionada:', innerPointColor: 'Color de los puntos internos:', bloom: '✨ Efecto Bloom', neonGlow: '(Brillo Neón)', intensity: 'Intensidad:', atmosphere: '🌫 Brillo de la Atmósfera', glowColor: 'Color del brillo:', glowAria: 'Brillo', automatic: 'auto', dynamics: '⚙ Dinámica y Puntos', autoRotation: 'Rotación automática:', rotationSpeed: 'Velocidad de rotación:', flowSpeed: 'Velocidad de los flujos:', pointSize: 'Tamaño de los puntos:', layers3d: '🛰 Capas 3D', arcLayer: 'Arcos de flujo', arrows: 'Flechas de dirección', borders: 'Fronteras de los países', countryTip: 'Información del país al pasar el cursor', blocMarkers: 'Marcadores de bloques', labels: 'Rótulos', graticule: 'Cuadrícula (graticule)', stars: 'Estrellas', thematicLayer: '🌡 Capa temática del globo', theme: 'Tema', wages: 'Salarios', deaths: 'Muertes', restore: '⟲ restaurar visual predeterminado', rotation: 'Giro',
+    step: 'paso', chooseTour: 'Elegir tour', previousStep: 'Paso anterior', endTour: 'Cerrar tour', goStep: 'Ir al paso', next: 'siguiente →', finish: 'finalizar ✓', toggleLayer: 'Activar/desactivar capa', footerHint: 'clic en un arco = zoom + detalles del flujo · clic en un país = anatomía del bloque', warsAria: 'Conflictos de bloques en 3D', warsTitle: 'Conflictos de bloques y proxy wars — en el globo 3D',
+    levels: { simples: ['simple', 'Explicación directa'], didatico: ['didáctico', 'Lectura didáctica'], avancado: ['avanzado', 'Lectura técnica'] } as const,
+    themes: { cyber: ['Cian Matrix', 'Cyan Matrix'], quantum: ['Azul Cuántico', 'Quantum Blue'], emerald: ['Verde Esmeralda', 'Emerald Tech'], nebula: ['Violeta Nebulosa', 'Nebula Violet'], solar: ['Oro Solar', 'Solar Gold'], crimson: ['Núcleo Carmesí', 'Crimson Core'], hyper: ['Blanco Híper', 'Hyper White'] } as Record<string, [string, string]>,
+    regions: { none: 'Ninguna', brics: 'BRICS+ (10 miembros)', china: 'China', usa: 'Estados Unidos', ue: 'Unión Europea', sul: 'Sur Global (BRA+IND+ZAF)' } as Record<string, string>,
+  },
+} as const
+
 function GlobeConflictChips() {
   const conflict = useApp((s) => s.conflict)
   const setConflict = useApp((s) => s.setConflict)
   const mode = useApp((s) => s.mode)
-  const active = GLOBE_CONFLICTS.find((c) => c.id === conflict) ?? null
+  const lang = useApp((s) => s.lang)
+  const conflicts = useMemo(() => globeConflictsForLang(lang), [lang])
+  const active = conflicts.find((c) => c.id === conflict) ?? null
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-1.5">
-        {GLOBE_CONFLICTS.map((c) => (
+        {conflicts.map((c) => (
           <button key={c.id} onClick={() => setConflict(conflict === c.id ? null : c.id)}
             className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
               conflict === c.id ? 'border-transparent text-onaccent' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
@@ -94,7 +153,10 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 /** Card do fluxo selecionado — mesma estética do globo (sem drawer lateral). */
 function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
   const mode = useApp((s) => s.mode)
-  const st = TYPE_STYLE[flow.type]
+  const lang = useApp((s) => s.lang)
+  const copy = GLOBE_UI[lang]
+  const localizedFlow = flowForLang(flow, lang)
+  const st = flowTypeStyleForLang(flow.type, lang)
   const codeOf = (id: string | [number, number], label?: string) => {
     if (typeof id === 'string') {
       const b = BLOCS.find((x) => x.id === id)
@@ -107,7 +169,7 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
   return (
     <div
       role="dialog"
-      aria-label="Detalhes do fluxo"
+      aria-label={copy.details}
       className="thin-scroll absolute bottom-14 left-1/2 z-30 max-h-[52%] w-[min(94%,580px)] -translate-x-1/2 overflow-y-auto rounded-xl border bg-[#060b16]/95 p-4 shadow-2xl backdrop-blur max-md:bottom-16 max-md:p-3"
       style={{ borderColor: `${st.color}88`, boxShadow: `0 0 36px ${st.color}33, 0 18px 50px rgba(0,0,0,.6)` }}
     >
@@ -121,11 +183,11 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
               {st.label.split('(')[0].trim()}
             </span>
           </div>
-          <div className="mt-1 text-sm font-bold text-zinc-100">{flow.titulo}</div>
+          <div className="mt-1 text-sm font-bold text-zinc-100">{localizedFlow.titulo}</div>
         </div>
         <button
           onClick={onClose}
-          aria-label="Fechar detalhes do fluxo"
+          aria-label={copy.closeDetails}
           className="shrink-0 rounded-md border border-zinc-700 px-2 py-1 text-[11px] text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-100"
         >
           ✕
@@ -135,12 +197,12 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
         className="mt-2.5 rounded-lg border p-2.5"
         style={{ borderColor: `${st.color}55`, background: `${st.color}0d` }}
       >
-        <div className="text-[9px] uppercase tracking-widest text-zinc-500">escala anual do fluxo</div>
-        <div className="font-mono text-xl font-extrabold" style={{ color: st.color }}>{flow.totalAnual}</div>
+        <div className="text-[9px] uppercase tracking-widest text-zinc-500">{copy.annualScale}</div>
+        <div className="font-mono text-xl font-extrabold" style={{ color: st.color }}>{localizedFlow.totalAnual}</div>
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, flow.did, flow.adv)}</p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, localizedFlow.did, localizedFlow.adv)}</p>
       <div className="mt-2.5 space-y-1.5">
-        {flow.itens.map((it) => (
+        {localizedFlow.itens.map((it) => (
           <div key={it.rotulo} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-[11px] font-semibold text-zinc-100">{it.rotulo}</span>
@@ -150,7 +212,7 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
           </div>
         ))}
       </div>
-      {flow.fonte && <p className="mt-2 font-mono text-[9px] leading-relaxed text-zinc-600">fontes: {flow.fonte}</p>}
+      {localizedFlow.fonte && <p className="mt-2 font-mono text-[9px] leading-relaxed text-zinc-600">{copy.sources}: {localizedFlow.fonte}</p>}
     </div>
   )
 }
@@ -161,6 +223,10 @@ export default function GlobeModule() {
   const conflict = useApp((s) => s.conflict)
   const setConflict = useApp((s) => s.setConflict)
   const mode = useApp((s) => s.mode)
+  const lang = useApp((s) => s.lang)
+  const sharedMap = useApp((s) => s.sharedMap)
+  const setSharedMap = useApp((s) => s.setSharedMap)
+  const copy = GLOBE_UI[lang]
 
   /* ── visual ── */
   const [themeId, setThemeId] = useState(() => localStorage.getItem('globe3d-theme') || 'quantum')
@@ -198,16 +264,19 @@ export default function GlobeModule() {
   const [regionOn, setRegionOn] = useState(true)
   const [highlightFill, setHighlightFill] = useState('#facc15')
 
-  /* ── dados (iguais ao 2D) ── */
+  /* ── dados (iguais ao 2D, sincronizados via sharedMap) ── */
   const [visibleLayers, setVisibleLayers] = useState<Record<FlowType, boolean>>({
     commodities: true, manufatura: true, drain: true, dollar: true, brics: true, fantasma: true,
   })
-  const [selFlow, setSelFlow] = useState<string | null>(null)
-  const [tourStep, setTourStep] = useState<number | null>(null)
+  const [selFlow, setSelFlow] = useState<string | null>(() => sharedMap.selFlow)
+  const [tourStep, setTourStep] = useState<number | null>(() => sharedMap.tourStep)
   /** tour temático ativo (base comum ao 2D e ao 3D) */
-  const [activeTourId, setActiveTourId] = useState('principal')
-  const STOPS = getTour(activeTourId).stops
-  const TOUR_ACCENT = getTour(activeTourId).accent
+  const [activeTourId, setActiveTourId] = useState(() => sharedMap.activeTourId ?? 'principal')
+  const localizedFlows = useMemo(() => flowsForLang(lang), [lang])
+  const localizedTours = useMemo(() => toursForLang(lang), [lang])
+  const activeTour = getTourForLang(activeTourId, lang)
+  const STOPS = activeTour.stops
+  const TOUR_ACCENT = activeTour.accent
   /* tours de guerra tingem o globo de vermelho (só enquanto o tour roda) */
   const warTheme = activeTourId.startsWith('guerra') && tourStep !== null
   const themeDot = warTheme ? '#f87171' : themeDotBase
@@ -236,7 +305,7 @@ export default function GlobeModule() {
     return []
   }, [conflict])
 
-  const selFlowObj = useMemo(() => FLOWS.find((f) => f.id === selFlow) ?? null, [selFlow])
+  const selFlowObj = useMemo(() => localizedFlows.find((f) => f.id === selFlow) ?? null, [localizedFlows, selFlow])
 
   /* países em destaque no globo: parada do tour (fluxo ou ISOs manuais) ou seleção manual */
   const spot = useMemo(() => {
@@ -325,6 +394,7 @@ export default function GlobeModule() {
     else flyTo(s.lng, s.lat, s.dist ?? distFromK(s.k), 0.55)
     setSelFlow(s.flowId ?? null)
     setConflict((s.conflict as typeof conflict) ?? null)
+    setSharedMap({ tourStep: i, activeTourId, selFlow: s.flowId ?? null })
   }
   const gotoTour = (i: number) => {
     setTourStep(i)
@@ -334,6 +404,7 @@ export default function GlobeModule() {
     setTourStep(null)
     setSelFlow(null)
     setConflict(null)
+    setSharedMap({ tourStep: null, selFlow: null })
     try {
       if (document.fullscreenElement) {
         const p = document.exitFullscreen() as Promise<void> | undefined
@@ -343,6 +414,48 @@ export default function GlobeModule() {
       /* nada */
     }
   }
+
+  /* Sincronização inicial com o 2D via sharedMap */
+  const initialSynced = useRef(false)
+  useEffect(() => {
+    if (initialSynced.current) return
+    initialSynced.current = true
+    if (sharedMap.tourStep !== null) {
+      applyTourStep(sharedMap.tourStep)
+    } else if (sharedMap.selFlow) {
+      flyToFlow(sharedMap.selFlow, 0.5)
+    } else if (sharedMap.lng !== -15 || sharedMap.lat !== 15 || sharedMap.k !== 1) {
+      flyTo(sharedMap.lng, sharedMap.lat, distFromK(sharedMap.k), 0.5)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /* Sincronização contínua de saída (2D ⇄ 3D) */
+  const hudRef = useRef(hud)
+  useEffect(() => { hudRef.current = hud }, [hud])
+  const selFlowRef = useRef(selFlow)
+  useEffect(() => { selFlowRef.current = selFlow }, [selFlow])
+  const tourStepRef = useRef(tourStep)
+  useEffect(() => { tourStepRef.current = tourStep }, [tourStep])
+  const activeTourIdRef = useRef(activeTourId)
+  useEffect(() => { activeTourIdRef.current = activeTourId }, [activeTourId])
+
+  const syncToShared = useCallback(() => {
+    setSharedMap({
+      lng: hudRef.current.lng,
+      lat: hudRef.current.lat,
+      selFlow: selFlowRef.current,
+      activeTourId: activeTourIdRef.current,
+      tourStep: tourStepRef.current,
+    })
+  }, [setSharedMap])
+
+  useEffect(() => {
+    return () => {
+      syncToShared()
+    }
+  }, [syncToShared])
+
   /* troca de tour temático com o tour aberto */
   useEffect(() => {
     if (tourStep !== null) applyTourStep(tourStep)
@@ -358,6 +471,7 @@ export default function GlobeModule() {
       return
     }
     setSelFlow(id)
+    setSharedMap({ selFlow: id })
     if (!id) return
     /* enquadra a rota inteira (robusto p/ rotas que cruzam o Pacífico) */
     flyToFlow(id, 0.5)
@@ -375,7 +489,7 @@ export default function GlobeModule() {
   }
 
   const fmt = (n: number, d = 0) =>
-    n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })
+    n.toLocaleString(lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
   const latStr = `${Math.abs(hud.lat).toFixed(0)}°${hud.lat >= 0 ? 'N' : 'S'}`
   const lngStr = `${Math.abs(hud.lng).toFixed(0)}°${hud.lng >= 0 ? 'E' : 'W'}`
 
@@ -386,45 +500,47 @@ export default function GlobeModule() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-300">
-              Mapa 3D · Segunda versão
+              {copy.eyebrow}
             </span>
             <span className="rounded border border-emerald-400/50 bg-emerald-400/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-emerald-300">
               ● BETA
             </span>
           </div>
           <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">
-            O planeta do capital em 3D
+            {copy.title}
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-            O mesmo tabuleiro do mapa 2D — fluxos, blocos e guerras de capitais — sobre um globo vivo.
-            Arraste para orbitar, scroll/pinch para zoom, clique num arco para voar até a rota, clique num país para abrir o bloco. Base do futuro tour 3D.
+            {copy.intro} {copy.guide}
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
           <button
-            onClick={() => setTab('home')}
+            onClick={() => {
+              syncToShared()
+              setTab('home')
+            }}
             className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition-colors hover:border-sky-400/60 hover:text-sky-300"
           >
-            ← Mapa 2D
+            {copy.back2d}
           </button>
           <button
             onClick={startTour}
             className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/20"
           >
-            ▶ Tour 3D
+            {copy.tour3d}
           </button>
           <button
             onClick={toggleFullscreen}
-            title="Ver o mapa 3D em tela cheia"
+            title={copy.fullscreenTitle}
             className="rounded-lg border border-sky-400/60 bg-sky-400/10 px-3 py-1.5 text-xs font-bold text-sky-300 transition-colors hover:bg-sky-400/20"
           >
-            ⛶ Tela cheia
+            ⛶ {copy.fullscreen}
           </button>
           <button
             onClick={() => { setPanelTab('info'); setPanelOpen((s) => !s) }}
             className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-bold text-zinc-300 lg:hidden"
           >
-            ⓘ Painel
+            ⓘ {copy.panel}
           </button>
         </div>
       </header>
@@ -480,10 +596,10 @@ export default function GlobeModule() {
         <div className="absolute right-3 top-3 z-20 hidden gap-1.5 md:flex">
           <button
             onClick={toggleFullscreen}
-            title="Ver o mapa 3D em tela cheia"
+            title={copy.fullscreenTitle}
             className="rounded-full border border-sky-400/70 bg-sky-400/15 px-3 py-1.5 font-mono text-[10px] font-bold tracking-wider text-sky-200 backdrop-blur transition-colors hover:bg-sky-400/25"
           >
-            ⛶ TELA CHEIA
+            ⛶ {copy.fullscreen.toUpperCase()}
           </button>
           <button
             onClick={() => setAutoRotate((s) => !s)}
@@ -491,13 +607,13 @@ export default function GlobeModule() {
               autoRotate ? 'border-zinc-600 bg-zinc-900/80 text-zinc-200' : 'border-zinc-700 bg-zinc-900/80 text-zinc-500'
             }`}
           >
-            {autoRotate ? '❚❚ GIRO' : '▶ GIRO'}
+            {autoRotate ? `❚❚ ${copy.rotation.toUpperCase()}` : `▶ ${copy.rotation.toUpperCase()}`}
           </button>
           <button
             onClick={() => setPanelOpen((s) => !s)}
             className="rounded-full border border-zinc-600 bg-zinc-900/80 px-3 py-1.5 font-mono text-[10px] font-bold tracking-wider text-zinc-200 backdrop-blur transition-colors hover:border-sky-400/60 hover:text-sky-200"
           >
-            ⓘ PAINEL
+            ⓘ {copy.panel.toUpperCase()}
           </button>
         </div>
 
@@ -512,7 +628,7 @@ export default function GlobeModule() {
               } hover:bg-zinc-800/80`}
             >
               <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
-              <span className="truncate text-zinc-300">{TYPE_STYLE[t].label}</span>
+              <span className="truncate text-zinc-300">{flowTypeStyleForLang(t, lang).label}</span>
             </button>
           ))}
           <div className="my-1 h-px bg-zinc-800" />
@@ -520,13 +636,13 @@ export default function GlobeModule() {
             onClick={() => setShowFlowList((s) => !s)}
             className="rounded-md border border-zinc-700 px-1.5 py-1 text-left text-[10px] font-semibold text-zinc-300 hover:border-sky-400/60 hover:text-sky-300"
           >
-            ☰ fluxos ({FLOWS.length})
+            ☰ {copy.flows} ({localizedFlows.length})
           </button>
           <button
             onClick={toggleFullscreen}
             className="rounded-md border border-zinc-700 px-1.5 py-1 text-left text-[10px] font-semibold text-zinc-300 hover:border-sky-400/60 hover:text-sky-300"
           >
-            ⛶ tela inteira
+            ⛶ {copy.fullscreen.toLowerCase()}
           </button>
         </div>
 
@@ -534,15 +650,15 @@ export default function GlobeModule() {
         {showFlowList && (
           <div className="thin-scroll absolute left-3 top-28 z-30 max-h-[62%] w-72 overflow-y-auto rounded-xl border border-zinc-800 bg-[#060b16]/95 p-2 shadow-2xl backdrop-blur md:left-52">
             <div className="flex items-center justify-between px-1 pb-1.5">
-              <span className="text-[9.5px] uppercase tracking-widest text-zinc-500">roteiro 3D · clique voa até a rota</span>
+              <span className="text-[9.5px] uppercase tracking-widest text-zinc-500">{copy.flowRoute}</span>
               <button onClick={() => setShowFlowList(false)} className="rounded border border-zinc-700 px-1.5 text-[10px] text-zinc-400">✕</button>
             </div>
             {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
               <div key={t} className="mb-2">
                 <div className="px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: TYPE_STYLE[t].color }}>
-                  {TYPE_STYLE[t].label}
+                  {flowTypeStyleForLang(t, lang).label}
                 </div>
-                {FLOWS.filter((f) => f.type === t).map((f) => (
+                {localizedFlows.filter((f) => f.type === t).map((f) => (
                   <button
                     key={f.id}
                     onClick={() => focusFlow(f.id)}
@@ -562,16 +678,16 @@ export default function GlobeModule() {
           <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-[#060b16]/85 px-2.5 py-1.5 backdrop-blur">
             <span className="inline-block h-8 w-8 rounded-full border border-sky-400/40" style={{ background: 'conic-gradient(from 0deg, rgba(56,189,248,.5), transparent 30%)' }} />
             <div className="font-mono text-[9px] leading-tight text-zinc-400">
-              <div>◉ VARREDURA RADAR: <b className="text-sky-300">360° ATIVO</b></div>
-              <div>○ INTEGRIDADE DO ESCUDO: <b className="text-emerald-300">100%</b></div>
-              <div>▦ MATRIZ DE PONTOS: <b className="text-zinc-100">{dotCount ? fmt(dotCount) : '…'} PTS</b></div>
+              <div>◉ {copy.radar}: <b className="text-sky-300">{copy.active360}</b></div>
+              <div>○ {copy.shield}: <b className="text-emerald-300">100%</b></div>
+              <div>▦ {copy.pointsMatrix}: <b className="text-zinc-100">{dotCount ? fmt(dotCount) : '…'} PTS</b></div>
             </div>
           </div>
         </div>
 
         {/* dica de controle */}
         <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap font-mono text-[9.5px] tracking-widest text-zinc-600 lg:block">
-          ARRASTE PARA ORBITAR · SCROLL PARA ZOOM · CLIQUE NUM ARCO = VOO + DETALHES · CLIQUE NUM PAÍS = BLOCO
+          {copy.orbitHint}
         </div>
 
         {/* ── painel visual (direita) ── */}
@@ -589,7 +705,7 @@ export default function GlobeModule() {
                 panelTab === 'info' ? 'bg-sky-400/20 text-sky-200' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              ⓘ PAINEL
+              ⓘ {copy.panel.toUpperCase()}
             </button>
             <button
               onClick={() => setPanelTab('visual')}
@@ -597,9 +713,9 @@ export default function GlobeModule() {
                 panelTab === 'visual' ? 'bg-sky-400/20 text-sky-200' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              ⚙ VISUAL
+              ⚙ {copy.visual.toUpperCase()}
             </button>
-            <button onClick={() => setPanelOpen(false)} aria-label="Fechar painel" className="ml-auto rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-100">✕</button>
+            <button onClick={() => setPanelOpen(false)} aria-label={copy.closePanel} className="ml-auto rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-100">✕</button>
           </div>
 
           {panelTab === 'info' ? (
@@ -607,10 +723,10 @@ export default function GlobeModule() {
               {/* sistema em números */}
               <div className="grid grid-cols-2 gap-1.5">
                 {[
-                  { k: 'FLUXOS DE CAPITAL', v: String(FLOWS.length), c: '#22d3ee' },
-                  { k: 'BLOCOS MAPEADOS', v: String(BLOCS.length), c: '#66bb6a' },
-                  { k: 'PONTOS DO GLOBO', v: dotCount ? fmt(dotCount) : '…', c: '#a855f7' },
-                  { k: 'FPS AGORA', v: String(hud.fps), c: '#34d399' },
+                  { k: copy.capitalFlows, v: String(localizedFlows.length), c: '#22d3ee' },
+                  { k: copy.mappedBlocs, v: String(BLOCS.length), c: '#66bb6a' },
+                  { k: copy.globePoints, v: dotCount ? fmt(dotCount) : '…', c: '#a855f7' },
+                  { k: copy.fpsNow, v: String(hud.fps), c: '#34d399' },
                 ].map((s) => (
                   <div key={s.k} className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5">
                     <div className="font-mono text-[8.5px] tracking-widest text-zinc-500">{s.k}</div>
@@ -625,7 +741,7 @@ export default function GlobeModule() {
                   className="mt-2 rounded-lg border p-2"
                   style={{ borderColor: `${TYPE_STYLE[selFlowObj.type].color}66`, background: `${TYPE_STYLE[selFlowObj.type].color}0d` }}
                 >
-                  <div className="font-mono text-[8.5px] tracking-widest text-zinc-500">ROTA ATIVA · GIRO PAUSADO</div>
+                  <div className="font-mono text-[8.5px] tracking-widest text-zinc-500">{copy.activeRoute}</div>
                   <div className="mt-0.5 text-[11.5px] font-bold leading-snug text-zinc-100">{selFlowObj.titulo}</div>
                   <div className="mt-0.5 font-mono text-[11px] font-bold" style={{ color: TYPE_STYLE[selFlowObj.type].color }}>
                     {selFlowObj.totalAnual}
@@ -634,20 +750,20 @@ export default function GlobeModule() {
                     onClick={() => setSelFlow(null)}
                     className="mt-1.5 w-full rounded-md border border-zinc-700 px-2 py-1 text-[10.5px] font-semibold text-zinc-300 hover:border-zinc-500 hover:text-zinc-100"
                   >
-                    ✕ soltar rota e retomar o giro
+                    {copy.releaseRoute}
                   </button>
                 </div>
               ) : (
                 <p className="mt-2 rounded-lg border border-dashed border-zinc-700 bg-zinc-950/40 p-2 text-[10.5px] leading-snug text-zinc-500">
-                  👆 <b className="text-zinc-300">Clique num arco</b> para voar até a rota e abrir o card — o giro pausa sozinho.
+                  👆 <b className="text-zinc-300">{copy.clickArc}</b> {copy.clickArcRest}
                 </p>
               )}
 
               {/* camadas */}
-              <div className="mt-2 text-[11px] font-semibold text-zinc-300">◈ Camadas de fluxo</div>
+              <div className="mt-2 text-[11px] font-semibold text-zinc-300">◈ {copy.flowLayers}</div>
               <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
                 {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
-                  <Row key={t} label={TYPE_STYLE[t].label}>
+                  <Row key={t} label={flowTypeStyleForLang(t, lang).label}>
                     <span className="inline-block h-2 w-2 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
                     <Toggle on={visibleLayers[t]} onClick={() => toggleLayer(t)} accent={TYPE_STYLE[t].color} />
                   </Row>
@@ -659,23 +775,20 @@ export default function GlobeModule() {
                   onClick={() => { setPanelOpen(false); setShowFlowList(true) }}
                   className="rounded-lg border border-zinc-700 px-2 py-1.5 text-[11px] font-semibold text-zinc-200 hover:border-sky-400/60 hover:text-sky-300"
                 >
-                  ☰ Roteiro de fluxos
+                  {copy.flowRoadmap}
                 </button>
                 <button
                   onClick={() => { setPanelOpen(false); startTour() }}
                   className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-2 py-1.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/20"
                 >
-                  ▶ Tour 3D
+                  {copy.tour3d}
                 </button>
               </div>
 
               <div className="mt-2 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">como explorar</div>
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{copy.howExplore}</div>
                 <ul className="space-y-1 text-[10.5px] leading-snug text-zinc-400">
-                  <li>🌍 <b className="text-zinc-200">Arraste</b> para orbitar · <b className="text-zinc-200">scroll/pinch</b> para zoom</li>
-                  <li>🖱️ <b className="text-zinc-200">Passe o mouse</b> nos países para ver nomes e fronteiras</li>
-                  <li>📍 <b className="text-zinc-200">Clique num país</b> para abrir a anatomia do bloco</li>
-                  <li>⚔️ Use as <b className="text-zinc-200">guerras de blocos</b> abaixo para acender frentes</li>
+                  {copy.explore.map((line, index) => <li key={line}>{['🌍', '🖱️', '📍', '⚔️'][index]} {line}</li>)}
                 </ul>
               </div>
             </>
@@ -684,7 +797,7 @@ export default function GlobeModule() {
 
           {/* tema */}
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-300">🌐 Tema Global <span className="text-zinc-500">(Tema Planetário)</span></span>
+            <span className="text-[11px] font-semibold text-zinc-300">{copy.globalTheme} <span className="text-zinc-500">{copy.planetaryTheme}</span></span>
             <span className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[9px] text-sky-300">{useCustom ? customHex.toUpperCase() : theme.hex}</span>
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -698,21 +811,21 @@ export default function GlobeModule() {
               >
                 <span className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-100">
                   <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: t.dot, boxShadow: `0 0 8px ${t.dot}` }} />
-                  {t.label}
+                  {(copy.themes[t.id] ?? [t.label, t.sub])[0]}
                 </span>
-                <span className="block pl-4 font-mono text-[9px] text-zinc-500">{t.sub}</span>
+                <span className="block pl-4 font-mono text-[9px] text-zinc-500">{(copy.themes[t.id] ?? [t.label, t.sub])[1]}</span>
               </button>
             ))}
           </div>
           <div className="mt-1.5 flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5">
-            <span className="text-[10.5px] text-zinc-400">Cor personalizada:</span>
+            <span className="text-[10.5px] text-zinc-400">{copy.customColor}</span>
             <span className="flex items-center gap-1.5">
               <input
                 type="color"
                 value={customHex}
                 onChange={(e) => { setCustomHex(e.target.value); setUseCustom(true) }}
                 className="h-6 w-8 cursor-pointer rounded border border-zinc-700 bg-transparent"
-                aria-label="Cor personalizada do tema"
+                aria-label={copy.customColorAria}
               />
               <span className="font-mono text-[9px] text-zinc-400">{customHex.toUpperCase()}</span>
             </span>
@@ -720,35 +833,35 @@ export default function GlobeModule() {
 
           {/* destaque regional */}
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-300">📍 Destaque Regional <span className="text-zinc-500">(Fronteiras e Pontos)</span></span>
+            <span className="text-[11px] font-semibold text-zinc-300">{copy.regionalHighlight} <span className="text-zinc-500">{copy.bordersPoints}</span></span>
             <Toggle on={regionOn} onClick={() => setRegionOn((s) => !s)} />
           </div>
           {regionOn && (
             <div className="mt-1 space-y-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
-              <Row label="Região selecionada:">
+              <Row label={copy.selectedRegion}>
                 <select
                   value={regionKey}
                   onChange={(e) => setRegionKey(e.target.value)}
                   className="max-w-[150px] cursor-pointer rounded-md border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[10.5px] text-zinc-200"
                 >
                   {Object.entries(REGION_SETS).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label}</option>
+                    <option key={k} value={k}>{copy.regions[k] ?? v.label}</option>
                   ))}
                 </select>
               </Row>
-              <Row label="Cor dos pontos internos:">
-                <input type="color" value={highlightFill} onChange={(e) => setHighlightFill(e.target.value)} className="h-6 w-8 cursor-pointer rounded border border-zinc-700 bg-transparent" aria-label="Cor dos pontos internos" />
+              <Row label={copy.innerPointColor}>
+                <input type="color" value={highlightFill} onChange={(e) => setHighlightFill(e.target.value)} className="h-6 w-8 cursor-pointer rounded border border-zinc-700 bg-transparent" aria-label={copy.innerPointColor} />
               </Row>
             </div>
           )}
 
           {/* bloom */}
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-300">✨ Efeito Bloom <span className="text-zinc-500">(Brilho Neon)</span></span>
+            <span className="text-[11px] font-semibold text-zinc-300">{copy.bloom} <span className="text-zinc-500">{copy.neonGlow}</span></span>
             <Toggle on={bloom} onClick={() => setBloom((s) => !s)} />
           </div>
           {bloom && (
-            <Row label="Intensidade:">
+            <Row label={copy.intensity}>
               <input type="range" min={0} max={2} step={0.1} value={bloomIntensity} onChange={(e) => setBloomIntensity(parseFloat(e.target.value))} className="w-28" />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{bloomIntensity.toFixed(1)}</span>
             </Row>
@@ -756,26 +869,26 @@ export default function GlobeModule() {
 
           {/* atmosfera */}
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-300">🌫 Brilho da Atmosfera</span>
+            <span className="text-[11px] font-semibold text-zinc-300">{copy.atmosphere}</span>
             <Toggle on={atmosphere} onClick={() => setAtmosphere((s) => !s)} />
           </div>
           {atmosphere && (
             <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
-              <Row label="Cor do brilho:">
+              <Row label={copy.glowColor}>
                 <span className="flex gap-1">
                   {GLOW_SWATCHES.map((c) => (
                     <button
                       key={c}
                       onClick={() => setGlowColor(c)}
-                      aria-label={`Brilho ${c}`}
+                      aria-label={`${copy.glowAria} ${c}`}
                       className="h-4 w-4 rounded-full border"
                       style={{ background: c, borderColor: (glowColor || themeGlow) === c ? '#fff' : 'transparent', boxShadow: `0 0 6px ${c}` }}
                     />
                   ))}
-                  <button onClick={() => setGlowColor('')} title="Automático (tema)" className="ml-1 font-mono text-[9px] text-zinc-500 underline">auto</button>
+                  <button onClick={() => setGlowColor('')} title={`${copy.automatic} (${copy.theme.toLowerCase()})`} className="ml-1 font-mono text-[9px] text-zinc-500 underline">{copy.automatic}</button>
                 </span>
               </Row>
-              <Row label="Intensidade:">
+              <Row label={copy.intensity}>
                 <input type="range" min={0.2} max={2.5} step={0.05} value={atmoIntensity} onChange={(e) => setAtmoIntensity(parseFloat(e.target.value))} className="w-28" />
                 <span className="w-7 font-mono text-[10px] text-zinc-300">{atmoIntensity.toFixed(2)}</span>
               </Row>
@@ -783,44 +896,44 @@ export default function GlobeModule() {
           )}
 
           {/* dinâmica */}
-          <div className="mt-3 text-[11px] font-semibold text-zinc-300">⚙ Dinâmica e Pontos</div>
+          <div className="mt-3 text-[11px] font-semibold text-zinc-300">{copy.dynamics}</div>
           <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
-            <Row label="Rotação automática:">
+            <Row label={copy.autoRotation}>
               <Toggle on={autoRotate} onClick={() => setAutoRotate((s) => !s)} />
             </Row>
-            <Row label="Velocidade de rotação:">
+            <Row label={copy.rotationSpeed}>
               <input type="range" min={0.1} max={3} step={0.1} value={rotateSpeed} onChange={(e) => setRotateSpeed(parseFloat(e.target.value))} className="w-28" />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{rotateSpeed.toFixed(1)}×</span>
             </Row>
-            <Row label="Velocidade dos fluxos:">
+            <Row label={copy.flowSpeed}>
               <input type="range" min={0.2} max={3} step={0.1} value={arcSpeed} onChange={(e) => setArcSpeed(parseFloat(e.target.value))} className="w-28" />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{arcSpeed.toFixed(1)}×</span>
             </Row>
-            <Row label="Tamanho dos pontos:">
+            <Row label={copy.pointSize}>
               <input type="range" min={0.006} max={0.022} step={0.001} value={dotSize} onChange={(e) => setDotSize(parseFloat(e.target.value))} className="w-28" />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{dotSize.toFixed(3)}</span>
             </Row>
           </div>
 
           {/* camadas */}
-          <div className="mt-3 text-[11px] font-semibold text-zinc-300">🛰 Camadas 3D</div>
+          <div className="mt-3 text-[11px] font-semibold text-zinc-300">{copy.layers3d}</div>
           <div className="mt-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-2">
-            <Row label="Arcos de fluxo"><Toggle on={showArcs} onClick={() => setShowArcs((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Setas de direção"><Toggle on={showArrows} onClick={() => setShowArrows((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Fronteiras dos países"><Toggle on={showBorders} onClick={() => setShowBorders((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Dica de país no hover"><Toggle on={showCountryTip} onClick={() => setShowCountryTip((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Marcadores de blocos"><Toggle on={showMarkers} onClick={() => setShowMarkers((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Rótulos"><Toggle on={showLabels} onClick={() => setShowLabels((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Grade (graticule)"><Toggle on={showGraticule} onClick={() => setShowGraticule((s) => !s)} accent="#22d3ee" /></Row>
-            <Row label="Estrelas"><Toggle on={showStars} onClick={() => setShowStars((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.arcLayer}><Toggle on={showArcs} onClick={() => setShowArcs((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.arrows}><Toggle on={showArrows} onClick={() => setShowArrows((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.borders}><Toggle on={showBorders} onClick={() => setShowBorders((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.countryTip}><Toggle on={showCountryTip} onClick={() => setShowCountryTip((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.blocMarkers}><Toggle on={showMarkers} onClick={() => setShowMarkers((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.labels}><Toggle on={showLabels} onClick={() => setShowLabels((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.graticule}><Toggle on={showGraticule} onClick={() => setShowGraticule((s) => !s)} accent="#22d3ee" /></Row>
+            <Row label={copy.stars}><Toggle on={showStars} onClick={() => setShowStars((s) => !s)} accent="#22d3ee" /></Row>
           </div>
 
-          <div className="mt-3 text-[11px] font-semibold text-zinc-300">🌡 Camada temática do globo</div>
+          <div className="mt-3 text-[11px] font-semibold text-zinc-300">{copy.thematicLayer}</div>
           <div className="mt-1 grid grid-cols-3 gap-1.5">
             {([
-              { k: 'none' as const, label: 'Tema' },
-              { k: 'wages' as const, label: 'Salários' },
-              { k: 'deaths' as const, label: 'Mortes' },
+              { k: 'none' as const, label: copy.theme },
+              { k: 'wages' as const, label: copy.wages },
+              { k: 'deaths' as const, label: copy.deaths },
             ]).map((opt) => (
               <button
                 key={opt.k}
@@ -844,7 +957,7 @@ export default function GlobeModule() {
             onClick={() => { pickTheme('quantum'); setGlowColor(''); setBloom(true); setBloomIntensity(1.2); setAtmoIntensity(1.15); setRotateSpeed(1); setArcSpeed(1.2); setDotSize(window.innerWidth < 768 ? 0.014 : 0.0115); setRegionKey('brics'); setRegionOn(true); setHighlightFill('#facc15'); setShowBorders(true); setShowCountryTip(true); setShowArrows(true); setBaseLayer('none') }}
             className="mt-3 w-full rounded-lg border border-zinc-700 px-3 py-1.5 text-[11px] font-semibold text-zinc-300 hover:border-sky-400/60 hover:text-sky-300"
           >
-            ⟲ restaurar visual padrão
+            {copy.restore}
           </button>
             </>
           )}
@@ -853,16 +966,16 @@ export default function GlobeModule() {
         {/* barra mobile */}
         <div className="absolute inset-x-2.5 bottom-2.5 z-20 flex items-stretch gap-1 rounded-xl border border-zinc-800 bg-[#060b16]/90 p-1 backdrop-blur md:hidden">
           <button onClick={() => { setPanelTab('info'); setPanelOpen((s) => !s) }} className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold ${panelOpen ? 'bg-sky-400/15 text-sky-300' : 'text-zinc-300'}`}>
-            <span className="text-base leading-none">ⓘ</span>Painel
+            <span className="text-base leading-none">ⓘ</span>{copy.panel}
           </button>
           <button onClick={() => setShowFlowList((s) => !s)} className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold text-zinc-300">
-            <span className="text-base leading-none">☰</span>Fluxos
+            <span className="text-base leading-none">☰</span>{copy.flows}
           </button>
           <button onClick={startTour} className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold text-emerald-300">
             <span className="text-base leading-none">▶</span>Tour
           </button>
           <button onClick={() => setAutoRotate((s) => !s)} className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg py-1.5 text-[9px] font-semibold text-zinc-300">
-            <span className="text-base leading-none">{autoRotate ? '❚❚' : '▶'}</span>Giro
+            <span className="text-base leading-none">{autoRotate ? '❚❚' : '▶'}</span>{copy.rotation}
           </button>
           <button onClick={toggleFullscreen} className="flex flex-1 items-center justify-center rounded-lg text-base text-zinc-300">⛶</button>
         </div>
@@ -870,7 +983,7 @@ export default function GlobeModule() {
         {/* tour 3D — mesmo tour do 2D; o modo global alterna simples/completa */}
         {tourStep !== null && STOPS[tourStep] && (() => {
           const s = STOPS[tourStep]
-          const tour = getTour(activeTourId)
+          const tour = activeTour
           const A = tour.accent
           const setMode = useApp.getState().setMode
           return (
@@ -879,29 +992,29 @@ export default function GlobeModule() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
-                    <span>{s.chapter} · passo {tourStep + 1}/{STOPS.length}</span>
+                    <span>{s.chapter} · {copy.step} {tourStep + 1}/{STOPS.length}</span>
                     <span className="inline-flex overflow-hidden rounded border border-zinc-700">
                       {NIVEIS.map((n) => (
-                        <button key={n.id} onClick={() => setMode(n.id)} title={n.descricao}
+                        <button key={n.id} onClick={() => setMode(n.id)} title={copy.levels[n.id][1]}
                           className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === n.id ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
                           style={mode === n.id ? { background: A } : undefined}>
-                          {n.rotulo.toLowerCase()}
+                          {copy.levels[n.id][0]}
                         </button>
                       ))}
                     </span>
                   </div>
                   <div className="mt-0.5 text-sm font-bold text-zinc-100">{s.titulo}</div>
                   <select value={activeTourId} onChange={(e) => { setActiveTourId(e.target.value); setTourStep(0) }}
-                    title="Escolher tour" aria-label="Escolher tour"
+                    title={copy.chooseTour} aria-label={copy.chooseTour}
                     className="mt-1.5 max-w-full cursor-pointer truncate rounded-md border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[10.5px] font-semibold text-zinc-200 outline-none hover:border-zinc-500">
-                    {TOURES.map((td) => (
+                    {localizedTours.map((td) => (
                       <option key={td.id} value={td.id}>{td.titulo}</option>
                     ))}
                   </select>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => gotoTour(Math.max(0, tourStep - 1))} aria-label="Passo anterior" className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">←</button>
-                  <button onClick={endTour} aria-label="Encerrar tour" className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">✕</button>
+                  <button onClick={() => gotoTour(Math.max(0, tourStep - 1))} aria-label={copy.previousStep} className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">←</button>
+                  <button onClick={endTour} aria-label={copy.endTour} className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">✕</button>
                 </div>
               </div>
               {mode !== 'avancado' ? (
@@ -926,7 +1039,7 @@ export default function GlobeModule() {
               <div className="mt-2.5 flex items-center justify-between gap-2">
                 <div className="flex max-w-[55%] flex-wrap items-center gap-1 overflow-hidden">
                   {STOPS.map((st, i) => (
-                    <button key={st.id} onClick={() => gotoTour(i)} title={st.titulo} aria-label={`Ir ao passo ${i + 1}`}
+                    <button key={st.id} onClick={() => gotoTour(i)} title={st.titulo} aria-label={`${copy.goStep} ${i + 1}`}
                       className={`h-1.5 shrink-0 rounded-full transition-all ${i === tourStep ? 'w-5' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'}`}
                       style={i === tourStep ? { background: A } : undefined} />
                   ))}
@@ -936,7 +1049,7 @@ export default function GlobeModule() {
                   className="rounded border px-3 py-1 text-[11px] font-bold hover:bg-white/5 max-md:px-4 max-md:py-2"
                   style={{ borderColor: `${A}99`, color: A }}
                 >
-                  {tourStep < STOPS.length - 1 ? 'próximo →' : 'finalizar ✓'}
+                  {tourStep < STOPS.length - 1 ? copy.next : copy.finish}
                 </button>
               </div>
               {tourStep === STOPS.length - 1 && (
@@ -959,20 +1072,20 @@ export default function GlobeModule() {
       {/* legenda + conflitos */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5">
         {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
-          <button key={t} onClick={() => toggleLayer(t)} title="Ligar/desligar camada"
+          <button key={t} onClick={() => toggleLayer(t)} title={copy.toggleLayer}
             className={`inline-flex items-center gap-1.5 text-[10.5px] ${visibleLayers[t] ? 'text-zinc-300' : 'text-zinc-600 line-through'}`}>
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
-            {TYPE_STYLE[t].label}
+            {flowTypeStyleForLang(t, lang).label}
           </button>
         ))}
         <span className="ml-auto hidden text-[10px] text-zinc-600 xl:inline">
-          clique num arco = zoom + detalhes do fluxo · clique num país = anatomia do bloco
+          {copy.footerHint}
         </span>
       </div>
 
-      <section aria-label="Guerras de blocos no 3D">
+      <section aria-label={copy.warsAria}>
         <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-          Guerras de blocos & proxy wars — no globo 3D
+          {copy.warsTitle}
         </h3>
         <GlobeConflictChips />
       </section>

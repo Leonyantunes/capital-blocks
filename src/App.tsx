@@ -2,8 +2,9 @@ import { Suspense, lazy, useEffect } from 'react'
 import { AnimatePresence, LazyMotion, domAnimation, m } from 'framer-motion'
 import Navbar from './components/Navbar'
 import { useApp } from './store/useApp'
-import { t } from './i18n'
+import { pick, t, type Lang } from './i18n'
 import ErrorBoundary from './components/ErrorBoundary'
+import LessonGuideBar from './components/ui/LessonGuideBar'
 
 /**
  * Code-splitting por módulo: cada aba vira um chunk carregado sob demanda.
@@ -24,11 +25,13 @@ const SourcesModule = lazy(() => import('./components/sources/SourcesModule'))
 const SettingsModule = lazy(() => import('./components/SettingsModule'))
 const CountryDrawer = lazy(() => import('./components/CountryDrawer'))
 
-function ModuleFallback() {
+function ModuleFallback({ lang }: { lang: Lang }) {
   return (
     <div className="flex min-h-[50vh] items-center justify-center gap-3 text-zinc-500">
       <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-700 border-t-money" />
-      <span className="font-mono text-xs">carregando módulo…</span>
+      <span className="font-mono text-xs">
+        {pick(lang, 'carregando módulo…', 'loading module…', 'cargando módulo…')}
+      </span>
     </div>
   )
 }
@@ -58,7 +61,7 @@ export default function App() {
       <div className="flex min-h-full flex-col bg-zinc-950">
         <a href="#conteudo"
           className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[80] focus:rounded-lg focus:bg-money focus:px-3 focus:py-2 focus:text-xs focus:font-bold focus:text-onaccent">
-          Pular para o conteúdo
+          {pick(lang, 'Pular para o conteúdo', 'Skip to content', 'Saltar al contenido')}
         </a>
         <Navbar />
         <AnimatePresence mode="wait">
@@ -72,8 +75,9 @@ export default function App() {
             tabIndex={-1}
             className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 outline-none"
           >
-            <Suspense fallback={<ModuleFallback />}>
+            <Suspense fallback={<ModuleFallback lang={lang} />}>
               <ErrorBoundary>
+                <LessonGuideBar />
                 {tab === 'home' && <MapModule />}
                 {tab === 'globe3d' && <GlobeModule />}
                 {tab === 'circuit' && <CircuitModule />}

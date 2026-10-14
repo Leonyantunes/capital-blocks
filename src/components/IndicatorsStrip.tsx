@@ -1,4 +1,4 @@
-import { INDICATORS } from '../data/indicators'
+import { indicatorsForLang } from '../data/indicators'
 import Tip from './ui/Tip'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
@@ -6,16 +6,23 @@ import { textoPorModo } from '../lib/simples'
 /** Faixa de indicadores globais pesquisados (fontes primárias, três níveis de leitura). */
 export default function IndicatorsStrip() {
   const mode = useApp((s) => s.mode)
+  const lang = useApp((s) => s.lang)
+  const indicators = indicatorsForLang(lang)
+  const copy = lang === 'en'
+    ? { aria: 'Global indicators', title: 'Global indicators dashboard', hint: 'primary sources · hover to read', source: 'source' }
+    : lang === 'es'
+      ? { aria: 'Indicadores mundiales', title: 'Panel de indicadores mundiales', hint: 'fuentes primarias · pasa el cursor para leer', source: 'fuente' }
+      : { aria: 'Indicadores globais', title: 'Painel de indicadores globais', hint: 'fontes primárias · passe o mouse p/ ler', source: 'fonte' }
   return (
-    <section aria-label="Indicadores globais">
+    <section aria-label={copy.aria}>
       <div className="mb-1.5 flex items-baseline justify-between">
         <h3 className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-          Painel de indicadores globais
+          {copy.title}
         </h3>
-        <span className="text-[10px] text-zinc-600">fontes primárias · passe o mouse p/ ler</span>
+        <span className="text-[10px] text-zinc-600">{copy.hint}</span>
       </div>
       <div className="thin-scroll flex gap-3 overflow-x-auto pb-1">
-        {INDICATORS.map((ind) => (
+        {indicators.map((ind) => (
           <Tip key={ind.id} text={textoPorModo(mode, ind.didatico, ind.avancado)}>
             <article className="group w-60 shrink-0 cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-600">
               <div className="flex items-baseline justify-between gap-2">
@@ -31,7 +38,7 @@ export default function IndicatorsStrip() {
                 {ind.sourceUrl && (
                   <a href={ind.sourceUrl} target="_blank" rel="noreferrer"
                     className="underline decoration-dotted hover:text-money" onClick={(e) => e.stopPropagation()}>
-                    fonte ↗
+                    {copy.source} ↗
                   </a>
                 )}
               </div>

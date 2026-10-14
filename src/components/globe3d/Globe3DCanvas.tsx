@@ -9,11 +9,13 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { FLOWS, TYPE_STYLE, type FlowType } from '../../data/flows'
+import { FLOWS, TYPE_STYLE, flowForLang, type FlowType } from '../../data/flows'
 import { BLOCS, ISO_TO_BLOC, routeMidpoint } from '../../lib/world'
 import { WAGES, wageColor } from '../../data/wages'
 import { DISASTERS } from '../../data/disasters'
 import { buildLandMatrixAsync, findCountry, getBorderPositions, latLngToVec3, type LandMatrix } from './landPoints'
+import { pick } from '../../i18n'
+import { useApp } from '../../store/useApp'
 
 export interface GlobeVisualOpts {
   themeDot: string
@@ -109,6 +111,7 @@ const flowById: Record<string, (typeof FLOWS)[number]> = Object.fromEntries(
 )
 
 export default function Globe3DCanvas(props: Props) {
+  const lang = useApp((s) => s.lang)
   const containerRef = useRef<HTMLDivElement>(null)
   const labelsRef = useRef<HTMLDivElement>(null)
   const live = useRef(props)
@@ -139,7 +142,7 @@ export default function Globe3DCanvas(props: Props) {
     } catch {
       const fb = document.createElement('div')
       fb.className = 'globe3d-loading'
-      fb.textContent = 'WebGL indisponível neste dispositivo — use o Mapa 2D.'
+      fb.textContent = pick(lang, 'WebGL indisponível neste dispositivo — use o Mapa 2D.', 'WebGL is unavailable on this device — use the 2D Map.', 'WebGL no está disponible en este dispositivo — usa el Mapa 2D.')
       container.appendChild(fb)
       return
     }
@@ -440,7 +443,7 @@ export default function Globe3DCanvas(props: Props) {
     let disposed = false
     const loadingEl = document.createElement('div')
     loadingEl.className = 'globe3d-loading'
-    loadingEl.innerHTML = '<span class="globe3d-spin"></span><span>construindo matriz de pontos…</span>'
+    loadingEl.innerHTML = `<span class="globe3d-spin"></span><span>${pick(lang, 'construindo matriz de pontos…', 'building point matrix…', 'construyendo matriz de puntos…')}</span>`
     container.appendChild(loadingEl)
 
     const addDots = (matrix: LandMatrix) => {
@@ -984,8 +987,9 @@ export default function Globe3DCanvas(props: Props) {
       renderer.domElement.style.cursor = hit ? 'pointer' : 'grab'
       /* tooltip do arco: título + escala anual (só desktop com mouse fino) */
       if (finePointer && hitArc) {
-        const f = flowById[hitArc]
-        if (f) {
+        const raw = flowById[hitArc]
+        if (raw) {
+          const f = flowForLang(raw, lang)
           if (hoverIso !== null) {
             hoverIso = null
             recolorDots()
@@ -1419,8 +1423,10 @@ export default function Globe3DCanvas(props: Props) {
       tipEl.remove()
       labelsBox.innerHTML = ''
     }
+    // Recria apenas quando o idioma muda, para atualizar textos DOM criados
+    // imperativamente pelo renderer sem manter uma segunda árvore de labels.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lang])
 
   return (
     <div ref={containerRef} className="globe3d-host relative h-full w-full overflow-hidden">

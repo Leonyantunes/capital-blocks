@@ -14,3 +14,7 @@ Thumbs.db
 
 # cache de ferramentas locais (Hermes, agentes)
 .hermes/
+
+# arquivos compactados locais
+*.rar
+*.zip

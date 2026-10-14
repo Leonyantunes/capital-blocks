@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react'
 import {
   MAP_W, MAP_H, COUNTRY_FEATURES, GRATICULE_D, SPHERE_D, ISO_TO_BLOC, BLOCS, arcPath, project,
 } from '../../lib/world'
-import { WAR_EPOCHS, WAR_CONFLICTS, SUPPLIERS, type SupplierId } from '../../data/wars'
+import { WAR_EPOCHS, WAR_CONFLICTS, SUPPLIERS, warText, type SupplierId } from '../../data/wars'
+import { locale, pick } from '../../i18n'
+import { useApp } from '../../store/useApp'
 
 /**
  * MAPA "WAR ROOM" — mesma cartografia da Home (Natural Earth 110m),
@@ -27,8 +29,15 @@ export default function WarMap({
   onSelect: (id: string) => void
   selectedId: string | null
 }) {
+  const lang = useApp((s) => s.lang)
   const epoch = WAR_EPOCHS[epochIndex]
   const [hoverName, setHoverName] = useState<{ name: string; x: number; y: number } | null>(null)
+  const regionNames = useMemo(() => {
+    const DisplayNames = (Intl as unknown as {
+      DisplayNames?: new (locales: string[], options: { type: 'region' }) => { of(code: string): string | undefined }
+    }).DisplayNames
+    return DisplayNames ? new DisplayNames([locale(lang)], { type: 'region' }) : null
+  }, [lang])
 
   const conflicts = useMemo(
     () => WAR_CONFLICTS.filter((c) => c.epoch === epochIndex),
@@ -68,7 +77,7 @@ export default function WarMap({
               style={{ fill: color ? `${color}1a` : '#141a22', stroke: '#232c38', strokeWidth: 0.5 }}
               onPointerEnter={(e) => {
                 const r = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect()
-                setHoverName({ name: f.name, x: ((e.clientX - r.left) / r.width) * MAP_W, y: ((e.clientY - r.top) / r.height) * MAP_H })
+                setHoverName({ name: regionNames?.of(f.id) ?? f.name, x: ((e.clientX - r.left) / r.width) * MAP_W, y: ((e.clientY - r.top) / r.height) * MAP_H })
               }}
               onPointerLeave={() => setHoverName(null)}
             />
@@ -76,13 +85,13 @@ export default function WarMap({
         })}
       </g>
     ),
-    [],
+    [regionNames],
   )
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60">
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="h-auto w-full select-none"
-        role="img" aria-label={`Mapa de conflitos — época ${epoch.faixa}`}>
+        role="img" aria-label={`${pick(lang, 'Mapa de conflitos — época', 'Conflict map — era', 'Mapa de conflictos — época')} ${epoch.faixa}`}>
         <rect width={MAP_W} height={MAP_H} fill="#0d1117" />
 
         <g>
@@ -118,9 +127,9 @@ export default function WarMap({
                   strokeWidth={sel ? 3 : 1.8} />
                 <text x={x + 13} y={y + 4} fontSize="11" fontWeight="700"
                   fill={sel ? '#ffffff' : epoch.color} className="font-mono pointer-events-none">
-                  {c.curto}
+                  {warText(lang, c.curto)}
                 </text>
-                <title>{`${c.nome} · ${c.periodo} — clique para “quem lucra”`}</title>
+                <title>{`${warText(lang, c.nome)} · ${warText(lang, c.periodo)} — ${pick(lang, 'clique para “quem lucra”', 'click for “who profits”', 'haz clic para “quién gana”')}`}</title>
               </g>
             )
           })}
@@ -132,7 +141,7 @@ export default function WarMap({
             return (
               <g key={s.id} opacity={active ? 1 : 0.28}>
                 <rect x={x - 3.5} y={y - 3.5} width="7" height="7" fill="#ffc107" stroke="#0d1117" strokeWidth="0.8" />
-                <title>{`${s.nome} (${s.pais})${active ? ' → fornecendo nesta época' : ''}`}</title>
+                <title>{`${s.nome} (${warText(lang, s.pais)})${active ? pick(lang, ' → fornecendo nesta época', ' → supplying in this era', ' → suministrando en esta época') : ''}`}</title>
               </g>
             )
           })}
@@ -149,10 +158,10 @@ export default function WarMap({
 
       {/* legenda */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 px-4 py-2 text-[10px] text-zinc-500">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: epoch.color }} /> zona de conflito ({epoch.faixa})</span>
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 bg-money" /> matriz do complexo militar-industrial</span>
-        <span>linhas = fluxo de armas/dinheiro/logística</span>
-        <span className="ml-auto hidden md:inline">clique no nó para abrir o painel “quem lucra”</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: epoch.color }} /> {pick(lang, 'zona de conflito', 'conflict zone', 'zona de conflicto')} ({epoch.faixa})</span>
+        <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 bg-money" /> {pick(lang, 'matriz do complexo militar-industrial', 'military-industrial complex headquarters', 'sede del complejo militar-industrial')}</span>
+        <span>{pick(lang, 'linhas = fluxo de armas/dinheiro/logística', 'lines = flow of weapons/money/logistics', 'líneas = flujo de armas/dinero/logística')}</span>
+        <span className="ml-auto hidden md:inline">{pick(lang, 'clique no nó para abrir o painel “quem lucra”', 'click the node to open the “who profits” panel', 'haz clic en el nodo para abrir el panel “quién gana”')}</span>
       </div>
     </div>
   )

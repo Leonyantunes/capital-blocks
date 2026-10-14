@@ -190,3 +190,79 @@ export function quadPoint(d: string, t = 0.5): [number, number] {
   const u = 1 - t
   return [u * u * x1 + 2 * u * t * cx + t * t * x2, u * u * y1 + 2 * u * t * cy + t * t * y2]
 }
+
+export type DitRole = 'core' | 'semiperiphery' | 'periphery'
+
+export const DIT_META: Record<DitRole, { color: string; label: [pt: string, en: string, es: string] }> = {
+  core: {
+    color: '#ffc107',
+    label: ['Centro (Comando Financeiro & IP)', 'Core (Financial Command & IP)', 'Centro (Comando Financiero y PI)'],
+  },
+  semiperiphery: {
+    color: '#38bdf8',
+    label: ['Semiperiferia Industrial & Tecnológica', 'Industrial & Tech Semi-periphery', 'Semiperiferia Industrial y Tecnológica'],
+  },
+  periphery: {
+    color: '#ef5350',
+    label: ['Periferia Primário-Exportadora / Montagem', 'Primary-Export / Assembly Periphery', 'Periferia Primario-Exportadora / Ensamblaje'],
+  },
+}
+
+const CORE_ISOS = new Set([
+  '840', '124', '826', '276', '250', '380', '528', '056', '040', '756', '752', '578', '208', '246', '372', '442', '392', '036', '554',
+])
+const SEMIPERIPHERY_ISOS = new Set([
+  '156', '410', '158', '643', '356', '076', '484', '792', '710', '682', '784', '360', '458', '764', '616', '724', '620',
+])
+
+export function getDitRole(iso: string): DitRole {
+  if (CORE_ISOS.has(iso)) return 'core'
+  if (SEMIPERIPHERY_ISOS.has(iso)) return 'semiperiphery'
+  return 'periphery'
+}
+
+export interface ChokepointDef {
+  id: string
+  nome: [pt: string, en: string, es: string]
+  lngLat: [number, number]
+  fluxoGlobal: [pt: string, en: string, es: string]
+  risco: [pt: string, en: string, es: string]
+}
+
+export const GLOBAL_CHOKEPOINTS: ChokepointDef[] = [
+  {
+    id: 'hormuz',
+    nome: ['Estreito de Ormuz', 'Strait of Hormuz', 'Estrecho de Ormuz'],
+    lngLat: [56.25, 26.56],
+    fluxoGlobal: ['~20% do petróleo mundial', '~20% of world oil', '~20% del petróleo mundial'],
+    risco: ['Gargalo energético do Golfo Pérsico', 'Persian Gulf energy bottleneck', 'Cuello de botella energético del Golfo Pérsico'],
+  },
+  {
+    id: 'malacca',
+    nome: ['Estreito de Malaca', 'Strait of Malacca', 'Estrecho de Malaca'],
+    lngLat: [101.2, 2.5],
+    fluxoGlobal: ['~25% do comércio marítimo global', '~25% of global maritime trade', '~25% del comercio marítimo global'],
+    risco: ['Artéria energética e industrial da China/Ásia', 'China/Asia energy and industrial artery', 'Arteria energética e industrial de China/Asia'],
+  },
+  {
+    id: 'suez',
+    nome: ['Canal de Suez / Bab el-Mandeb', 'Suez Canal / Bab el-Mandeb', 'Canal de Suez / Bab el-Mandeb'],
+    lngLat: [32.55, 29.9],
+    fluxoGlobal: ['~12% do comércio global', '~12% of global trade', '~12% del comercio global'],
+    risco: ['Rota Ásia–Europa (desvios pelo Cabo elevam frete)', 'Asia–Europe route (Cape rerouting raises freight)', 'Ruta Asia–Europa (desvíos por el Cabo elevan fletes)'],
+  },
+  {
+    id: 'taiwan-strait',
+    nome: ['Estreito de Taiwan', 'Taiwan Strait', 'Estrecho de Taiwán'],
+    lngLat: [119.5, 24.5],
+    fluxoGlobal: ['~90% dos chips lógicos de ponta (TSMC)', '~90% of leading-edge logic chips (TSMC)', '~90% de los chips lógicos de vanguardia (TSMC)'],
+    risco: ['Epicentro da guerra tecnológica EUA × China', 'Epicenter of US × China tech war', 'Epicentro de la guerra tecnológica EE. UU. × China'],
+  },
+  {
+    id: 'panama',
+    nome: ['Canal do Panamá', 'Panama Canal', 'Canal de Panamá'],
+    lngLat: [-79.6, 9.1],
+    fluxoGlobal: ['~5% do comércio marítimo (EUA–Ásia)', '~5% of maritime trade (US–Asia)', '~5% del comercio marítimo (EE. UU.–Asia)'],
+    risco: ['Vulnerável a secas climáticas e disputas tarifárias', 'Vulnerable to climate droughts and tariff disputes', 'Vulnerable a sequías climáticas y disputas tarifarias'],
+  },
+]

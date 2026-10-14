@@ -1,5 +1,4 @@
-/** i18n LEVE — tradução do CHROME da interface (PT/EN/ES).
- *  O conteúdo dos módulos permanece em PT-BR (tradução integral = próxima fase).
+/** i18n LEVE — seleção reutilizável de texto da interface (PT/EN/ES).
  *  Uso: t(lang, 'chave') — cada entrada é [pt, en, es].
  *
  *  A NUMERAÇÃO DOS MÓDULOS NÃO VIVE AQUI: ela vem de `data/modules.ts`
@@ -9,8 +8,28 @@
 import { MODULES, modRef, type TabId } from './data/modules'
 
 export type Lang = 'pt' | 'en' | 'es'
+export type TriText = readonly [pt: string, en: string, es: string]
 
-const D: Record<string, [string, string, string]> = {
+export function langIndex(lang: Lang): 0 | 1 | 2 {
+  return lang === 'pt' ? 0 : lang === 'en' ? 1 : 2
+}
+
+/** Seleciona uma das três versões sem obrigar o texto a entrar no dicionário global. */
+export function pick(lang: Lang, pt: string, en: string, es: string): string {
+  return [pt, en, es][langIndex(lang)]
+}
+
+/** Variante útil quando a tradução já está armazenada como tupla. */
+export function pickTri(lang: Lang, value: TriText): string {
+  return value[langIndex(lang)]
+}
+
+/** Locale de apresentação para números, datas e horas da interface. */
+export function locale(lang: Lang): string {
+  return lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-ES'
+}
+
+const D: Record<string, TriText> = {
   mapa: ['Mapa', 'Map', 'Mapa'],
   circuito: ['Circuito', 'Circuit', 'Circuito'],
   guerra: ['Guerra', 'War', 'Guerra'],
@@ -90,7 +109,7 @@ const D: Record<string, [string, string, string]> = {
 
 export function t(lang: Lang, key: keyof typeof D): string {
   const e = D[key]
-  return e ? e[lang === 'pt' ? 0 : lang === 'en' ? 1 : 2] : key
+  return e ? e[langIndex(lang)] : key
 }
 
 /** Cabeçalhos dos módulos trilíngues (kicker + título). Corpo dos textos: PT-BR.
@@ -128,7 +147,7 @@ const KICKER_SUFFIX: Partial<Record<TabId, [string, string, string]>> = {
 
 /** Monta o kicker final: ex. "Módulo 04 · Moeda × Dívida" / "Home · Módulo 01". */
 function buildKicker(tab: TabId, lang: Lang): string {
-  const i = lang === 'pt' ? 0 : lang === 'en' ? 1 : 2
+  const i = langIndex(lang)
   const { num, shortTitle } = MODULES[tab]
   if (!num) return shortTitle
   const base = lang === 'en' ? `Module ${num}` : `Módulo ${num}`
@@ -141,7 +160,7 @@ function buildKicker(tab: TabId, lang: Lang): string {
 export function mt(lang: Lang, tab: string): { kicker: string; title: string } {
   /* `tab` chega de dados externos (?t=) e pode ser inválido — nunca quebrar a UI */
   const key = (tab in MODULES ? tab : 'home') as TabId
-  const i = lang === 'pt' ? 0 : lang === 'en' ? 1 : 2
+  const i = langIndex(lang)
   const titles = MOD_TITLES[key]
   return {
     kicker: buildKicker(key, lang),
