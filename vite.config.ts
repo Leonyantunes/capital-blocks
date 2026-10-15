@@ -21,6 +21,7 @@ export default defineConfig({
           'vendor-geo': ['d3-geo', 'topojson-client', 'world-atlas/countries-110m.json'],
           'vendor-three': ['three'],
           'vendor-graph': ['cytoscape', '3d-force-graph'],
+          'vendor-deck': ['@deck.gl/core', '@deck.gl/layers', '@deck.gl/react'],
         },
       },
     },

@@ -74,6 +74,8 @@ export default function SettingsModule() {
   const setPresentation = useApp((s) => s.setPresentation)
   const setLang = useApp((s) => s.setLang)
   const setTab = useApp((s) => s.setTab)
+  const mapRenderer = useApp((s) => s.mapRenderer)
+  const setMapRenderer = useApp((s) => s.setMapRenderer)
   const levelDescription = (id: UIMode) => {
     if (id === 'simples') return pick(lang,
       'Para quem está começando: palavras do dia a dia, sem fórmula.',
@@ -190,6 +192,41 @@ export default function SettingsModule() {
               'The 2D and 3D maps keep a dark canvas (an instrument with its own palette) in both themes.',
               'Los mapas 2D y 3D mantienen el lienzo oscuro (un instrumento con paleta propia) en ambos temas.')}
           </p>
+        </section>
+
+        {/* ── motor do mapa 2D ── */}
+        <section className="flex flex-col gap-2">
+          <SectionTitle>{pick(lang, 'Motor do Mapa 2D', '2D Map Engine', 'Motor del Mapa 2D')}</SectionTitle>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              {
+                id: 'svg' as const,
+                nome: pick(lang, '🍃 Mapa Vetorial SVG (Leve / Padrão)', '🍃 Lightweight SVG Map (Default)', '🍃 Mapa SVG Ligero (Predeterminado)'),
+                desc: pick(lang, 'Renderização SVG nativa direta pelo navegador. Máxima compatibilidade e zero consumo de GPU.', 'Native browser SVG rendering. Maximum compatibility and zero GPU load.', 'Renderización SVG nativa. Máxima compatibilidad y sin carga de GPU.')
+              },
+              {
+                id: 'gpu' as const,
+                nome: pick(lang, '⚡ GPU Deck.gl (60 FPS)', '⚡ GPU Deck.gl (60 FPS)', '⚡ GPU Deck.gl (60 FPS)'),
+                desc: pick(lang, 'Aceleração de hardware WebGL2 com arcos parabólicos 3D de alta densidade.', 'WebGL2 hardware acceleration with 3D parabolic arcs.', 'Aceleración por hardware WebGL2 con arcos parabólicos 3D.')
+              }
+            ].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setMapRenderer(m.id)}
+                aria-pressed={mapRenderer === m.id}
+                className={`rounded-xl border p-3.5 text-left transition-colors ${
+                  mapRenderer === m.id
+                    ? 'border-money/70 bg-money/10'
+                    : 'border-zinc-800 bg-zinc-900/60 hover:border-zinc-700'
+                }`}
+              >
+                <span className={`block text-xs font-bold ${mapRenderer === m.id ? 'text-money' : 'text-zinc-100'}`}>
+                  {m.nome}
+                </span>
+                <span className="mt-1 block text-[10px] leading-relaxed text-zinc-400">{m.desc}</span>
+              </button>
+            ))}
+          </div>
         </section>
 
         {/* ── idioma ── */}

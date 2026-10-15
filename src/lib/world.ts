@@ -12,7 +12,8 @@ export const MAP_W = 980
 export const MAP_H = 540
 
 const topo = topology as unknown as any
-const fc: any = feature(topo, topo.objects.countries)
+export const COUNTRIES_GEOJSON: any = feature(topo, topo.objects.countries)
+const fc = COUNTRIES_GEOJSON
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const projection = geoNaturalEarth1().fitExtent(

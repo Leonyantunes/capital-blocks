@@ -10,6 +10,8 @@ export type DisciplineLens = 'geral' | 'geografia' | 'historia' | 'economia'
 export type MapOverlayMode = 'padrao' | 'dit' | 'chokepoints'
 export type Theme = 'dark' | 'light'
 export type ConflictId = 'semis' | 'energia' | 'reprimaria' | null
+export type MapRenderer = 'svg' | 'gpu'
+const RENDERERS = ['svg', 'gpu'] as const
 
 /** Estado de sessão compartilhado entre MapWorld (2D) e GlobeModule (3D) */
 export interface SharedMapSession {
@@ -88,6 +90,10 @@ interface AppState {
   /** Idioma do chrome da UI */
   lang: Lang
   setLang: (l: Lang) => void
+
+  /** Motor de renderização do mapa: svg (leve, backup) ou gpu (Deck.gl WebGL2) */
+  mapRenderer: MapRenderer
+  setMapRenderer: (r: MapRenderer) => void
 }
 
 function initialTab(): TabId {
@@ -118,6 +124,7 @@ interface PersistedState {
   theme: Theme
   showRefs: boolean
   lang: Lang
+  mapRenderer: MapRenderer
 }
 
 function sanitize(persisted: unknown): Partial<PersistedState> {
@@ -133,6 +140,7 @@ function sanitize(persisted: unknown): Partial<PersistedState> {
     theme: oneOf(p.theme, ['dark', 'light'] as const, 'dark'),
     showRefs: bool(p.showRefs, false),
     lang: oneOf(p.lang, LANGS, 'pt'),
+    mapRenderer: oneOf(p.mapRenderer, RENDERERS, 'svg'),
   }
 }
 
@@ -197,6 +205,9 @@ export const useApp = create<AppState>()(
 
       lang: 'pt',
       setLang: (lang) => set({ lang }),
+
+      mapRenderer: 'svg',
+      setMapRenderer: (mapRenderer) => set({ mapRenderer }),
     }),
     {
       name: 'cb.app.v1',
@@ -213,6 +224,7 @@ export const useApp = create<AppState>()(
         theme: s.theme,
         showRefs: s.showRefs,
         lang: s.lang,
+        mapRenderer: s.mapRenderer,
       }),
       merge: (persisted, current) => ({ ...current, ...sanitize(persisted) }),
     },

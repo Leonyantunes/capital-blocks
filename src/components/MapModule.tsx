@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import MapWorld, { ConflictSelector } from './MapWorld'
 import IndicatorsStrip from './IndicatorsStrip'
 import WorldWealthPanel from './WorldWealthPanel'
@@ -6,6 +7,8 @@ import { StackedBar } from './DonutChart'
 import ModeBadge from './ui/ModeBadge'
 import { useApp } from '../store/useApp'
 import { modRef } from '../data/modules'
+
+const GpuFlowMap = lazy(() => import('./map/GpuFlowMap'))
 
 /** Segmentos da rosca com os rótulos do nível de leitura atual. */
 function useSegmentsOf() {
@@ -23,6 +26,8 @@ export default function MapModule() {
   const basis = useApp((s) => s.basis)
   const setBasis = useApp((s) => s.setBasis)
   const openCountry = useApp((s) => s.openCountry)
+  const mapRenderer = useApp((s) => s.mapRenderer)
+  const setMapRenderer = useApp((s) => s.setMapRenderer)
   const lang = useApp((s) => s.lang)
   const segmentsOf = useSegmentsOf()
   const countries = countriesForLang(lang)
@@ -83,19 +88,60 @@ export default function MapModule() {
             {copy.intro}
           </p>
         </div>
-        <div className="inline-flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-          {(['nominal', 'ppp'] as const).map((b) => (
-            <button key={b} onClick={() => setBasis(b)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                basis === b ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
-              }`}>
-              {b === 'nominal' ? copy.nominal : 'PPP'}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Seletor de Motor Cartográfico (SVG vs GPU Deck.gl) */}
+          <div className="inline-flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5" role="group" aria-label="Motor do mapa">
+            <button
+              type="button"
+              onClick={() => setMapRenderer('svg')}
+              title="Renderizador 2D SVG clássico leve (padrão)"
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                mapRenderer === 'svg'
+                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              🍃 SVG
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => setMapRenderer('gpu')}
+              title="Aceleração gráfica Deck.gl com arcos parabólicos 3D na GPU"
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                mapRenderer === 'gpu'
+                  ? 'bg-emerald-600/90 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              ⚡ GPU Deck.gl
+            </button>
+          </div>
+
+          <div className="inline-flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
+            {(['nominal', 'ppp'] as const).map((b) => (
+              <button key={b} onClick={() => setBasis(b)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  basis === b ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
+                }`}>
+                {b === 'nominal' ? copy.nominal : 'PPP'}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
-      <MapWorld />
+      {mapRenderer === 'gpu' ? (
+        <Suspense fallback={
+          <div className="flex h-[620px] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-400">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            <span>Carregando motor GPU Deck.gl & MapLibre…</span>
+          </div>
+        }>
+          <GpuFlowMap />
+        </Suspense>
+      ) : (
+        <MapWorld />
+      )}
 
       <details className="group rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
         <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-zinc-200">
