@@ -20,6 +20,7 @@ export default defineConfig({
           'vendor-motion': ['framer-motion'],
           'vendor-geo': ['d3-geo', 'topojson-client', 'world-atlas/countries-110m.json'],
           'vendor-three': ['three'],
+          'vendor-graph': ['cytoscape', '3d-force-graph'],
         },
       },
     },

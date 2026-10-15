@@ -1,4 +1,4 @@
-import { Fragment, memo, useEffect, useMemo, useState } from 'react'
+import { Fragment, memo, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import {
   COMPANIES_ALL, WORLD_AGGREGATES, WORLD_COMPANIES, brView, fmtBRL, metricsFor,
   type CompanyRecord,
@@ -19,7 +19,9 @@ import {
   loadCachedQuotes, loadSyncSettings, quotesToRecords, runSync, saveSyncSettings,
 } from '../lib/marketApi/sync'
 
-type Dataset = 'global' | 'brasil'
+const CorporateNetworkGraph = lazy(() => import('./network/CorporateNetworkGraph'))
+
+type Dataset = 'global' | 'brasil' | 'teia'
 const PAGE = 40
 
 function severityColor(taxa: number): string {
@@ -758,37 +760,51 @@ export default function CompaniesModule() {
       {/* controles */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5">
-          {(['global', 'brasil'] as Dataset[]).map((ds) => (
+          {([
+            ['global', `${pick(lang, 'Maiores do Mundo', 'World’s Largest', 'Mayores del Mundo')} (${filteredGl.length})`],
+            ['brasil', `${pick(lang, 'Brasil', 'Brazil', 'Brasil')} (${filteredBr.length})`],
+            ['teia', `🕸 ${pick(lang, 'Teia Acionária (Big Three)', 'Ownership Web (Big Three)', 'Red Accionaria (Big Three)')}`],
+          ] as [Dataset, string][]).map(([ds, label]) => (
             <button key={ds} onClick={() => { setDataset(ds); setSector('todas'); setQuery('') }}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                dataset === ds ? 'bg-money text-onaccent' : 'text-zinc-400 hover:text-zinc-200'
+                dataset === ds ? 'bg-money text-onaccent font-bold' : 'text-zinc-400 hover:text-zinc-200'
               }`}>
-              {ds === 'global'
-                ? `${pick(lang, 'Maiores do Mundo', 'World’s Largest', 'Mayores del Mundo')} (${filteredGl.length})`
-                : `${pick(lang, 'Brasil', 'Brazil', 'Brasil')} (${filteredBr.length})`}
+              {label}
             </button>
           ))}
         </div>
 
-        <input value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder={dataset === 'global'
-            ? pick(lang, 'Pesquisar empresa/país…', 'Search company/country…', 'Buscar empresa/país…')
-            : pick(lang, 'Pesquisar empresa/ticker…', 'Search company/ticker…', 'Buscar empresa/ticker…')}
-          className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60" />
+        {dataset !== 'teia' && (
+          <>
+            <input value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder={dataset === 'global'
+                ? pick(lang, 'Pesquisar empresa/país…', 'Search company/country…', 'Buscar empresa/país…')
+                : pick(lang, 'Pesquisar empresa/ticker…', 'Search company/ticker…', 'Buscar empresa/ticker…')}
+              className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60" />
 
-        <select value={sector} onChange={(e) => setSector(e.target.value)}
-          aria-label={pick(lang, 'Filtrar por setor', 'Filter by sector', 'Filtrar por sector')}
-          className="h-[34px] cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-2 text-xs text-zinc-300 outline-none focus:border-money/60">
-          <option value="todas">{pick(lang, 'Todos os setores', 'All sectors', 'Todos los sectores')} ({sectors.length})</option>
-          {sectors.map((s) => <option key={s} value={s}>{generatedText(lang, s)}</option>)}
-        </select>
+            <select value={sector} onChange={(e) => setSector(e.target.value)}
+              aria-label={pick(lang, 'Filtrar por setor', 'Filter by sector', 'Filtrar por sector')}
+              className="h-[34px] cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-2 text-xs text-zinc-300 outline-none focus:border-money/60">
+              <option value="todas">{pick(lang, 'Todos os setores', 'All sectors', 'Todos los sectores')} ({sectors.length})</option>
+              {sectors.map((s) => <option key={s} value={s}>{generatedText(lang, s)}</option>)}
+            </select>
+          </>
+        )}
 
         <div className="ml-auto w-full sm:w-auto sm:min-w-[280px]">
           <MarketSyncPanel records={apiRecords} onLoad={setApiRecords} />
         </div>
       </div>
 
-      {dataset === 'brasil' ? (
+      {dataset === 'teia' ? (
+        <Suspense fallback={
+          <div className="h-96 flex items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-500 font-mono text-xs">
+            {pick(lang, 'Carregando motor gráfico de teia acionária…', 'Loading ownership network graph engine…', 'Cargando motor gráfico de red accionaria…')}
+          </div>
+        }>
+          <CorporateNetworkGraph />
+        </Suspense>
+      ) : dataset === 'brasil' ? (
         <>
           {topBr && (
             <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4" style={{ borderColor: '#f4433655', background: '#f443360d' }}>
@@ -925,7 +941,7 @@ export default function CompaniesModule() {
         </>
       )}
 
-      {rowsCount > (dataset === 'global' ? visibleGl.length : visibleBr.length) && (
+      {dataset !== 'teia' && rowsCount > (dataset === 'global' ? visibleGl.length : visibleBr.length) && (
         <button onClick={() => setPage((p) => p + PAGE)}
           className="mx-auto rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:border-money/60 hover:text-money">
           {pick(lang, 'Mostrar mais', 'Show more', 'Mostrar más')}{' '}
