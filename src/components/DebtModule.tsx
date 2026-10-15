@@ -6,6 +6,7 @@ import { FiscalLensToggle, LensPanels, type FiscalLens } from './debt/FiscalLens
 import KaleckiSimulator from './debt/KaleckiSimulator'
 import TheoryCompareCard from './TheoryCompareCard'
 import ModeBadge from './ui/ModeBadge'
+import MethodologyNote from './ui/MethodologyNote'
 import { BUDGET_BR, DEATH_STEPS } from '../data/debt'
 import { locale, mt, pick } from '../i18n'
 import { useApp } from '../store/useApp'
@@ -121,6 +122,8 @@ export default function DebtModule() {
       <MmtPanel />
 
       <KaleckiSimulator />
+
+      <MethodologyNote topic="debt" className="mt-2" />
 
       <TheoryCompareCard />
     </div>

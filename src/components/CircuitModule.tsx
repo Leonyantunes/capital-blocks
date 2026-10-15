@@ -5,6 +5,7 @@ import ProfitCurve from './ProfitCurve'
 import { UnpaidClock } from './Clocks'
 import Tip from './ui/Tip'
 import ModeBadge from './ui/ModeBadge'
+import MethodologyNote from './ui/MethodologyNote'
 import { computeCircuit, fmtHours, pct, units, unpaidHours } from '../lib/marx'
 import { mt, modRef, pick } from '../i18n'
 import { useApp } from '../store/useApp'
@@ -301,6 +302,8 @@ export default function CircuitModule() {
       ) : (
         <ProfitCurve />
       )}
+
+      <MethodologyNote topic="circuit" className="mt-4" />
     </div>
   )
 }

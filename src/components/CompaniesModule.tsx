@@ -8,6 +8,7 @@ import { MiniClock, UnpaidClock } from './Clocks'
 import DonutChart from './DonutChart'
 import Tip from './ui/Tip'
 import ModeBadge from './ui/ModeBadge'
+import MethodologyNote from './ui/MethodologyNote'
 import { fmtHours } from '../lib/marx'
 import { locale, mt, pick, pickTri, type TriText } from '../i18n'
 import { generatedText } from '../data/generatedTranslations'
@@ -934,6 +935,8 @@ export default function CompaniesModule() {
           {pick(lang, 'restantes', 'remaining', 'restantes')} ↓
         </button>
       )}
+
+      <MethodologyNote topic="companies" className="mt-4" />
     </div>
   )
 }

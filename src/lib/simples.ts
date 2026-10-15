@@ -245,6 +245,156 @@ export const MODULE_PEDAGOGY: Partial<Record<TabId, ModulePedagogyMeta>> = {
       'Nota Metodológica (Avanzado): Dado que la plusvalía se redistribuye entre sectores mediante precios de producción y rentas, una razón m/v alta en bancos o petroleras refleja también captura intersectorial.',
     ],
   },
+  platform: {
+    bncc: ['EF09GE12', 'EM13CHS401', 'EM13CHS402', 'EM13CHS404'],
+    perguntaAula: [
+      'Por que motoristas e entregadores de aplicativo trabalham mais de 10h diárias, arcam com veículo e combustível, mas não têm garantia de salário mínimo nem férias?',
+      'Why do app delivery workers and drivers work over 10 hours a day, pay for their own vehicle and gas, but have no minimum wage or paid vacation guarantees?',
+      '¿Por qué los repartidores y conductores de aplicación trabajan más de 10 horas al día, asumen el vehículo y combustible, pero no tienen salario mínimo ni vacaciones?',
+    ],
+    recorteLente: {
+      geografia: [
+        'Observe como as sedes e servidores das grandes plataformas ficam no Norte Global (Vale do Silício, Amsterdã), enquanto milhões de trabalhadores precários circulam nas metrópoles do Sul Global.',
+        'Notice how gig platform headquarters and servers remain in the Global North (Silicon Valley, Amsterdam), while millions of precarious workers circulate in Global South metropolises.',
+        'Observa cómo las sedes de plataformas están en el Norte Global, mientras millones de trabajadores precarios circulan en metrópolis del Sur Global.',
+      ],
+      historia: [
+        'Compare a jornada fabril dos séculos XIX e XX (com direitos conquistados após décadas de lutas sindicais) com o trabalho sob demanda mediado por algoritmo no século XXI.',
+        'Compare 19th and 20th-century factory workdays (with labor rights won through union struggles) with 21st-century algorithm-managed on-demand work.',
+        'Compara la jornada fabril de los siglos XIX y XX con el trabajo por demanda gestionado por algoritmos en el siglo XXI.',
+      ],
+      economia: [
+        'Transferência de capital constante para o trabalhador: a plataforma não adianta c (celular, veículo e manutenção são pagos pelo entregador), elevando a taxa de mais-valia aparente e socializando o risco operacional.',
+        'Transfer of constant capital to labor: platforms advance zero c (phone, vehicle, and maintenance paid by the worker), driving up the rate of surplus-value while socializing operational risk.',
+        'Transferencia de capital constante a la fuerza de trabajo: la plataforma no adelanta c, elevando la tasa de plusvalía y socializando el riesgo operativo.',
+      ],
+    },
+    notaMetodologicaPesquisa: [
+      'Nota Metodológica (Avançado): Baseado nas pesquisas do IBGE/PNAD Contínua (módulo Trabalho por Aplicativo), OIT e Fairwork Brasil (Oxford/UFRJ). O rendimento médio por hora dos plataformizados desconta despesas de combustível, depreciação e dados para estimar a remuneração líquida real.',
+      'Methodological Note (Advanced): Based on IBGE/PNAD Contínua (Platform Work module), ILO, and Fairwork Brazil (Oxford/UFRJ). Average hourly earnings deduct fuel, vehicle depreciation, and data costs to estimate real net remuneration.',
+      'Nota Metodológica (Avanzado): Basado en IBGE/PNAD Contínua (Trabajo en Plataformas), OIT y Fairwork Brasil (Oxford/UFRJ). Se descuentan combustible, depreciación y conectividad para estimar el ingreso neto real.',
+    ],
+  },
+  wealth: {
+    bncc: ['EF09GE11', 'EM13CHS201', 'EM13CHS403', 'EM13CHS404'],
+    perguntaAula: [
+      'Se toda a riqueza acumulada no mundo fosse repartida igualmente, quanto caberia a cada ser humano adulto, e por que a maior parte está concentrada no topo 1%?',
+      'If all global wealth were divided equally, how much would each adult receive, and why is most of it concentrated in the top 1%?',
+      '¿Si toda la riqueza acumulada se repartiera por igual, cuánto recibiría cada adulto y por qué la mayor parte está concentrada en el 1% superior?',
+    ],
+    recorteLente: {
+      geografia: [
+        'Analise a pirâmide da riqueza global: o topo (EUA e Europa Ocidental) detém ativos financeiros líquidos, enquanto a base (África, América Latina e Sul da Ásia) detém trabalho vivo e recursos primários.',
+        'Analyze the global wealth pyramid: the top (US and Western Europe) holds liquid financial claims, while the base (Africa, Latin America, South Asia) holds living labor and primary resources.',
+        'Analiza la pirámide de riqueza global: la cúspide posee activos financieros líquidos, mientras la base posee trabajo vivo y recursos primarios.',
+      ],
+      historia: [
+        'Da acumulação primitiva colonial (pilhagem mineral e comércio escravista) à financeirização neoliberal: o estoque de riqueza acumulada reflete séculos de expansão e proteção jurídica de ativos.',
+        'From colonial primitive accumulation (bullion plunder and slave trade) to neoliberal financialization: accumulated wealth stocks reflect centuries of imperial expansion and asset protection.',
+        'De la acumulación primitiva colonial a la financiarización neoliberal: el acervo de riqueza refleja siglos de expansión imperial y protección patrimonial.',
+      ],
+      economia: [
+        'Diferença entre fluxo de valor novo (PIB = v + m) e estoque de riqueza: a riqueza patrimonial (W) capitaliza fluxos futuros de mais-valia descontados à taxa de juros do mercado (capital fictício).',
+        'Distinction between new value flow (GDP = v + m) and wealth stock: accumulated net worth (W) capitalizes discounted future surplus-value streams (fictitious capital).',
+        'Diferencia entre flujo de valor nuevo (PIB = v + m) y acervo de riqueza: el patrimonio acumulado capitaliza flujos futuros de plusvalía (capital ficticio).',
+      ],
+    },
+    notaMetodologicaPesquisa: [
+      'Nota Metodológica (Avançado): Dados consolidados a partir do World Inequality Report (WID.world / Piketty, Chancel, Saez, Zucman), Global Wealth Report (UBS/Credit Suisse) e Forbes Billionaires Index. As participações do topo incluem estimativas de paraísos fiscais conforme metodologia Zucman (2014).',
+      'Methodological Note (Advanced): Data synthesized from the World Inequality Report (WID.world), UBS Global Wealth Report, and Forbes Billionaires Index. Top wealth fractiles adjust for offshore tax havens following Zucman (2014).',
+      'Nota Metodológica (Avanzado): Datos del World Inequality Report (WID.world), Informe de Riqueza Global de UBS y Forbes Billionaires Index, ajustados por paraísos fiscales según Zucman (2014).',
+    ],
+  },
+  consequences: {
+    bncc: ['EF08GE14', 'EF09HI15', 'EM13CHS106', 'EM13CHS304'],
+    perguntaAula: [
+      'Por que os maiores desastres industriais, ambientais e sanitários da história quase sempre atingem comunidades pobres enquanto os lucros já foram distribuídos aos acionistas?',
+      'Why do the largest industrial, environmental, and health disasters in history almost always strike poor communities while profits were already distributed to shareholders?',
+      '¿Por qué los mayores desastres industriales, ambientales y sanitarios afectan a comunidades pobres mientras las ganancias ya fueron distribuidas a los accionistas?',
+    ],
+    recorteLente: {
+      geografia: [
+        'Racismo ambiental e zonas de sacrifício: trace no mapa onde estão localizados os desastres corporativos (Bhopal, Cubatão, Mariana, Brumadinho, Rana Plaza, Minamata).',
+        'Environmental racism and sacrifice zones: locate corporate disasters on the map (Bhopal, Cubatão, Mariana, Brumadinho, Rana Plaza, Minamata Bay).',
+        'Racismo ambiental y zonas de sacrificio: localiza en el mapa dónde se ubican los desastres corporativos (Bhopal, Cubatão, Mariana, Brumadinho, Rana Plaza, Minamata).',
+      ],
+      historia: [
+        'Evolução da blindagem corporativa: da proteção estatal sob regimes autoritários aos acordos judiciais contemporâneos que convertem a perda de vidas humanas em custo operacional administrável.',
+        'Evolution of corporate liability shields: from authoritarian state protection to contemporary out-of-court settlements pricing human life as manageable operating costs.',
+        'Evolución del blindaje corporativo: de la protección estatal bajo regímenes autoritarios a acuerdos extrajudiciales que cotizan la vida humana como costo operativo.',
+      ],
+      economia: [
+        'Externalização forçada de custos: ao cortar gastos de manutenção e segurança no capital constante fixo (c), corporações maximizam a taxa de lucro imediata e transferem o risco catastrófico para a sociedade.',
+        'Forced cost externalization: by cutting fixed constant capital (c) safety and maintenance, corporations maximize short-term profit rates while shifting catastrophic risk to society.',
+        'Externalización forzada de costos: al recortar mantenimiento en capital constante fijo (c), las corporaciones maximizan la tasa de ganancia inmediata y transfieren el riesgo catastrófico a la sociedad.',
+      ],
+    },
+    notaMetodologicaPesquisa: [
+      'Nota Metodológica (Avançado): Compilado a partir de relatórios da OIT (2,9 milhões de mortes laborais anuais), laudos do US Chemical Safety Board (CSB), inquéritos de Ministérios Públicos e literatura de ecologia política (Bullard; Acselrad; Rob Nixon - Slow Violence).',
+      'Methodological Note (Advanced): Compiled from ILO reports (2.9M annual workplace fatalities), US Chemical Safety Board (CSB) findings, and political ecology literature (Bullard, Nixon - Slow Violence).',
+      'Nota Metodológica (Avanzado): Compilado a partir de informes de la OIT (2,9M de muertes laborales anuales), peritajes del US CSB y literatura de ecología política.',
+    ],
+  },
+  alternatives: {
+    bncc: ['EF09HI32', 'EM13CHS102', 'EM13CHS404', 'EM13CHS604'],
+    perguntaAula: [
+      'Se o modelo atual concentra renda e degrada a biosfera, quais são as propostas concretas de reorganização da produção, da moeda e da propriedade já testadas no mundo?',
+      'If the current system concentrates wealth and degrades the biosphere, what concrete proposals for reorganizing production, currency, and property have been tested globally?',
+      '¿Si el modelo actual concentra riqueza y degrada la biosfera, cuáles son las propuestas concretas para reorganizar producción, moneda y propiedad?',
+    ],
+    recorteLente: {
+      geografia: [
+        'Mapeie iniciativas territoriais de soberania alimentar, transição energética justa, fundos soberanos de recursos naturais e bancos públicos comunitários de desenvolvimento.',
+        'Map territorial initiatives for food sovereignty, just energy transitions, natural resource sovereign wealth funds, and community development banks.',
+        'Mapea iniciativas territoriales de soberanía alimentaria, transición energética justa y fondos soberanos de recursos naturales.',
+      ],
+      historia: [
+        'Do Estado de Bem-Estar e planejamento centralizado aos experimentos de autogestão operária (Iugoslávia, Mondragón) e às economias mistas lideradas pelo Estado (China, Vietnã).',
+        'From the Welfare State and centralized planning to worker self-management (Yugoslavia, Mondragón) and strategic state-led mixed economies (China, Vietnam).',
+        'Del Estado de Bienestar a la autogestión obrera y las economías mixtas lideradas por empresas públicas estratégicas.',
+      ],
+      economia: [
+        'Planejamento democrático vs. coordenação exclusiva pelo mercado: cálculo econômico socialista, garantia pública de emprego (Job Guarantee / MMT) e desmercantilização de bens comuns.',
+        'Democratic planning vs. exclusive market coordination: socialist economic calculation, public Job Guarantee (MMT), and decommodification of essential common goods.',
+        'Planificación democrática vs. mercado: cálculo económico socialista, garantía pública de empleo (MMT) y desmercantilización de bienes comunes.',
+      ],
+    },
+    notaMetodologicaPesquisa: [
+      'Nota Metodológica (Avançado): Taxonomia comparativa baseada em modelos de economia política heterodoxa (Cockshott & Cottrell, 1993; Albert & Hahnel - Parecon; Mariana Mazzucato - Estado Empreendedor; Karl Polanyi - A Grande Transformação).',
+      'Methodological Note (Advanced): Comparative taxonomy grounded in heterodox political economy models (Cockshott & Cottrell, 1993; Albert & Hahnel; Mazzucato; Polanyi).',
+      'Nota Metodológica (Avanzado): Taxonomía comparativa basada en modelos heterodoxos (Cockshott & Cottrell, Mazzucato, Polanyi).',
+    ],
+  },
+  sources: {
+    bncc: ['EM13CHS101', 'EM13CHS103', 'EM13CHS401'],
+    perguntaAula: [
+      'Como transformar dados e estatísticas oficiais em ferramentas de denúncia e análise crítica da realidade social?',
+      'How can official government statistics and corporate balance sheets be transformed into tools for critical analysis and social accountability?',
+      '¿Cómo transformar datos y estadísticas oficiales en herramientas de análisis crítico y compromiso social?',
+    ],
+    recorteLente: {
+      geografia: [
+        'Georreferenciamento de dados abertos: cruze bases do IBGE, MDIC Comex Stat e agências internacionais para evidenciar a geografia desigual do valor.',
+        'Open data georeferencing: cross-reference IBGE, Comex Stat, and international agencies to reveal the uneven geography of value extraction.',
+        'Georreferenciación de datos abiertos: cruza bases del IBGE y aduanas internacionales para evidenciar la geografía desigual del valor.',
+      ],
+      historia: [
+        'Evolução histórica das Contas Nacionais: do esforço de guerra de Kuznets e Keynes à padronização do Sistema de Contas Nacionais (SNA) pela ONU (1953 a 2008).',
+        'Historical evolution of National Accounts: from Kuznets and Keynes war efforts to the UN System of National Accounts standards (1953 to 2008).',
+        'Evolución histórica de las Cuentas Nacionales: del esfuerzo de guerra de Kuznets y Keynes a los manuales SCN de la ONU.',
+      ],
+      economia: [
+        'Crítica metodológica do PIB: por que o SCN contabiliza publicidade e especulação financeira como "geração de valor", enquanto o trabalho doméstico e de cuidado não pago permanece invisibilizado.',
+        'Methodological critique of GDP: why SNA counts advertising and financial fees as "value creation" while unpaid domestic and care work remains invisible.',
+        'Crítica metodológica del PIB: por qué el SCN contabiliza la especulación como "creación de valor" mientras invisibiliza el trabajo de cuidados no remunerado.',
+      ],
+    },
+    notaMetodologicaPesquisa: [
+      'Nota Metodológica (Avançado): Todos os dados do Capital Blocks provêm de fontes primárias públicas auditáveis (MDIC, IBGE, BCB, STN, SEC, SIPRI, UNCTAD, FMI, Banco Mundial, WID.world, PWT). Cada número no aplicativo possui rastreabilidade via `sourceUsage.ts` e link de citação.',
+      'Methodological Note (Advanced): All Capital Blocks data originate from auditable public primary sources (MDIC, IBGE, SEC, SIPRI, UNCTAD, IMF, WID, PWT) with provenance traceability in `sourceUsage.ts`.',
+      'Nota Metodológica (Avanzado): Todos los datos provienen de fuentes primarias auditables, con trazabilidad completa en `sourceUsage.ts`.',
+    ],
+  },
 }
 
 export const isSimples = (m: UIMode): boolean => m === 'simples'
