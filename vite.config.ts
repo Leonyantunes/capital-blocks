@@ -26,10 +26,12 @@ export default defineConfig({
         },
       },
     },
+    chunkSizeWarningLimit: 1500,
   },
   test: {
     environment: 'jsdom',
-    pool: 'threads',
+    fileParallelism: false,
+    maxWorkers: 1,
     include: ['src/**/*.test.ts'],
   },
 })
