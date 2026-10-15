@@ -22,6 +22,7 @@ export default defineConfig({
           'vendor-three': ['three'],
           'vendor-graph': ['cytoscape', '3d-force-graph'],
           'vendor-deck': ['@deck.gl/core', '@deck.gl/layers', '@deck.gl/react'],
+          'vendor-duckdb': ['@duckdb/duckdb-wasm'],
         },
       },
     },

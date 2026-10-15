@@ -7,6 +7,7 @@ import { useApp } from '../../store/useApp'
 import { textoPorModo } from '../../lib/simples'
 import ModeBadge from '../ui/ModeBadge'
 import Tip from '../ui/Tip'
+import AnalyticsLab from './AnalyticsLab'
 
 /**
  * Estados de verificação, em PT/EN/ES.
@@ -84,6 +85,7 @@ const KIND_LABELS: Record<string, TriText> = {
 export default function SourcesModule() {
   const lang = useApp((s) => s.lang)
   const mode = useApp((s) => s.mode)
+  const [subTab, setSubTab] = useState<'fontes' | 'analytics'>('fontes')
   const [query, setQuery] = useState('')
   const [categoria, setCategoria] = useState('todas')
   const [tipo, setTipo] = useState('todos')
@@ -168,7 +170,40 @@ export default function SourcesModule() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {/* Seletor de Sub-Abas: Fontes Documentais vs Laboratório Analítico SQL */}
+      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+        <button
+          type="button"
+          onClick={() => setSubTab('fontes')}
+          className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            subTab === 'fontes'
+              ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <span>📚 {pick(lang, 'Base Documental & Fontes', 'Audited Sources & References', 'Base Documental y Fuentes')}</span>
+          <span className="rounded-full bg-zinc-700/60 px-1.5 py-0.2 font-mono text-[10px] text-zinc-300">{resumo.total}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSubTab('analytics')}
+          className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            subTab === 'analytics'
+              ? 'bg-emerald-600/90 text-white shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <span>🔬 {pick(lang, 'Laboratório Analítico SQL (DuckDB-Wasm)', 'SQL Analytics Lab (DuckDB-Wasm)', 'Laboratorio Analítico SQL (DuckDB-Wasm)')}</span>
+          <span className="rounded-full bg-emerald-950 px-1.5 py-0.2 font-mono text-[10px] text-emerald-300">WASM</span>
+        </button>
+      </div>
+
+      {subTab === 'analytics' ? (
+        <AnalyticsLab />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
           <div className="text-[9.5px] uppercase tracking-widest text-zinc-500">
             {pick(lang, 'Referências', 'References', 'Referencias')}
@@ -361,6 +396,8 @@ export default function SourcesModule() {
           'How to cite: prefer institution + vintage + page/table. Example: “IMF, COFER, Q4 2025”. Internal estimates use the “est.” badge and must never be presented as official statistics. “Review pending” entries state exactly what still needs checking.',
           'Cómo citar: prefiere institución + período + página/tabla. Ejemplo: “FMI, COFER, Q4 2025”. Las estimaciones internas usan la etiqueta “est.” y nunca deben presentarse como estadística oficial. Las entradas con “revisión pendiente” indican exactamente qué falta verificar.')}
       </p>
+        </>
+      )}
     </div>
   )
 }
