@@ -14,6 +14,7 @@ import { NIVEIS, textoPorModo } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
 import SourceLinks from '../ui/SourceLinks'
+import TourQuizCard from '../ui/TourQuizCard'
 
 /** Chips de conflito locais (mesmos do mapa 2D, sem puxar o chunk do MapWorld). */
 const GLOBE_CONFLICTS: { id: 'semis' | 'energia' | 'reprimaria'; chip: string; title: string; didatico: string; avancado: string; color: string }[] = [
@@ -1036,6 +1037,7 @@ export default function GlobeModule() {
               {s.dica && (
                 <p className="mt-2 font-mono text-[10px] leading-snug text-zinc-500">💡 {s.dica}</p>
               )}
+              {s.quiz && <TourQuizCard quiz={s.quiz} accentColor={A} />}
               <div className="mt-2.5 flex items-center justify-between gap-2">
                 <div className="flex max-w-[55%] flex-wrap items-center gap-1 overflow-hidden">
                   {STOPS.map((st, i) => (

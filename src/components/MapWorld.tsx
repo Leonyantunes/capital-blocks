@@ -10,6 +10,8 @@ import { NIVEIS, textoPorModo } from '../lib/simples'
 import { t } from '../i18n'
 import FlowCard from './FlowCard'
 import SourceLinks from './ui/SourceLinks'
+import TourQuizCard from './ui/TourQuizCard'
+import { useTourDriver } from '../hooks/useTourDriver'
 import { BR_STATES, BR_STATE_FLOWS, INTERNAL_FLOWS, STATE_CAT_META, BRAZIL_VIEW } from '../data/brazil'
 import { WAGES, wageColor, wageBucketLabelForLang, WAGE_BUCKETS } from '../data/wages'
 import { DISASTERS } from '../data/disasters'
@@ -415,6 +417,17 @@ export default function MapWorld() {
   const STOPS = activeTour.stops
   const TOUR_ACCENT = activeTour.accent
 
+  const { startDriverTour, destroyDriver, isDriverActive } = useTourDriver({
+    stops: STOPS,
+    activeStep: tourStep,
+    onStepChange: (idx) => setTourStep(idx),
+    onEndTour: () => endTour(),
+    accent: TOUR_ACCENT,
+    mode,
+    lang,
+    targetElementSelector: '#tour-spotlight-target',
+  })
+
   /** inicia o tour em tela cheia (com fallback silencioso) */
   const startTour = () => {
     try {
@@ -430,6 +443,7 @@ export default function MapWorld() {
   }
   /** encerra o tour e sai da tela cheia */
   const endTour = () => {
+    destroyDriver()
     setTourStep(null)
     try {
       if (document.fullscreenElement) {
@@ -1583,7 +1597,7 @@ export default function MapWorld() {
         const setMode = useApp.getState().setMode
         const A = tour.accent
         return (
-          <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,620px)] -translate-x-1/2 rounded-xl border bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3"
+          <div id="tour-spotlight-target" className="absolute bottom-14 left-1/2 z-30 w-[min(94%,620px)] -translate-x-1/2 rounded-xl border bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3"
             style={{ borderColor: `${A}88`, boxShadow: `0 0 28px ${A}22, 0 18px 50px rgba(0,0,0,.55)` }}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -1608,7 +1622,14 @@ export default function MapWorld() {
                   ))}
                 </select>
               </div>
-              <div className="flex shrink-0 gap-1">
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  onClick={() => startDriverTour(tourStep)}
+                  title={lang === 'pt' ? 'Ativar modo Spotlight acessível (Driver.js)' : 'Activate accessible Spotlight mode (Driver.js)'}
+                  className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-amber-500/20 max-md:px-2.5 max-md:py-1.5"
+                >
+                  🔦
+                </button>
                 <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
                   className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
                 <button onClick={() => setTourStep(tourStep < STOPS.length - 1 ? tourStep + 1 : null)}
@@ -1636,6 +1657,7 @@ export default function MapWorld() {
             {s.dica && (
               <p className="mt-2 font-mono text-[10px] leading-snug text-zinc-500">💡 {s.dica}</p>
             )}
+            {s.quiz && <TourQuizCard quiz={s.quiz} accentColor={A} />}
             <div className="mt-2.5 flex items-center justify-between gap-2">
               <div className="flex max-w-[60%] flex-wrap items-center gap-1 overflow-hidden">
                 {STOPS.map((st, i) => (

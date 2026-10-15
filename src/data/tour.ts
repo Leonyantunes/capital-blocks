@@ -19,6 +19,13 @@ export interface TourStat {
   sourceIds: string[]
 }
 
+export interface TourQuiz {
+  pergunta: [pt: string, en: string, es: string]
+  opcoes: [pt: string, en: string, es: string][]
+  correta: number
+  explicacao: [pt: string, en: string, es: string]
+}
+
 export interface TourStop {
   id: string
   chapter: string
@@ -46,6 +53,7 @@ export interface TourStop {
   bncc?: string[]
   perguntaDebate?: string
   lenteSugerida?: 'geografia' | 'historia' | 'economia'
+  quiz?: TourQuiz
 }
 
 /**
@@ -127,6 +135,36 @@ export const TOUR_STOPS: TourStop[] = [
     ],
     adv: 'GVC (cadeias globais de valor): captura de margem pelo detentor da marca/IP; o déficit bilateral estrutura a guerra tecnológica — montar não é o mesmo que mandar.',
     dica: `veja o ${modRef('companies')} para o Raio-X das empresas da rota`,
+    quiz: {
+      pergunta: [
+        'Na cadeia global de um smartphone montado na Ásia, quem retém a maior parcela do valor final?',
+        'In the global value chain of an Asia-assembled smartphone, who captures the largest share of final value?',
+        'En la cadena global de un smartphone ensamblado en Asia, ¿quién retiene la mayor parte del valor final?',
+      ],
+      opcoes: [
+        [
+          'A montadora asiática encarregada das linhas de produção física',
+          'The Asian contract manufacturer operating physical assembly lines',
+          'El fabricante asiático que opera las líneas de montaje físico',
+        ],
+        [
+          'A corporação transnacional detentora de patentes, design e marca',
+          'The transnational corporation owning patents, design, and brand IP',
+          'La corporación transnacional dueña de patentes, diseño y marca',
+        ],
+        [
+          'Os mineradores artesanais que extraem o cobalto e o lítio brutos',
+          'Artisanal miners extracting raw cobalt and lithium',
+          'Los mineros artesanales que extraen el cobalto y litio brutos',
+        ],
+      ],
+      correta: 1,
+      explicacao: [
+        'Estudos de decomposição de valor (Kraemer et al.; UNCTAD) mostram que cerca de 58% a 60% do preço de varejo vai para propriedade intelectual, lucro e marketing no centro, enquanto a montagem física na periferia/semiperiferia retém menos de 5%.',
+        'Empirical value chain studies (Kraemer et al.; UNCTAD) show that 58% to 60% of retail price is captured as IP, profit, and brand margin in the core, while assembly in the periphery/semi-periphery retains under 5%.',
+        'Estudios de descomposición de valor (Kraemer et al.; UNCTAD) demuestran que cerca del 58% al 60% del precio final va a propiedad intelectual, beneficios y marketing en el centro, mientras el montaje en la periferia retiene menos del 5%.',
+      ],
+    },
   },
   {
     id: 'fabrica-muda',
@@ -196,8 +234,38 @@ export const TOUR_STOPS: TourStop[] = [
       { v: '1 ilha', k: 'no centro da disputa', sourceIds: ['nist-chips', 'relatorios-anuais-empresas'] },
     ],
     adv: 'TSMC→EUA (<7nm) como chokepoint estratégico: o "escudo de silício" estrutura a contenção à China — export controls (ASML/EUV, NVIDIA) sobre o capital constante mais avançado.',
-
-    dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',},
+    dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',
+    quiz: {
+      pergunta: [
+        'Por que a ilha de Taiwan e a empresa TSMC representam o nó mais vulnerável da economia digital global?',
+        'Why do Taiwan and TSMC constitute the single most vulnerable node in the global digital economy?',
+        '¿Por qué Taiwán y TSMC representan el nodo más vulnerable de la economía digital global?',
+      ],
+      opcoes: [
+        [
+          'Porque concentram mais de 90% da fundição mundial de chips lógicos de ponta (<7nm)',
+          'Because they concentrate over 90% of global foundry capacity for leading-edge logic chips (<7nm)',
+          'Porque concentran más del 90% de la fundición mundial de chips lógicos de vanguardia (<7nm)',
+        ],
+        [
+          'Porque detêm as maiores jazidas de areia de silício natural do mundo',
+          'Because they control the largest natural silicon sand deposits in the world',
+          'Porque poseen los mayores yacimientos de arena de silicio natural del mundo',
+        ],
+        [
+          'Porque compram a totalidade das ações das Big Techs no mercado financeiro',
+          'Because they acquire all outstanding shares of Big Tech firms on financial markets',
+          'Porque compran la totalidad de las acciones de las Big Tech en el mercado financiero',
+        ],
+      ],
+      correta: 0,
+      explicacao: [
+        'A TSMC responde por mais de 90% de toda a fundição de processadores e aceleradores de IA de ponta. Uma interrupção no Estreito de Taiwan paralisaria montadoras automotivas, servidores e smartphones em semanas em escala planetária.',
+        'TSMC accounts for over 90% of world foundry capacity for advanced AI accelerators and processors. Any disruption across the Taiwan Strait would freeze automotive, server, and phone assembly globally within weeks.',
+        'TSMC representa más del 90% de la fundición mundial de procesadores y aceleradores de IA avanzados. Una interrupción en el Estrecho de Taiwán paralizaría el ensamblaje global de automóviles, servidores y teléfonos en pocas semanas.',
+      ],
+    },
+  },
   {
     id: 'vaza',
     chapter: 'Cap. 4 · Para onde vai o lucro',
@@ -211,6 +279,36 @@ export const TOUR_STOPS: TourStop[] = [
     ],
     adv: 'Canal 3 da TMD: remessa de rendas de propriedade (ILAESE: R$195–294 bi/ano só do Brasil) — juros, royalties e dividendos capitalizam matrizes do centro (dos Santos: dependência como reprodução do subdesenvolvimento).',
     dica: 'o painel da rota lista empresa por empresa',
+    quiz: {
+      pergunta: [
+        'O que caracteriza o "dreno de valor" e a dependência financeira na Teoria Marxista da Dependência (TMD)?',
+        'What characterizes value drainage and financial dependence in Marxist Dependency Theory (TMD)?',
+        '¿Qué caracteriza el drenaje de valor y la dependencia financiera en la Teoría Marxista de la Dependencia (TMD)?',
+      ],
+      opcoes: [
+        [
+          'O fluxo contínuo de ajuda humanitária e doações do Norte Global para o Sul',
+          'The continuous net inflow of humanitarian grants and aid from the North to the South',
+          'El flujo neto continuo de ayuda humanitaria y donaciones del Norte hacia el Sur',
+        ],
+        [
+          'A remessa líquida estrutural de mais-valia da periferia ao centro via lucros, juros da dívida e royalties',
+          'The structural net remittance of surplus value from periphery to core via profits, debt service, and royalties',
+          'La remisión neta estructural de plusvalía de la periferia al centro mediante beneficios, deuda y regalías',
+        ],
+        [
+          'A equalização espontânea dos salários e do desenvolvimento produtivo entre todas as nações',
+          'Spontaneous equalization of wages and productive development across all nations',
+          'La igualación espontánea de salarios y desarrollo productivo entre todas las naciones',
+        ],
+      ],
+      correta: 1,
+      explicacao: [
+        'Segundo Mauro Marini e Theotônio dos Santos, a periferia transfere sistematicamente mais-valia ao centro financeiro. Essa perda líquida de recursos (R$ 195–294 bi/ano no Brasil) bloqueia a soberania produtiva nacional e reforça a superexploração do trabalho.',
+        'According to Marini and dos Santos, peripheral economies systematically transfer surplus value to imperialist financial cores. This net outflow drain locks in dependent subordination and reinforces super-exploitation of labor.',
+        'Según Marini y dos Santos, la periferia transfiere sistemáticamente plusvalía a los centros financieros. Esta fuga neta de recursos perpetúa la subordinación dependiente y profundiza la superexplotación del trabajo.',
+      ],
+    },
   },
   {
     id: 'remessas',
@@ -280,8 +378,38 @@ export const TOUR_STOPS: TourStop[] = [
       { v: 'Fed sobe', k: 'feijão sobe aqui', sourceIds: ['bcb-portal', 'us-treasury-tic'] },
     ],
     adv: 'Hierarquia monetária (Pilar 3): Treasuries + precificação dolarizada + dívida corporativa externa — a política do Fed transmite-se ao custo de vida periférico sem passar por nenhuma urna.',
-
-    dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',},
+    dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',
+    quiz: {
+      pergunta: [
+        'Como a hegemonia do dólar (privilégio exorbitante) opera no comércio e na finança internacional?',
+        'How does the hegemony of the US dollar (exorbitant privilege) function in international trade and finance?',
+        '¿Cómo opera la hegemonía del dólar estadounidense (privilegio exorbitante) en el comercio y las finanzas globales?',
+      ],
+      opcoes: [
+        [
+          'Exigindo que o dólar seja lastreado integralmente em reservas físicas de ouro desde 1971',
+          'By requiring the dollar to be 100% backed by physical gold reserves since 1971',
+          'Exigiendo que el dólar esté respaldado íntegramente en reservas físicas de oro desde 1971',
+        ],
+        [
+          'Permitindo aos EUA importar bens reais e energia emitindo passivos na sua própria moeda soberana, que o mundo é forçado a reter como reservas',
+          'By enabling the US to import real commodities and energy by issuing liabilities in its own currency, which other nations are obliged to hold as reserves',
+          'Permitiendo a EE. UU. importar bienes reales y energía emitiendo pasivos en su propia moneda, que el resto del mundo retiene como reservas',
+        ],
+        [
+          'Impedindo qualquer banco central periférico de emitir moeda nacional',
+          'By prohibiting any peripheral central bank from issuing local currency',
+          'Prohibiendo a cualquier banco central periférico emitir moneda nacional',
+        ],
+      ],
+      correta: 1,
+      explicacao: [
+        'Por ser a moeda de liquidação das principais commodities (petróleo, grãos) e o padrão de liquidez global, os EUA compram produtos do trabalho estrangeiro emitindo títulos do Tesouro e dólares, exportando inflação e impondo a taxa de juros do Fed ao planeta.',
+        'As the clearing standard for energy and global reserves, the US buys real foreign labor output with its own currency, exporting fiscal imbalances and dictating world financing conditions via Fed policy.',
+        'Como moneda de liquidación de materias primas y reserva global, EE. UU. adquiere trabajo real extranjero con su propia moneda, exportando desequilibrios y determinando las condiciones financieras mundiales mediante la tasa de la Fed.',
+      ],
+    },
+  },
   {
     id: 'credor',
     chapter: 'Cap. 5 · A moeda que manda',

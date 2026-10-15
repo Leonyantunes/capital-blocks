@@ -232,3 +232,66 @@ body {
 body {
   overflow-x: clip;
 }
+
+/* ── Driver.js Custom Styling (Capital Blocks Theme) ── */
+.driver-popover.capital-tour-driver-popover {
+  background-color: #161b22;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+  padding: 16px;
+  max-width: 380px;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-title {
+  color: #f0f6fc;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-description {
+  color: #c9d1d9;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-progress-text {
+  color: #8b949e;
+  font-size: 11px;
+  font-family: monospace;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-footer button {
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  transition: all 0.2s ease;
+  border: 1px solid #30363d;
+  background-color: #21262d;
+  color: #c9d1d9;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-footer button:hover {
+  background-color: #30363d;
+  color: #ffffff;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-footer .driver-popover-next-btn {
+  background-color: #10b981;
+  color: #0d1117;
+  border-color: #10b981;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-footer .driver-popover-next-btn:hover {
+  background-color: #059669;
+  color: #ffffff;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-arrow-side-top {
+  border-bottom-color: #161b22;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-arrow-side-bottom {
+  border-top-color: #161b22;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-arrow-side-left {
+  border-right-color: #161b22;
+}
+.driver-popover.capital-tour-driver-popover .driver-popover-arrow-side-right {
+  border-left-color: #161b22;
+}
+

@@ -17,8 +17,10 @@
 import type { TabId } from '../store/useApp'
 import { FLOWS, TYPE_STYLE } from './flows'
 import { flowIsos } from '../lib/world'
-import { TOUR_STOPS, tourStopForLang, type TourStop } from './tour'
+import { TOUR_STOPS, tourStopForLang, tourStopsForLang, distFromK, type TourStop, type TourStat, type TourQuiz } from './tour'
 import { modRef, modTitle } from './modules'
+
+export { TOUR_STOPS, distFromK, tourStopForLang, tourStopsForLang, type TourStop, type TourStat, type TourQuiz }
 
 export interface TourDef {
   id: string
