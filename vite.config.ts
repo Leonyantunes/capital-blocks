@@ -16,13 +16,24 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-motion': ['framer-motion'],
-          'vendor-geo': ['d3-geo', 'topojson-client', 'world-atlas/countries-110m.json'],
-          'vendor-three': ['three'],
-          'vendor-graph': ['cytoscape', '3d-force-graph'],
-          'vendor-deck': ['@deck.gl/core', '@deck.gl/layers', '@deck.gl/react'],
-          'vendor-duckdb': ['@duckdb/duckdb-wasm'],
+        /* manualChunks em função (e não objeto) por um motivo específico:
+           o helper de preload do Vite é um módulo virtual que o formato-objeto
+           não consegue direcionar — sem esta regra, o Rollup o mesclava dentro
+           do chunk do deck.gl e o ENTRY passava a importar vendor-deck
+           estaticamente (deck.gl baixado/executado no primeiro load, mesmo com
+           o modo GPU sendo opcional). Isolá-lo em 'vendor-preload' mantém o
+           deck.gl 100% no grafo dinâmico. */
+        manualChunks(id) {
+          if (id.includes('vite/preload-helper')) return 'vendor-preload'
+          if (id.includes('node_modules/framer-motion/')) return 'vendor-motion'
+          if (id.includes('node_modules/d3-geo/') || id.includes('node_modules/topojson-client/') || id.includes('world-atlas/')) return 'vendor-geo'
+          /* APENAS o core do three (three.module/three.core): o three.webgpu,
+             importado por three-render-objects (grafo corporativo), NÃO pode
+             entrar aqui — dobraria o chunk baixado pelo globo 3D. */
+          if (/node_modules\/three\/build\/three\.(core|module)\.js$/.test(id)) return 'vendor-three'
+          if (id.includes('node_modules/cytoscape/') || id.includes('node_modules/3d-force-graph/')) return 'vendor-graph'
+          if (id.includes('node_modules/@deck.gl/')) return 'vendor-deck'
+          if (id.includes('node_modules/@duckdb/duckdb-wasm/')) return 'vendor-duckdb'
         },
       },
     },

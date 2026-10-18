@@ -206,6 +206,16 @@ body {
   }
 }
 
+/* brilho dos elementos destacados do mapa (fluxo selecionado, hover, tour).
+   Fica no CSS — e não inline — para que a supressão durante gestos seja feita
+   pela classe .is-interacting do root, sem re-render das camadas memoizadas. */
+.map-root .glow-filter {
+  filter: drop-shadow(0 0 var(--glow-blur, 8px) var(--glow-color, #fff));
+}
+.map-root.is-interacting .glow-filter {
+  filter: none;
+}
+
 /* respeito à preferência de movimento reduzido (acessibilidade + bateria) */
 @media (prefers-reduced-motion: reduce) {
   .marker-ring,

@@ -773,7 +773,9 @@ export default function Globe3DCanvas(props: Props) {
       atmoUniforms.uIntensity.value = o.atmosphereIntensity
       haloMat.color.copy(glow)
       haloMat.opacity = o.bloom ? 0.22 + o.bloomIntensity * 0.14 : 0.14 + o.atmosphereIntensity * 0.05
-      renderer.toneMappingExposure = o.bloom ? 1.05 + o.bloomIntensity * 0.22 : 1.0
+      /* renderer.toneMappingExposure omitido de propósito: sem `renderer.toneMapping`
+         definido (default NoToneMapping) ele seria um no-op — se um dia o tone
+         mapping for ativado por design, reintroduzir aqui. */
       if (moverPoints) {
         ;(moverPoints.material as THREE.PointsMaterial).size = 0.02 + (o.bloom ? o.bloomIntensity * 0.004 : 0)
       }
@@ -1292,9 +1294,14 @@ export default function Globe3DCanvas(props: Props) {
       const lc = live.current
       const spotKey = lc.spot ? lc.spot.color + '|' + lc.spot.isos.join(',') : ''
       const layerKey = layerSignature(lc.visibleLayers)
-      /* a distância entra com 2 casas: entre elas o enquadramento não muda.
-         `|0` converte para inteiro sem alocar string. */
-      const distKey = (camDist * 100) | 0
+      /* a distância entra QUANTIZADA no limiar do modo detalhado (o único uso
+         semântico de `camDist` em applySelection: `detailOn = camDist < 2.75`).
+         Um valor contínuo mudava a assinatura a cada frame de zoom e fazia
+         applySelection() + recolorDots() reescreverem e reenviarem à GPU o
+         buffer de cor dos ~15k pontos POR FRAME, sem efeito visual a mais.
+         (O brilho das fronteiras por zoom é tratado à parte, nas linhas de
+         `targetOp`, com change-detection própria.) */
+      const distKey = camDist < 2.75 ? 1 : 0
       /* os ids precisam entrar INTEIROS na assinatura: dois conjuntos de
          mesmo tamanho (ex.: 2 ids A,B → 1 id C) têm que ser distinguidos,
          senão a seleção não reavalia. */

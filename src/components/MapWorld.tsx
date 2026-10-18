@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   MAP_W, MAP_H, COUNTRY_FEATURES, GRATICULE_D, SPHERE_D,
   ISO_TO_BLOC, BRICS_ISO, BLOCS, BLOC_MEMBERS, arcPath, quadPoint, project, projection, flowIsos,
@@ -27,6 +27,15 @@ import { useApp, type ConflictId } from '../store/useApp'
    ════════════════════════════════════════════════════════════════ */
 
 const A = Object.fromEntries(BLOCS.map((b) => [b.id, b.anchor])) as Record<string, [number, number]>
+
+/**
+ * Brilho dos elementos em destaque (fluxo selecionado, hover, países do tour).
+ * O filtro em si vive no index.css (classe `.glow-filter`): assim a supressão
+ * durante gestos é feita pela classe `.is-interacting` no root (CSS puro) e as
+ * camadas memoizadas NÃO dependem do estado de interação para re-renderizar.
+ */
+const glowVars = (color: string, blur: number) =>
+  ({ '--glow-color': color, '--glow-blur': `${blur}px` }) as CSSProperties
 
 /** Dispositivo de toque: orçamento menor de partículas e sem tooltips de hover. */
 const COARSE = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
@@ -281,7 +290,13 @@ export default function MapWorld() {
     const p = new URLSearchParams(window.location.search)
     const v = p.get('v')?.split(',').map(Number) ?? []
     const hasUrlView = v.length === 3 && v.every((n) => !isNaN(n))
-    let initView = hasUrlView ? { k: v[0], x: v[1], y: v[2] } : { k: 1, x: 0, y: 0 }
+    /* ?v= é validado contra NaN, mas k=0/∞ ou pan absurdo abririam o mapa no
+       vazio: clampa aos limites dos gestos (k 1–10) e exige o conteúdo pelo
+       menos parcialmente visível (|x| ≤ MAP_W·k, |y| ≤ MAP_H·k). */
+    const k0 = hasUrlView ? Math.min(10, Math.max(1, v[0])) : 1
+    let initView = hasUrlView
+      ? { k: k0, x: Math.min(MAP_W, Math.max(-MAP_W * k0, v[1])), y: Math.min(MAP_H, Math.max(-MAP_H * k0, v[2])) }
+      : { k: 1, x: 0, y: 0 }
     if (!hasUrlView && (initialShared.k !== 1 || initialShared.lng !== -15 || initialShared.lat !== 15)) {
       const [px, py] = project([initialShared.lng, initialShared.lat])
       initView = { k: initialShared.k, x: MAP_W / 2 - px * initialShared.k, y: MAP_H / 2 - py * initialShared.k }
@@ -829,13 +844,13 @@ export default function MapWorld() {
   const tourGlowLayer = useMemo(() => {
     if (!tourHi) return null
     return (
-      <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 5px ${tourHi.color})` }}>
+      <g pointerEvents="none" className="glow-filter" style={glowVars(tourHi.color, 5)}>
         {COUNTRY_FEATURES.filter((f) => tourHi.isos.has(f.id)).map((f) => (
           <path key={f.id} d={f.d} fill={`${tourHi.color}3d`} stroke={tourHi.color} strokeWidth={1.4} strokeLinejoin="round" />
         ))}
       </g>
     )
-  }, [tourHi, isInteracting])
+  }, [tourHi])
 
   const ditActive = lens === 'geografia' || overlayMode === 'dit'
 
@@ -935,7 +950,7 @@ export default function MapWorld() {
           return (
             <g key={fl.id} style={{ transition: 'opacity .35s' }} opacity={opacity}>
               {isSel && (
-                <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 10px ${st.color})` }}>
+                <g pointerEvents="none" className="glow-filter" style={glowVars(st.color, 10)}>
                   <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 5.5}
                     opacity="0.42" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                   <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1}
@@ -986,7 +1001,7 @@ export default function MapWorld() {
         })}
       </g>
     ),
-    [visibleLayers, selFlow, active, zoomTier, detailOn, isInteracting],
+    [visibleLayers, selFlow, active, zoomTier, detailOn],
   )
 
   /* ── overlay de destaque do fluxo em hover (só 1 caminho; não toca na base) ── */
@@ -999,14 +1014,14 @@ export default function MapWorld() {
     const { d } = FLOW_GEO[fl.id]
     const baseW = 1 + (fl.peso - 1) * 1.5
     return (
-      <g pointerEvents="none" style={{ filter: isInteracting ? undefined : `drop-shadow(0 0 8px ${st.color})` }}>
+      <g pointerEvents="none" className="glow-filter" style={glowVars(st.color, 8)}>
         <path d={d} fill="none" stroke="#ffffff" strokeWidth={baseW * 1.1} opacity="0.5"
           strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         <path d={d} fill="none" stroke={st.color} strokeWidth={baseW * 1.9} opacity="1"
           strokeDasharray={st.dash || undefined} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </g>
     )
-  }, [hoverFlow, selFlow, visibleLayers, detailOn, isInteracting])
+  }, [hoverFlow, selFlow, visibleLayers, detailOn])
 
   /* ── arcos de conflito: memoizados ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
