@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:tours": "node scripts/tour-audit.mjs",
-    "test:tours:editorial": "node scripts/tour-editorial.mjs"
+    "test:tours:editorial": "node scripts/tour-editorial.mjs",
+    "test:perf:budget": "node scripts/performance-budget.mjs"
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.0",

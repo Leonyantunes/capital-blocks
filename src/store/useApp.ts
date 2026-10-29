@@ -96,10 +96,33 @@ interface AppState {
   setMapRenderer: (r: MapRenderer) => void
 }
 
+function urlParams(): URLSearchParams | null {
+  return typeof window === 'undefined' ? null : new URLSearchParams(window.location.search)
+}
+
 function initialTab(): TabId {
-  if (typeof window === 'undefined') return 'home'
-  const t = new URLSearchParams(window.location.search).get('t')
+  const t = urlParams()?.get('t')
   return (TABS as string[]).includes(t ?? '') ? (t as TabId) : 'home'
+}
+
+function initialModeFromUrl(): UIMode | null {
+  const m = urlParams()?.get('m')
+  return (['simples', 'didatico', 'avancado'] as string[]).includes(m ?? '') ? (m as UIMode) : null
+}
+
+function initialLangFromUrl(): Lang | null {
+  const l = urlParams()?.get('l')
+  return (LANGS as readonly string[]).includes(l ?? '') ? (l as Lang) : null
+}
+
+/** Mantém links pedagógicos reproduzíveis sem apagar estado espacial do mapa. */
+function syncUrlParam(key: 't' | 'm' | 'l', value: string, defaultValue: string): void {
+  if (typeof window === 'undefined') return
+  const p = new URLSearchParams(window.location.search)
+  if (value === defaultValue) p.delete(key)
+  else p.set(key, value)
+  const qs = p.toString()
+  window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`)
 }
 
 const num = (v: unknown, min: number, max: number, fallback: number): number =>
@@ -148,10 +171,16 @@ export const useApp = create<AppState>()(
   persist(
     (set) => ({
       tab: initialTab(),
-      setTab: (tab) => set({ tab }),
+      setTab: (tab) => {
+        syncUrlParam('t', tab, 'home')
+        set({ tab })
+      },
 
-      mode: 'didatico',
-      setMode: (mode) => set({ mode }),
+      mode: initialModeFromUrl() ?? 'didatico',
+      setMode: (mode) => {
+        syncUrlParam('m', mode, 'didatico')
+        set({ mode })
+      },
 
       lens: 'geral',
       setLens: (lens) => set({ lens }),
@@ -203,8 +232,11 @@ export const useApp = create<AppState>()(
       showRefs: false,
       setShowRefs: (showRefs) => set({ showRefs }),
 
-      lang: 'pt',
-      setLang: (lang) => set({ lang }),
+      lang: initialLangFromUrl() ?? 'pt',
+      setLang: (lang) => {
+        syncUrlParam('l', lang, 'pt')
+        set({ lang })
+      },
 
       mapRenderer: 'svg',
       setMapRenderer: (mapRenderer) => set({ mapRenderer }),
@@ -226,7 +258,17 @@ export const useApp = create<AppState>()(
         lang: s.lang,
         mapRenderer: s.mapRenderer,
       }),
-      merge: (persisted, current) => ({ ...current, ...sanitize(persisted) }),
+      merge: (persisted, current) => {
+        const restored = sanitize(persisted)
+        const urlMode = initialModeFromUrl()
+        const urlLang = initialLangFromUrl()
+        return {
+          ...current,
+          ...restored,
+          ...(urlMode ? { mode: urlMode } : {}),
+          ...(urlLang ? { lang: urlLang } : {}),
+        }
+      },
     },
   ),
 )

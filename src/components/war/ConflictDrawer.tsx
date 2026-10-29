@@ -43,6 +43,31 @@ function Bar({ label, val, max, color, lang }: { label: string; val: number; max
   )
 }
 
+function warMechanismSimple(
+  lang: Lang,
+  c: { periodo: string; stats: { valor: string; label: string }[] },
+): string {
+  const anchor = c.stats[0]
+  return pick(
+    lang,
+    `Este conflito ocorre em ${warText(lang, c.periodo)}. Ele muda gastos públicos, rotas e contratos. ${anchor ? `Um número para acompanhar é ${warText(lang, anchor.valor)} — ${warText(lang, anchor.label)}.` : 'Compare os números abaixo.'}`,
+    `This conflict takes place in ${warText(lang, c.periodo)}. It changes public spending, routes, and contracts. ${anchor ? `One number to track is ${warText(lang, anchor.valor)} — ${warText(lang, anchor.label)}.` : 'Compare the figures below.'}`,
+    `Este conflicto ocurre en ${warText(lang, c.periodo)}. Cambia gasto público, rutas y contratos. ${anchor ? `Un número para seguir es ${warText(lang, anchor.valor)} — ${warText(lang, anchor.label)}.` : 'Compara los datos de abajo.'}`,
+  )
+}
+
+function companyGainSimple(
+  lang: Lang,
+  emp: { nome: string; setor: string; pais: string },
+): string {
+  return pick(
+    lang,
+    `${warText(lang, emp.nome)} atua em ${warText(lang, emp.setor)} (${warText(lang, emp.pais)}). O card mostra como pedidos, contratos ou preços ligados ao conflito podem mudar sua receita ou carteira.`,
+    `${warText(lang, emp.nome)} operates in ${warText(lang, emp.setor)} (${warText(lang, emp.pais)}). The card shows how conflict-related orders, contracts, or prices can change its revenue or backlog.`,
+    `${warText(lang, emp.nome)} actúa en ${warText(lang, emp.setor)} (${warText(lang, emp.pais)}). La tarjeta muestra cómo pedidos, contratos o precios ligados al conflicto pueden cambiar sus ingresos o cartera.`,
+  )
+}
+
 /** Painel lateral do conflito — “quem lucra com esta guerra”. */
 export default function ConflictDrawer({
   conflictId,
@@ -53,7 +78,6 @@ export default function ConflictDrawer({
 }) {
   const mode = useApp((s) => s.mode)
   const lang = useApp((s) => s.lang)
-  const didatico = mode !== 'avancado'
   const trapRef = useFocusTrap(!!conflictId, onClose)
   const c = WAR_CONFLICTS.find((x) => x.id === conflictId) ?? null
 
@@ -89,7 +113,7 @@ export default function ConflictDrawer({
                 </h3>
                 <p className="mt-1.5 rounded-lg border p-3 text-xs leading-relaxed text-zinc-200"
                   style={{ borderColor: '#f4433655', background: '#f443360d' }}>
-                  {textoPorModo(mode, warText(lang, c.mecanismoDidatico), warText(lang, c.mecanismoAvancado))}
+                  {textoPorModo(mode, warText(lang, c.mecanismoDidatico), warText(lang, c.mecanismoAvancado), warMechanismSimple(lang, c))}
                 </p>
               </section>
 
@@ -126,7 +150,7 @@ export default function ConflictDrawer({
                         )}
                       </div>
                       <p className="mt-1.5 text-xs leading-relaxed text-zinc-300">
-                        {textoPorModo(mode, warText(lang, emp.ganhoDidatico), warText(lang, emp.ganhoAvancado))}
+                        {textoPorModo(mode, warText(lang, emp.ganhoDidatico), warText(lang, emp.ganhoAvancado), companyGainSimple(lang, emp))}
                       </p>
                       {emp.surge && (
                         <div className="mt-2">

@@ -31,7 +31,7 @@ export default function ModeBadge() {
         : pick(lang, 'Leitura universitária/pesquisa com categorias, fórmulas e notas metodológicas.', 'University/research reading with categories, formulas and methodological notes.', 'Lectura universitaria/investigación con categorías, fórmulas y notas metodológicas.')
 
   return (
-    <div className="inline-flex flex-wrap items-center gap-1.5">
+    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">
       <button
         type="button"
         onClick={() => setMode(NEXT_MODE[mode])}
@@ -47,7 +47,7 @@ export default function ModeBadge() {
         {label}
       </button>
 
-      <div className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950/90 p-0.5">
+      <div className="flex max-w-full flex-wrap items-center rounded-full border border-zinc-800 bg-zinc-950/90 p-0.5">
         {LENTES.map((l) => {
           const active = lens === l.id
           return (

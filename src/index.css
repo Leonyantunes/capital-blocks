@@ -206,6 +206,22 @@ body {
   }
 }
 
+/* Sem fullscreen (ex.: iPhone, que não permite elemento em tela cheia), o palco
+   do mapa 2D fica com a altura da proporção do SVG — curto demais para o card
+   com cabeçalho e rodapé fixos. Nesse fallback o card inteiro rola, para que
+   nenhum controle fique inacessível; em fullscreen seguem as faixas fixas. */
+@media (max-width: 767px) {
+  .map-root:not(:fullscreen) .tour-panel {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .map-root:not(:fullscreen) .tour-panel-body {
+    flex: none;
+    overflow: visible;
+  }
+}
+
 /* brilho dos elementos destacados do mapa (fluxo selecionado, hover, tour).
    Fica no CSS — e não inline — para que a supressão durante gestos seja feita
    pela classe .is-interacting do root, sem re-render das camadas memoizadas. */

@@ -69,11 +69,11 @@ export default function WarMap({
   const countriesLayer = useMemo(
     () => (
       <g strokeLinejoin="round">
-        {COUNTRY_FEATURES.map((f) => {
+        {COUNTRY_FEATURES.map((f, featureIndex) => {
           const bloc = ISO_TO_BLOC[f.id]
           const color = BLOCS.find((b) => b.id === bloc)?.color
           return (
-            <path key={f.id} d={f.d}
+            <path key={`${f.id ?? 'country'}-${featureIndex}`} d={f.d}
               style={{ fill: color ? `${color}1a` : '#141a22', stroke: '#232c38', strokeWidth: 0.5 }}
               onPointerEnter={(e) => {
                 const r = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect()

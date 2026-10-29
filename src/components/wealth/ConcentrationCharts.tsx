@@ -213,6 +213,18 @@ export function MirrorBars() {
   )
 }
 
+function concentrationStatSimple(
+  lang: Lang,
+  copy: { value: string; label: string; source: string },
+): string {
+  return pick(
+    lang,
+    `Este indicador mostra ${copy.value}: ${copy.label}. A fonte indicada é ${copy.source}.`,
+    `This indicator shows ${copy.value}: ${copy.label}. The cited source is ${copy.source}.`,
+    `Este indicador muestra ${copy.value}: ${copy.label}. La fuente indicada es ${copy.source}.`,
+  )
+}
+
 export function ConcentrationStats() {
   const mode = useApp((s) => s.mode)
   const lang = useApp((s) => s.lang)
@@ -221,7 +233,7 @@ export function ConcentrationStats() {
       {CONCENTRATION_STATS.map((st, index) => {
         const copy = statCopy(lang, index, st)
         return (
-        <Tip key={st.label} className="w-full" text={textoPorModo(mode, copy.tipDidatico, copy.tipAvancado)}>
+        <Tip key={st.label} className="w-full" text={textoPorModo(mode, copy.tipDidatico, copy.tipAvancado, concentrationStatSimple(lang, copy))}>
           <article className="h-full w-full cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-colors hover:border-zinc-600">
             <div className="font-mono text-2xl font-extrabold text-money">{copy.value}</div>
             <div className="mt-1 text-xs font-semibold leading-snug text-zinc-200">{copy.label}</div>

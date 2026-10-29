@@ -492,8 +492,15 @@ export function simplificarTexto(texto: string): string {
   return out
 }
 
-export function textoPorModo(modo: UIMode, did?: string, adv?: string, simples?: string): string {
-  return resolve({ simples, did, adv }, modo)
+/**
+ * Resolver estrito para conteúdo pedagógico exibido na UI.
+ * Os três níveis são obrigatórios: fallback editorial deve ser explícito no
+ * chamador, nunca silencioso dentro do resolver.
+ */
+export function textoPorModo(modo: UIMode, did: string, adv: string, simples: string): string {
+  if (modo === 'simples') return simples
+  if (modo === 'avancado') return adv
+  return did
 }
 
 export function termoSimples(termo: string): string {

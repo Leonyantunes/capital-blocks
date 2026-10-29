@@ -27,7 +27,7 @@ const CountryDrawer = lazy(() => import('./components/CountryDrawer'))
 
 function ModuleFallback({ lang }: { lang: Lang }) {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center gap-3 text-zinc-500">
+    <div className="flex min-h-[calc(100dvh-8rem)] items-center justify-center gap-3 text-zinc-500">
       <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-700 border-t-money" />
       <span className="font-mono text-xs">
         {pick(lang, 'carregando módulo…', 'loading module…', 'cargando módulo…')}
@@ -46,6 +46,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.style.fontSize = presentation ? '19px' : '16px'
   }, [presentation])
+
+  /* leitor de tela, hifenização e pronúncia precisam acompanhar o idioma ativo. */
+  useEffect(() => {
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en' : 'es'
+  }, [lang])
 
   /* tema por tokens: data-theme na raiz inverte as variáveis (index.css);
      meta theme-color acompanha para a barra do navegador mobile */

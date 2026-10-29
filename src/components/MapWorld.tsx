@@ -6,15 +6,15 @@ import {
 } from '../lib/world'
 import { FLOWS, TYPE_STYLE, flowForLang, flowTypeStyleForLang, flowsForLang, type FlowDef, type FlowType } from '../data/flows'
 import { TOURES, getTourForLang, stopColor, stopIsos, toursForLang } from '../data/tours'
-import { NIVEIS, textoPorModo } from '../lib/simples'
+import { textoPorModo } from '../lib/simples'
 import { t } from '../i18n'
 import FlowCard from './FlowCard'
-import SourceLinks from './ui/SourceLinks'
-import TourQuizCard from './ui/TourQuizCard'
+import TourPanel from './ui/TourPanel'
 import { useTourDriver } from '../hooks/useTourDriver'
 import { BR_STATES, BR_STATE_FLOWS, INTERNAL_FLOWS, STATE_CAT_META, BRAZIL_VIEW } from '../data/brazil'
 import { WAGES, wageColor, wageBucketLabelForLang, WAGE_BUCKETS } from '../data/wages'
-import { DISASTERS } from '../data/disasters'
+import { DISASTERS, disasterSimpleForLang } from '../data/disasters'
+import { conflictSimpleForLang } from '../data/conflictSimple'
 import { useApp, type ConflictId } from '../store/useApp'
 
 /* ════════════════════════════════════════════════════════════════
@@ -150,17 +150,17 @@ const MAP_UI = {
   pt: {
     zoomIn: 'Aproximar', zoomOut: 'Afastar', reset: 'Resetar zoom', brazil: 'Zoom no Brasil — estados e fluxos estaduais', brazilTitle: 'Zoom no Brasil: estados, exportações por estado e fluxo interno', fullscreen: 'Tela inteira', exitFullscreen: 'Sair da tela inteira',
     mapAria: 'Mapa-múndi geopolítico interativo com fluxos de capital', layers: 'Camadas', layersPanel: 'camadas · legenda · ferramentas', closeLayers: 'Fechar painel de camadas', legend: 'legenda', clickBloc: 'clique → bloco', clickDetails: 'clique p/ detalhes →', routePath: 'no caminho da rota', regionalRoute: 'rota regional ativa', blocAnatomy: 'clique para anatomia do bloco', wageAvg: 'salário médio', month: 'mês',
-    copyTitle: 'Copiar link do estado atual do mapa (zoom, fluxo, país)', flowList: 'roteiro de análise · clique voa até a rota', detailMode: 'modo detalhado', regionalVisible: 'rotas regionais visíveis', noData: 'País renderizado no globo, aguardando dados. Para conectá-lo a um bloco, adicione o ISO', noDataJoin: 'em', noDataEntry: 'e crie sua entrada em', wageLegend: 'salário médio mensal (USD, aprox.)', step: 'passo', chooseTour: 'Escolher tour temático', endTour: 'Encerrar tour', goStep: 'Ir ao passo', next: 'próximo →', finish: 'finalizar ✓', footerHint: 'clique numa linha = detalhes do fluxo · scroll = zoom · contorno verde-água = BRICS+', internalOff: '⇄ fluxo financeiro interno (N/NE ⇄ SE)', internalOn: '✕ fluxo interno', loadingStates: 'carregando contornos dos estados (IBGE)…', click: 'clique', startTour: 'Iniciar tour guiado', levels: { simples: ['simples', 'Explicação direta'], didatico: ['didático', 'Leitura didática'], avancado: ['avançado', 'Leitura técnica'] } as const,
+    copyTitle: 'Copiar link do estado atual do mapa (zoom, fluxo, país)', flowList: 'roteiro de análise · clique voa até a rota', detailMode: 'modo detalhado', regionalVisible: 'rotas regionais visíveis', noData: 'País renderizado no globo, aguardando dados. Para conectá-lo a um bloco, adicione o ISO', noDataJoin: 'em', noDataEntry: 'e crie sua entrada em', wageLegend: 'salário médio mensal (USD, aprox.)', step: 'passo', chooseTour: 'Escolher tour temático', previousStep: 'Passo anterior', endTour: 'Encerrar tour', goStep: 'Ir ao passo', next: 'próximo →', finish: 'finalizar ✓', footerHint: 'clique numa linha = detalhes do fluxo · scroll = zoom · contorno verde-água = BRICS+', internalOff: '⇄ fluxo financeiro interno (N/NE ⇄ SE)', internalOn: '✕ fluxo interno', loadingStates: 'carregando contornos dos estados (IBGE)…', click: 'clique', startTour: 'Iniciar tour guiado', levels: { simples: ['simples', 'Explicação direta'], didatico: ['didático', 'Leitura didática'], avancado: ['avançado', 'Leitura técnica'] } as const,
   },
   en: {
     zoomIn: 'Zoom in', zoomOut: 'Zoom out', reset: 'Reset zoom', brazil: 'Zoom to Brazil — states and state flows', brazilTitle: 'Zoom to Brazil: states, state exports and internal flow', fullscreen: 'Fullscreen', exitFullscreen: 'Exit fullscreen',
     mapAria: 'Interactive geopolitical world map with capital flows', layers: 'Layers', layersPanel: 'layers · legend · tools', closeLayers: 'Close layers panel', legend: 'legend', clickBloc: 'click → bloc', clickDetails: 'click for details →', routePath: 'on the route', regionalRoute: 'regional route active', blocAnatomy: 'click for bloc anatomy', wageAvg: 'average wage', month: 'month',
-    copyTitle: 'Copy link to the current map state (zoom, flow, country)', flowList: 'analysis routes · click to fly to a route', detailMode: 'detail mode', regionalVisible: 'regional routes visible', noData: 'Country is rendered on the globe but has no detailed data yet. To connect it to a bloc, add ISO', noDataJoin: 'to', noDataEntry: 'and create its entry in', wageLegend: 'average monthly wage (USD, approx.)', step: 'step', chooseTour: 'Choose thematic tour', endTour: 'End tour', goStep: 'Go to step', next: 'next →', finish: 'finish ✓', footerHint: 'click a line = flow details · scroll = zoom · cyan outline = BRICS+', internalOff: '⇄ internal financial flow (N/NE ⇄ SE)', internalOn: '✕ internal flow', loadingStates: 'loading state boundaries (IBGE)…', click: 'click', startTour: 'Start guided tour', levels: { simples: ['simple', 'Direct explanation'], didatico: ['guided', 'Guided reading'], avancado: ['advanced', 'Technical reading'] } as const,
+    copyTitle: 'Copy link to the current map state (zoom, flow, country)', flowList: 'analysis routes · click to fly to a route', detailMode: 'detail mode', regionalVisible: 'regional routes visible', noData: 'Country is rendered on the globe but has no detailed data yet. To connect it to a bloc, add ISO', noDataJoin: 'to', noDataEntry: 'and create its entry in', wageLegend: 'average monthly wage (USD, approx.)', step: 'step', chooseTour: 'Choose thematic tour', previousStep: 'Previous step', endTour: 'End tour', goStep: 'Go to step', next: 'next →', finish: 'finish ✓', footerHint: 'click a line = flow details · scroll = zoom · cyan outline = BRICS+', internalOff: '⇄ internal financial flow (N/NE ⇄ SE)', internalOn: '✕ internal flow', loadingStates: 'loading state boundaries (IBGE)…', click: 'click', startTour: 'Start guided tour', levels: { simples: ['simple', 'Direct explanation'], didatico: ['guided', 'Guided reading'], avancado: ['advanced', 'Technical reading'] } as const,
   },
   es: {
     zoomIn: 'Acercar', zoomOut: 'Alejar', reset: 'Restablecer zoom', brazil: 'Zoom a Brasil — estados y flujos estatales', brazilTitle: 'Zoom a Brasil: estados, exportaciones estatales y flujo interno', fullscreen: 'Pantalla completa', exitFullscreen: 'Salir de pantalla completa',
     mapAria: 'Mapa mundial geopolítico interactivo con flujos de capital', layers: 'Capas', layersPanel: 'capas · leyenda · herramientas', closeLayers: 'Cerrar panel de capas', legend: 'leyenda', clickBloc: 'clic → bloque', clickDetails: 'clic para detalles →', routePath: 'en la ruta', regionalRoute: 'ruta regional activa', blocAnatomy: 'clic para anatomía del bloque', wageAvg: 'salario medio', month: 'mes',
-    copyTitle: 'Copiar enlace del estado actual del mapa (zoom, flujo, país)', flowList: 'rutas de análisis · clic para volar a la ruta', detailMode: 'modo detallado', regionalVisible: 'rutas regionales visibles', noData: 'El país está renderizado en el globo pero todavía no tiene datos detallados. Para conectarlo a un bloque, añade el ISO', noDataJoin: 'en', noDataEntry: 'y crea su entrada en', wageLegend: 'salario medio mensual (USD, aprox.)', step: 'paso', chooseTour: 'Elegir tour temático', endTour: 'Cerrar tour', goStep: 'Ir al paso', next: 'siguiente →', finish: 'finalizar ✓', footerHint: 'clic en una línea = detalles del flujo · rueda = zoom · contorno cian = BRICS+', internalOff: '⇄ flujo financiero interno (N/NE ⇄ SE)', internalOn: '✕ flujo interno', loadingStates: 'cargando límites estatales (IBGE)…', click: 'clic', startTour: 'Iniciar tour guiado', levels: { simples: ['simple', 'Explicación directa'], didatico: ['didáctico', 'Lectura didáctica'], avancado: ['avanzado', 'Lectura técnica'] } as const,
+    copyTitle: 'Copiar enlace del estado actual del mapa (zoom, flujo, país)', flowList: 'rutas de análisis · clic para volar a la ruta', detailMode: 'modo detallado', regionalVisible: 'rutas regionales visibles', noData: 'El país está renderizado en el globo pero todavía no tiene datos detallados. Para conectarlo a un bloque, añade el ISO', noDataJoin: 'en', noDataEntry: 'y crea su entrada en', wageLegend: 'salario medio mensual (USD, aprox.)', step: 'paso', chooseTour: 'Elegir tour temático', previousStep: 'Paso anterior', endTour: 'Cerrar tour', goStep: 'Ir al paso', next: 'siguiente →', finish: 'finalizar ✓', footerHint: 'clic en una línea = detalles del flujo · rueda = zoom · contorno cian = BRICS+', internalOff: '⇄ flujo financiero interno (N/NE ⇄ SE)', internalOn: '✕ flujo interno', loadingStates: 'cargando límites estatales (IBGE)…', click: 'clic', startTour: 'Iniciar tour guiado', levels: { simples: ['simple', 'Explicación directa'], didatico: ['didáctico', 'Lectura didáctica'], avancado: ['avanzado', 'Lectura técnica'] } as const,
   },
 } as const
 
@@ -417,11 +417,12 @@ export default function MapWorld() {
       if (countryId) p.set('c', countryId)
       if (tab !== 'home') p.set('t', tab)
       if (mode !== 'didatico') p.set('m', mode)
+      if (lang !== 'pt') p.set('l', lang)
       const qs = p.toString()
       history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname)
     }, 500)
     return () => clearTimeout(t)
-  }, [view, selFlow, conflict, countryId, tab, mode])
+  }, [view, selFlow, conflict, countryId, tab, mode, lang])
   const [showWages, setShowWages] = useState(false)
   const [showDeaths, setShowDeaths] = useState(false)
   const [selDisaster, setSelDisaster] = useState<string | null>(null)
@@ -452,6 +453,7 @@ export default function MapWorld() {
       /* sem fullscreen: o tour segue normal */
     }
     setSheetOpen(false)
+    setShowFlowList(false)
     setShowWages(false)
     setShowDeaths(false)
     setTourStep(0)
@@ -559,12 +561,15 @@ export default function MapWorld() {
     return () => window.removeEventListener('keydown', onKey)
   }, [tourStep])
 
-  /* tour guiado: voa até cada parada (ponto acima do card), acende fluxo/conflito/camada */
+  /* tour guiado: voa até cada parada (ponto acima do card), acende fluxo/conflito/camada.
+     Em tela muito larga o card vira coluna à direita e o mapa encolhe — aí o
+     alvo pode ficar centrado; nas demais, sobe para não ficar sob o sheet. */
   useEffect(() => {
     if (tourStep === null) return
     const s = STOPS[tourStep]
     if (!s) return
-    flyToLL(s.lng, s.lat, s.k, 0.36, 1)
+    const docked = typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches
+    flyToLL(s.lng, s.lat, s.k, docked ? 0.5 : 0.28, 1)
     if (s.flowId) setSelFlow(s.flowId)
     else setSelFlow(null)
     if (s.conflict) setConflict(s.conflict)
@@ -814,7 +819,9 @@ export default function MapWorld() {
 
   const showHoverLabel = (e: React.PointerEvent, iso: string, name: string, wageUsd?: number) => {
     if (e.pointerType === 'touch' || isInteracting) return // rótulo suprimido no toque ou durante gestos
-    const rect = containerRef.current?.getBoundingClientRect()
+    /* coordenadas do SVG (não do container): com o card dockado o mapa
+       encolhe e o canto do container deixa de coincidir com o canto do mapa */
+    const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return
     setHover({ name, iso, x: e.clientX - rect.left, y: e.clientY - rect.top, wageUsd })
   }
@@ -877,7 +884,7 @@ export default function MapWorld() {
           if (iso) handleCountryClick(iso, el.getAttribute('data-name') ?? iso)
         }}
       >
-        {COUNTRY_FEATURES.map((f) => {
+        {COUNTRY_FEATURES.map((f, featureIndex) => {
           const bloc = ISO_TO_BLOC[f.id]
           const isBrics = BRICS_ISO.has(f.id)
           const blocColor = BLOCS.find((b) => b.id === bloc)?.color
@@ -904,7 +911,7 @@ export default function MapWorld() {
           const stroke = thi ? 'none' : ditActive ? `${ditMeta.color}77` : glow ? '#8ab4f8' : wageOn ? '#0d1117' : bricsOn ? '#26c6da' : '#262f3b'
           return (
             <path
-              key={f.id}
+              key={`${f.id ?? 'country'}-${featureIndex}`}
               d={f.d}
               data-iso={f.id}
               data-name={f.name}
@@ -926,7 +933,7 @@ export default function MapWorld() {
   )
 
   /* ── fluxos: camada BASE memoizada (NÃO depende de hover — passar o mouse
-     não reconcilia os ~49 fluxos; o hover vira um overlay por cima) ── */
+     não reconcilia os 52 fluxos; o hover vira um overlay por cima) ── */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const flowsLayer = useMemo(
     () => (
@@ -978,7 +985,7 @@ export default function MapWorld() {
                 onPointerEnter={(e) => {
                   if (e.pointerType === 'touch') return // no toque, o clique abre os detalhes
                   setHoverFlow(fl.id)
-                  const r = containerRef.current?.getBoundingClientRect()
+                  const r = svgRef.current?.getBoundingClientRect()
                   if (r) setFlowTip({ x: e.clientX - r.left, y: e.clientY - r.top, id: fl.id })
                 }}
                 onPointerLeave={() => {
@@ -1255,6 +1262,9 @@ export default function MapWorld() {
           ? 'fixed inset-0 z-[100] flex flex-col items-stretch justify-start rounded-none border-0 bg-black'
           : 'rounded-xl border'
       }`}>
+      {/* com o tour ancorado à direita (telas xl), o mapa encolhe e divide o
+          palco com o card — em vez de ficar coberto por ele */}
+      <div className={`${isFs ? 'flex min-h-0 flex-1 flex-col' : ''} ${tourStep !== null ? 'xl:pr-[392px]' : ''}`}>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
@@ -1302,6 +1312,7 @@ export default function MapWorld() {
           {markersLayer}
         </g>
       </svg>
+      </div>
 
       {/* ── MOBILE: barra de controle inferior (estilo app de mapas) ── */}
       <div className="absolute inset-x-2.5 bottom-2.5 z-20 flex items-stretch gap-1 rounded-xl border border-zinc-800 bg-zinc-900/90 p-1 backdrop-blur md:hidden"
@@ -1428,7 +1439,7 @@ export default function MapWorld() {
           const st = flowTypeStyleForLang(fl.type, lang)
           const fc = BLOCS.find((b) => b.id === fl.from)
           const tc = BLOCS.find((b) => b.id === fl.to)
-          const flip = flowTip.x > (containerRef.current?.clientWidth ?? 800) - 300
+          const flip = flowTip.x > (svgRef.current?.clientWidth ?? 800) - 300
           return (
             <div
               className={`pointer-events-none absolute z-30 w-64 -translate-y-full rounded-xl border bg-zinc-900/95 p-3 shadow-2xl backdrop-blur ${
@@ -1513,7 +1524,7 @@ export default function MapWorld() {
 
       {/* lista de fluxos (roteiro de análise) — desktop: canto sup. direito · mobile: sheet sobre a barra */}
       {showFlowList && (
-        <div className="thin-scroll absolute right-12 top-2.5 z-30 max-h-[78%] w-72 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-2 shadow-2xl backdrop-blur max-md:inset-x-2.5 max-md:bottom-[4.25rem] max-md:left-2.5 max-md:top-auto max-md:w-auto max-md:max-h-[58%]">
+        <div className={`thin-scroll absolute right-12 top-2.5 z-30 max-h-[78%] w-72 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-2 shadow-2xl backdrop-blur max-md:inset-x-2.5 max-md:bottom-[4.25rem] max-md:left-2.5 max-md:top-auto max-md:w-auto max-md:max-h-[58%] ${tourStep !== null ? 'xl:right-[404px]' : ''}`}>
           <div className="px-1 pb-1.5 text-[9.5px] uppercase tracking-widest text-zinc-500">
             {copy.flowList}
           </div>
@@ -1554,7 +1565,10 @@ export default function MapWorld() {
         </div>
       )}
 
-      <ZoomButtons onZoom={zoomAroundCenter} onReset={() => setView({ k: 1, x: 0, y: 0 })} onBrazil={goBrazil} onFullscreen={toggleFullscreen} isFs={isFs} lang={lang} />
+      {/* durante o tour o card ocupa a coluna direita; os controles saem de baixo dele */}
+      {tourStep === null && (
+        <ZoomButtons onZoom={zoomAroundCenter} onReset={() => setView({ k: 1, x: 0, y: 0 })} onBrazil={goBrazil} onFullscreen={toggleFullscreen} isFs={isFs} lang={lang} />
+      )}
 
       {/* card "país sem dados" */}
       {selectedInfo && !hover && (
@@ -1598,112 +1612,39 @@ export default function MapWorld() {
             </div>
             <div className="mt-1.5 font-mono text-sm font-extrabold text-red-400">{d.mortos}</div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-300">
-              {textoPorModo(mode, d.did, d.adv)}
+              {textoPorModo(mode, d.did, d.adv, disasterSimpleForLang(d, lang))}
             </p>
           </div>
         )
       })()}
 
-      {/* tour guiado — MESMAS paradas do 3D; apresentação segue o modo (simples/completa) */}
-      {tourStep !== null && (() => {
-        const tour = activeTour
-        const s = STOPS[tourStep]
-        if (!s) return null
-        const setMode = useApp.getState().setMode
-        const A = tour.accent
-        return (
-          <div id="tour-spotlight-target" className="absolute bottom-14 left-1/2 z-30 w-[min(94%,620px)] -translate-x-1/2 rounded-xl border bg-zinc-900/95 p-4 shadow-2xl backdrop-blur max-md:bottom-[5rem] max-md:p-3"
-            style={{ borderColor: `${A}88`, boxShadow: `0 0 28px ${A}22, 0 18px 50px rgba(0,0,0,.55)` }}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
-                  <span>{s.chapter} · {copy.step} {tourStep + 1}/{STOPS.length}</span>
-                  <span className="inline-flex overflow-hidden rounded border border-zinc-700">
-                    {NIVEIS.map((n) => (
-                      <button key={n.id} onClick={() => setMode(n.id)} title={copy.levels[n.id][1]}
-                        className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === n.id ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
-                        style={mode === n.id ? { background: A } : undefined}>
-                        {copy.levels[n.id][0]}
-                      </button>
-                    ))}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-sm font-bold text-zinc-100">{s.titulo}</div>
-                <select value={activeTourId} onChange={(e) => { setActiveTourId(e.target.value); setTourStep(0) }}
-                  title={copy.chooseTour} aria-label={copy.chooseTour}
-                  className="mt-1.5 max-w-full cursor-pointer truncate rounded-md border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[10.5px] font-semibold text-zinc-200 outline-none hover:border-zinc-500">
-                  {localizedTours.map((td) => (
-                    <option key={td.id} value={td.id}>{td.titulo}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <button
-                  onClick={() => startDriverTour(tourStep)}
-                  title={lang === 'pt' ? 'Ativar modo Spotlight acessível (Driver.js)' : 'Activate accessible Spotlight mode (Driver.js)'}
-                  className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-amber-500/20 max-md:px-2.5 max-md:py-1.5"
-                >
-                  🔦
-                </button>
-                <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
-                <button onClick={() => setTourStep(tourStep < STOPS.length - 1 ? tourStep + 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">→</button>
-                <button onClick={endTour} aria-label={copy.endTour}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">✕</button>
-              </div>
-            </div>
-            {mode !== 'avancado' ? (
-              <>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, s.did, s.adv, s.simples)}</p>
-                <div className="mt-2.5 grid grid-cols-3 gap-1.5 max-md:grid-cols-3">
-                  {s.didStats.map((d) => (
-                    <div key={d.k} className="rounded-lg border px-2 py-1.5 text-center" style={{ borderColor: `${A}44`, background: `${A}0d` }}>
-                      <div className="font-mono text-sm font-extrabold leading-tight" style={{ color: A }}>{d.v}</div>
-                      <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{textoPorModo(mode, d.k, d.k)}</div>
-                      <SourceLinks sourceIds={d.sourceIds} />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="mt-2 text-xs leading-relaxed text-zinc-300">{s.adv}</p>
-            )}
-            {s.dica && (
-              <p className="mt-2 font-mono text-[10px] leading-snug text-zinc-500">💡 {s.dica}</p>
-            )}
-            {s.quiz && <TourQuizCard quiz={s.quiz} accentColor={A} />}
-            <div className="mt-2.5 flex items-center justify-between gap-2">
-              <div className="flex max-w-[60%] flex-wrap items-center gap-1 overflow-hidden">
-                {STOPS.map((st, i) => (
-                  <button key={st.id} onClick={() => setTourStep(i)} title={st.titulo} aria-label={`${copy.goStep} ${i + 1}`}
-                    className={`h-1.5 rounded-full transition-all ${i === tourStep ? 'w-5' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'} max-md:h-2.5 max-md:w-3`}
-                    style={i === tourStep ? { background: A } : undefined} />
-                ))}
-              </div>
-              <div className="flex gap-1">
-                <button onClick={() => setTourStep(tourStep > 0 ? tourStep - 1 : null)}
-                  className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2 max-md:text-xs">←</button>
-                <button onClick={() => (tourStep < STOPS.length - 1 ? setTourStep(tourStep + 1) : endTour())}
-                  className="rounded border px-2 py-0.5 text-[10px] font-bold hover:bg-white/5 max-md:px-4 max-md:py-2 max-md:text-xs"
-                  style={{ borderColor: `${A}99`, color: A }}>
-                  {tourStep < STOPS.length - 1 ? copy.next : copy.finish}
-                </button>
-              </div>
-            </div>
-            {tourStep === STOPS.length - 1 && (
-              <button onClick={() => { endTour(); useApp.getState().setTab(tour.finalTab) }}
-                className="mt-2 w-full rounded-lg px-3 py-1.5 text-[11px] font-bold text-onaccent hover:brightness-110"
-                style={{ background: A }}>
-                {tour.finalLabel}
-              </button>
-            )}
-          </div>
-        )
-      })()}
+      {/* tour guiado — MESMAS paradas do 3D; card compartilhado (coluna à
+          direita em telas xl, bottom sheet limitado nas demais) */}
+      {tourStep !== null && STOPS[tourStep] && (
+        <TourPanel
+          id="tour-spotlight-target"
+          stop={STOPS[tourStep]}
+          stepIndex={tourStep}
+          total={STOPS.length}
+          accent={activeTour.accent}
+          tourId={activeTourId}
+          tours={localizedTours}
+          copy={copy}
+          surface="2d"
+          dockAt="xl"
+          onPrev={() => setTourStep(Math.max(0, tourStep - 1))}
+          onNext={() => (tourStep < STOPS.length - 1 ? setTourStep(tourStep + 1) : endTour())}
+          onEnd={endTour}
+          onSelectStep={(i) => setTourStep(i)}
+          onSelectTour={(id) => { setActiveTourId(id); setTourStep(0) }}
+          onFinish={() => { endTour(); useApp.getState().setTab(activeTour.finalTab) }}
+          finalLabel={activeTour.finalLabel}
+          onSpotlight={() => startDriverTour(tourStep)}
+        />
+      )}
 
       {/* legenda + conflitos rápidos (desktop; no mobile a legenda vive no sheet) */}
-      <div className="hidden flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 px-4 py-2.5 md:flex">
+      <div className={`hidden flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 px-4 py-2.5 md:flex ${tourStep !== null ? 'xl:pr-[408px]' : ''}`}>
         {(Object.keys(TYPE_STYLE) as FlowType[]).map((t) => (
           <span key={t} className={`inline-flex items-center gap-1.5 text-[10.5px] ${visibleLayers[t] ? 'text-zinc-400' : 'text-zinc-600 line-through'}`}>
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: TYPE_STYLE[t].color }} />
@@ -1763,7 +1704,7 @@ export function ConflictSelector() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: active.color + '55', background: active.color + '0d' }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado)}</p>
+          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado, conflictSimpleForLang(active.id, lang))}</p>
         </div>
       )}
     </div>

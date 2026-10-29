@@ -51,7 +51,6 @@ export default function PlatformModule() {
   const mode = useApp((s) => s.mode)
   const loc = locale(lang)
   const tr = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
-  const didatico = mode !== 'avancado'
 
   const bruto = p.corridas * p.valorCorrida
   const comissao = bruto * (p.comissaoPct / 100)
@@ -200,10 +199,12 @@ export default function PlatformModule() {
           <div className="rounded-xl border border-dashed border-money/40 bg-money/5 p-4">
             <h4 className="text-sm font-bold text-money">{tr('Isso já existiu antes: o salário por peça', 'This existed before: piece wages', 'Esto ya existía: el salario por pieza')}</h4>
             <p className="mt-1 text-xs leading-relaxed text-zinc-300">
-              {tr(
-                'Marx descreve no Livro I o salário por peça: pagar por "peça produzida" esconde a jornada, intensifica o trabalho e transfere ao operário os riscos da produção. O aplicativo é a mesma lógica com GPS: a peça agora se chama corrida, entrega ou pacote — e o "galpão" é a rua.',
-                'In Capital, Volume I, Marx describes piece wages: paying per "piece produced" hides the workday, intensifies labor and shifts production risks to the worker. The app applies the same logic with GPS: the piece is now a ride, delivery or parcel — and the "factory floor" is the street.',
-                'En El capital, Libro I, Marx describe el salario por pieza: pagar por "pieza producida" oculta la jornada, intensifica el trabajo y traslada al trabajador los riesgos de la producción. La aplicación aplica la misma lógica con GPS: la pieza ahora es un viaje, una entrega o un paquete — y el "taller" es la calle.')}
+              {textoPorModo(
+                mode,
+                tr('Marx descreve no Livro I o salário por peça: pagar por "peça produzida" esconde a jornada, intensifica o trabalho e transfere ao operário os riscos da produção. O aplicativo é a mesma lógica com GPS: a peça agora se chama corrida, entrega ou pacote — e o "galpão" é a rua.', 'In Capital, Volume I, Marx describes piece wages: paying per "piece produced" hides the workday, intensifies labor and shifts production risks to the worker. The app applies the same logic with GPS: the piece is now a ride, delivery or parcel — and the "factory floor" is the street.', 'En El capital, Libro I, Marx describe el salario por pieza: pagar por "pieza producida" oculta la jornada, intensifica el trabajo y traslada al trabajador los riesgos de la producción. La aplicación aplica la misma lógica con GPS: la pieza ahora es un viaje, una entrega o un paquete — y el "taller" es la calle.'),
+                tr('No Livro I, o salário por peça é uma forma transformada do salário por tempo: remuneração por output pode intensificar a jornada e deslocar riscos/custos ao trabalhador. A plataforma acrescenta precificação e controle algorítmicos, além de externalizar veículo, combustível e manutenção.', 'In Capital Vol. I, piece wages are a transformed form of time wages: output-based pay can intensify labor and shift risks/costs to the worker. The platform adds algorithmic pricing and control while externalizing vehicle, fuel, and maintenance costs.', 'En El capital, Libro I, el salario por pieza es una forma transformada del salario por tiempo: pagar por output puede intensificar el trabajo y trasladar riesgos/costos al trabajador. La plataforma añade precios y control algorítmicos y externaliza vehículo, combustible y mantenimiento.'),
+                tr('Quando o pagamento é por corrida ou entrega, a renda depende de quantas tarefas são concluídas. Tempo de espera, combustível e manutenção podem ficar por conta do trabalhador.', 'When pay is per ride or delivery, income depends on how many tasks are completed. Waiting time, fuel, and maintenance can fall on the worker.', 'Cuando el pago es por viaje o entrega, el ingreso depende de cuántas tareas se completan. El tiempo de espera, combustible y mantenimiento pueden quedar a cargo del trabajador.'),
+              )}
             </p>
           </div>
         </div>

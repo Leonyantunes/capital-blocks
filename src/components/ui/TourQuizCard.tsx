@@ -10,7 +10,9 @@ interface TourQuizCardProps {
 
 export default function TourQuizCard({ quiz, accentColor = '#10b981' }: TourQuizCardProps) {
   const lang = useApp((s) => s.lang)
+  const mode = useApp((s) => s.mode)
   const li = lang === 'pt' ? 0 : lang === 'en' ? 1 : 2
+  const copy = mode === 'simples' ? quiz.simples : mode === 'avancado' ? quiz.avancado : quiz
   const [selected, setSelected] = useState<number | null>(null)
   const [revealed, setRevealed] = useState(false)
 
@@ -44,11 +46,11 @@ export default function TourQuizCard({ quiz, accentColor = '#10b981' }: TourQuiz
       </div>
 
       <h5 className="text-xs font-semibold leading-relaxed text-zinc-100">
-        {quiz.pergunta[li]}
+        {copy.pergunta[li]}
       </h5>
 
       <div className="mt-2.5 space-y-1.5">
-        {quiz.opcoes.map((opcao, idx) => {
+        {copy.opcoes.map((opcao, idx) => {
           let btnStyle = 'border-zinc-800 bg-zinc-900/70 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800/80'
 
           if (revealed) {
@@ -98,7 +100,7 @@ export default function TourQuizCard({ quiz, accentColor = '#10b981' }: TourQuiz
               </>
             )}
           </div>
-          <p className="text-[11px] leading-relaxed text-zinc-300">{quiz.explicacao[li]}</p>
+          <p className="text-[11px] leading-relaxed text-zinc-300">{copy.explicacao[li]}</p>
         </div>
       )}
     </div>

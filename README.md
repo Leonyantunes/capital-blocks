@@ -82,11 +82,14 @@ inteiramente cliente. Tudo o que precisa saber está nos arquivos de `src/data/`
 | `npm run test:globe` | Testes de propriedade do voo da câmera 3D |
 | `npm run test:framing` | Testes de enquadramento de rota (2D/3D, antimeridiano) |
 | `npm run test:tours` | Auditoria de integridade do contrato de parada dos tours |
-| `npm run test:tours:editorial` | Auditoria das 49 paradas, do nível Simples e da qualidade editorial |
+| `npm run test:tours:editorial` | Auditoria das 56 paradas, dos três níveis, idiomas e proveniência editorial |
+| `npm run test:perf:budget` | Gate pós-build de bytes e isolamento dos chunks pesados |
 
-As quatro suítes auxiliares são `.mjs` puros (sem dependência de teste) e verificam
-invariantes do globo, enquadramento e integridade/editorial dos tours. O deploy no GitHub Pages roda as
-**cinco** suítes antes do build — nada quebrado é publicado.
+As suítes auxiliares em `.mjs` verificam invariantes do globo, enquadramento,
+integridade/editorial dos tours e o orçamento estático de performance. O deploy no
+GitHub Pages roda as cinco suítes funcionais/editoriais antes do build e, depois do
+bundle de produção, executa `test:perf:budget` antes de publicar o artefato. O baseline,
+as metas e as limitações do laboratório estão em [PERFORMANCE-GATE.md](PERFORMANCE-GATE.md).
 
 ## Stack
 
@@ -171,9 +174,10 @@ mesmos números, datas e unidades: muda a linguagem, não o dado.
 | Fórmulas | evitadas quando não são necessárias | aparecem com apoio visual | sempre visíveis |
 | Tooltips | vocabulário de início do ensino médio | linguagem direta | definições formais |
 
-Nos tours, as **49 paradas** têm copy simples explícita. Nos demais componentes,
-`textoPorModo()` prefere copy simples curada e usa uma simplificação conservadora do
-texto didático como fallback, preservando números e unidades.
+Nos tours, as **56 paradas** têm Simples, Didático e Avançado explícitos. Nas
+superfícies pedagógicas, `textoPorModo()` exige as três versões e não faz fallback
+silencioso; EN/ES ausente também é tratado como erro. Valores e `sourceIds` permanecem
+invariantes entre níveis. Ver `READING-LEVEL-CONTRACT.md`.
 
 ## Design System
 
@@ -205,6 +209,9 @@ Este projeto leva dados a sério, e isso é **documentado como contrato**:
 - [`DATA-STANDARD.md`](DATA-STANDARD.md) — contrato legível por humanos **e por IA**:
   schemas TypeScript, vocabulários controlados, tabela de roteamento "fato → arquivo
   canônico" e workflow de verificação.
+- [`READING-LEVEL-CONTRACT.md`](READING-LEVEL-CONTRACT.md) — contrato estrito dos
+  modos Simples, Didático e Avançado: invariantes de número/fonte, paridade PT/EN/ES,
+  regras de fallback e critérios de aceite.
 - [`src/data/sources.ts`](src/data/sources.ts) — registro canônico das fontes, com
   **três estados de verificação** honestos:
   - `url-incluida` — link direto conferido
@@ -214,7 +221,7 @@ Este projeto leva dados a sério, e isso é **documentado como contrato**:
 O Módulo 10 expõe esse registro na UI, incluindo o que ainda está pendente. Um dado
 incompleto é exibido com honestidade, não escondido.
 
-As **101 estatísticas dos tours** apontam para uma ou mais entradas canônicas desse
+As **115 estatísticas dos tours** apontam para uma ou mais entradas canônicas desse
 registro e exibem atalho para a fonte diretamente nos cards do mapa 2D e do globo 3D.
 Em 2026-10-02 não havia nenhuma entrada efetivamente marcada `revisao-pendente`.
 
@@ -244,8 +251,9 @@ não entram na sincronização corrente.
 ## Contribuindo
 
 O projeto tem quatro documentos normativos que **prevalecem** sobre qualquer
-convenção usual: `THEORY.md` → `DATA-GUIDELINES.md` → `DATA-STANDARD.md`. Antes de
-mexer em qualquer número, texto, país, fluxo ou tour, leia os três.
+convenção usual: `THEORY.md` → `DATA-GUIDELINES.md` → `DATA-STANDARD.md` →
+`READING-LEVEL-CONTRACT.md`. Antes de mexer em qualquer número, texto, país, fluxo
+ou tour, leia os quatro.
 
 Fluxo sugerido:
 

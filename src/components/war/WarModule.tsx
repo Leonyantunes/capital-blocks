@@ -74,6 +74,18 @@ function TheoryCards() {
   )
 }
 
+function epochSimple(
+  lang: 'pt' | 'en' | 'es',
+  ep: { from: number; to: number; rotuloCurto: string },
+): string {
+  return pick(
+    lang,
+    `Este período vai de ${ep.from} a ${ep.to}. Observe quais conflitos aparecem no mapa e como eles mudam gastos, rotas e produção.`,
+    `This period runs from ${ep.from} to ${ep.to}. Watch which conflicts appear on the map and how they change spending, routes, and production.`,
+    `Este período va de ${ep.from} a ${ep.to}. Observa qué conflictos aparecen en el mapa y cómo cambian gasto, rutas y producción.`,
+  )
+}
+
 /** Linha do tempo reversa 2026 → 1914. */
 function EpochTimeline({ epochIndex, setEpochIndex }: {
   epochIndex: number
@@ -117,7 +129,7 @@ function EpochTimeline({ epochIndex, setEpochIndex }: {
         ))}
       </div>
 
-      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, warText(lang, ep.introDidatico), warText(lang, ep.introAvancado))}</p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, warText(lang, ep.introDidatico), warText(lang, ep.introAvancado), epochSimple(lang, ep))}</p>
       {mode === 'avancado' && (
         <p className="mt-1.5 rounded-lg bg-zinc-950/70 p-2 font-mono text-[10.5px] leading-relaxed text-zinc-500">
           [{pick(lang, 'avançado', 'advanced', 'avanzado')}] {warText(lang, ep.introAvancado)}

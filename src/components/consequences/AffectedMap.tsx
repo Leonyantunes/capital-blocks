@@ -8,13 +8,24 @@ import { textoPorModo } from '../../lib/simples'
 
 const IMPERIAL_BLOCS = new Set(['usa', 'eu', 'gbr', 'jpn'])
 
+function affectedSimple(
+  lang: 'pt' | 'en' | 'es',
+  c: { nome: string; chave: string; periodo: string; colonizador: string },
+): string {
+  return pick(
+    lang,
+    `Este caso destaca ${c.chave}. O período histórico indicado é ${c.periodo}; a potência colonial ou externa listada é ${c.colonizador}.`,
+    `This case highlights ${c.chave}. The historical period shown is ${c.periodo}; the listed colonial or external power is ${c.colonizador}.`,
+    `Este caso destaca ${c.chave}. El período histórico indicado es ${c.periodo}; la potencia colonial o externa registrada es ${c.colonizador}.`,
+  )
+}
+
 /** MAPA "O OUTRO LADO" — países atrasados/explorados pelo imperialismo. */
 export default function AffectedMap() {
   const [selectedIso, setSelectedIso] = useState<string | null>('180')
   const [catFilter, setCatFilter] = useState<AffectedCat | 'todas'>('todas')
   const lang = useApp((s) => s.lang)
   const mode = useApp((s) => s.mode)
-  const didatico = mode !== 'avancado'
   const affected = useMemo(() => affectedForLang(lang), [lang])
   const catMeta = useMemo(() => catMetaForLang(lang), [lang])
   const loc = locale(lang)
@@ -39,7 +50,7 @@ export default function AffectedMap() {
   const countriesLayer = useMemo(
     () => (
       <g strokeLinejoin="round">
-        {COUNTRY_FEATURES.map((f) => {
+        {COUNTRY_FEATURES.map((f, featureIndex) => {
           const aff = byIso[f.id]
           const bloc = ISO_TO_BLOC[f.id]
           const blocColor = BLOCS.find((b) => b.id === bloc)?.color
@@ -50,7 +61,7 @@ export default function AffectedMap() {
           if (aff) {
             const meta = catMeta[aff.cat]
             return (
-              <path key={f.id} d={f.d}
+              <path key={`${f.id ?? 'country'}-${featureIndex}`} d={f.d}
                 style={{
                   fill: `${meta.color}${dimmed ? '18' : '4d'}`,
                   stroke: sel ? '#ffffff' : meta.color,
@@ -66,7 +77,7 @@ export default function AffectedMap() {
           let featureName = f.name
           try { featureName = displayNames?.of(f.id) ?? f.name } catch { /* fallback Natural Earth */ }
           return (
-            <path key={f.id} d={f.d}
+            <path key={`${f.id ?? 'country'}-${featureIndex}`} d={f.d}
               style={{
                 fill: imperial ? `${blocColor ?? '#ffc107'}14` : bloc ? `${blocColor}10` : '#131a22',
                 stroke: '#232c38', strokeWidth: 0.5,
@@ -153,7 +164,7 @@ export default function AffectedMap() {
                 </div>
 
                 <p className="mt-2.5 text-xs leading-relaxed text-zinc-200">
-                  {textoPorModo(mode, selected.did, selected.adv)}
+                  {textoPorModo(mode, selected.did, selected.adv, affectedSimple(lang, selected))}
                 </p>
 
                 {/* dados atuais */}
@@ -198,7 +209,6 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 export function InterventionRanking() {
   const lang = useApp((s) => s.lang)
   const mode = useApp((s) => s.mode)
-  const didatico = mode !== 'avancado'
   const affected = affectedForLang(lang)
   const catMeta = catMetaForLang(lang)
   const tx = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
@@ -214,9 +224,12 @@ export function InterventionRanking() {
         <span className="font-mono text-[9.5px] text-zinc-600">{tx('1890–hoje · Blum/Kinzer/Tufts MIP (aprox.)', '1890–today · Blum/Kinzer/Tufts MIP (approx.)', '1890–hoy · Blum/Kinzer/Tufts MIP (aprox.)')}</span>
       </div>
       <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">
-        {didatico
-          ? tx('Cada barra é uma soma de invasões, ocupações, golpes e sabotagens documentadas. Cuba e o Haiti aparecem no topo — não por acaso: são os vizinhos mais rebeldes do império.', 'Each bar sums documented invasions, occupations, coups and sabotage operations. Cuba and Haiti appear near the top — Caribbean proximity to US power is part of that history.', 'Cada barra suma invasiones, ocupaciones, golpes y operaciones de sabotaje documentadas. Cuba y Haití aparecen cerca de la cima — la proximidad caribeña al poder estadounidense forma parte de esa historia.')
-          : tx('Contagem documentada de intervenções militares/operações encobertas (1890–hoje). A recorrência correlaciona-se com: proximidade ao centro (Caribe), recursos estratégicos e experimentação de doutrina (contra-insurgência, choque).', 'Documented count of military interventions/covert operations (1890–today). Recurrence correlates with proximity to the core (Caribbean), strategic resources and experimentation with doctrine (counterinsurgency, shock).', 'Conteo documentado de intervenciones militares/operaciones encubiertas (1890–hoy). La recurrencia se correlaciona con proximidad al centro (Caribe), recursos estratégicos y experimentación doctrinal (contrainsurgencia, shock).')}
+        {textoPorModo(
+          mode,
+          tx('Cada barra é uma soma de invasões, ocupações, golpes e sabotagens documentadas. Cuba e o Haiti aparecem no topo — não por acaso: são os vizinhos mais rebeldes do império.', 'Each bar sums documented invasions, occupations, coups and sabotage operations. Cuba and Haiti appear near the top — Caribbean proximity to US power is part of that history.', 'Cada barra suma invasiones, ocupaciones, golpes y operaciones de sabotaje documentadas. Cuba y Haití aparecen cerca de la cima — la proximidad caribeña al poder estadounidense forma parte de esa historia.'),
+          tx('Contagem documentada de intervenções militares/operações encobertas (1890–hoje). A recorrência correlaciona-se com: proximidade ao centro (Caribe), recursos estratégicos e experimentação de doutrina (contra-insurgência, choque).', 'Documented count of military interventions/covert operations (1890–today). Recurrence correlates with proximity to the core (Caribbean), strategic resources and experimentation with doctrine (counterinsurgency, shock).', 'Conteo documentado de intervenciones militares/operaciones encubiertas (1890–hoy). La recurrencia se correlaciona con proximidad al centro (Caribe), recursos estratégicos y experimentación doctrinal (contrainsurgencia, shock).'),
+          tx('Cada barra soma intervenções documentadas desde 1890, como invasões, ocupações, golpes e operações encobertas. Use a contagem aproximada e a fonte indicada para comparar os países.', 'Each bar adds documented interventions since 1890, including invasions, occupations, coups, and covert operations. Use the approximate count and cited source to compare countries.', 'Cada barra suma intervenciones documentadas desde 1890, como invasiones, ocupaciones, golpes y operaciones encubiertas. Usa el conteo aproximado y la fuente indicada para comparar los países.'),
+        )}
       </p>
       <div className="mt-3 space-y-1.5">
         {list.map((a) => (
@@ -239,7 +252,6 @@ export function InterventionRanking() {
 export function CfaPanel() {
   const lang = useApp((s) => s.lang)
   const mode = useApp((s) => s.mode)
-  const didatico = mode !== 'avancado'
   const affected = affectedForLang(lang)
   const cfaList = affected.filter((a) => a.cat === 'cfa')
   const totalPib = cfaList.reduce((s, a) => s + a.pibTri, 0)
@@ -252,9 +264,12 @@ export function CfaPanel() {
         <span className="font-mono text-[9.5px] text-zinc-600">14 {tx('países', 'countries', 'países')} · ≈US$ {totalPib.toLocaleString(loc, { maximumFractionDigits: 2 })} {tx('tri somados', 'tn combined', 'bill. combinados')}</span>
       </div>
       <p className="mt-1.5 text-xs leading-relaxed text-zinc-300">
-        {didatico
-          ? tx('Quatorze países africanos usam uma moeda (o franco CFA) que nasceu como moeda COLONIAL francesa. Até 2020, metade das reservas desses países ficava DEPOSITADA no Tesouro francês. A paridade é fixada em relação ao euro. Ou seja: a política monetária de 200 milhões de pessoas é decidida, na prática, longe delas. Quando um país tenta sair (Guiné, 1958), a França pune e vai embora levando até os fios da luz.', 'Fourteen African countries use a currency (the CFA franc) that began as a French COLONIAL currency. Until 2020, half of those countries’ reserves were DEPOSITED in the French Treasury. Its parity is fixed against the euro. In other words: the monetary policy affecting 200 million people is, in practice, decided far away from them. When a country tries to leave (Guinea, 1958), France punishes it and leaves taking even the electrical wiring.', 'Catorce países africanos usan una moneda (el franco CFA) que nació como moneda COLONIAL francesa. Hasta 2020, la mitad de las reservas de esos países quedaba DEPOSITADA en el Tesoro francés. La paridad se fija respecto del euro. Es decir: la política monetaria de 200 millones de personas se decide, en la práctica, lejos de ellas. Cuando un país intenta salir (Guinea, 1958), Francia lo castiga y se marcha llevándose hasta el cableado eléctrico.')
-          : tx('Arquitetura pós-colonial de captura monetária: emissão contratualizada (impressão via Banque de France), centralização de ~50% das reservas no Trésor français (até a reforma UEMOA 2020), paridade fixa ao franco/euro e convertibilidade garantida — em troca de disciplina orçamentária supervisada. Resultado: política monetária e cambial exógena, crédito restrito, desindustrialização e competividade artificial das exportações primárias (TMD aplicada à esfera monetária).', 'Post-colonial architecture of monetary capture: contracted issuance (printing via Banque de France), centralization of ~50% of reserves in the Trésor français (until the 2020 WAEMU reform), fixed parity with the franc/euro and guaranteed convertibility — in exchange for supervised budget discipline. Result: exogenous monetary and exchange-rate policy, restricted credit, deindustrialization and artificial competitiveness of primary exports (dependency theory applied to the monetary sphere).', 'Arquitectura poscolonial de captura monetaria: emisión contractualizada (impresión vía Banque de France), centralización de ~50% de las reservas en el Trésor français (hasta la reforma UEMOA 2020), paridad fija con el franco/euro y convertibilidad garantizada — a cambio de disciplina presupuestaria supervisada. Resultado: política monetaria y cambiaria exógena, crédito restringido, desindustrialización y competitividad artificial de las exportaciones primarias (teoría de la dependencia aplicada a la esfera monetaria).')}
+        {textoPorModo(
+          mode,
+          tx('Quatorze países africanos usam uma moeda (o franco CFA) que nasceu como moeda COLONIAL francesa. Até 2020, metade das reservas desses países ficava DEPOSITADA no Tesouro francês. A paridade é fixada em relação ao euro. Ou seja: a política monetária de 200 milhões de pessoas é decidida, na prática, longe delas. Quando um país tenta sair (Guiné, 1958), a França pune e vai embora levando até os fios da luz.', 'Fourteen African countries use a currency (the CFA franc) that began as a French COLONIAL currency. Until 2020, half of those countries’ reserves were DEPOSITED in the French Treasury. Its parity is fixed against the euro. In other words: the monetary policy affecting 200 million people is, in practice, decided far away from them. When a country tries to leave (Guinea, 1958), France punishes it and leaves taking even the electrical wiring.', 'Catorce países africanos usan una moneda (el franco CFA) que nació como moneda COLONIAL francesa. Hasta 2020, la mitad de las reservas de esos países quedaba DEPOSITADA en el Tesoro francés. La paridad se fija respecto del euro. Es decir: la política monetaria de 200 millones de personas se decide, en la práctica, lejos de ellas. Cuando un país intenta salir (Guinea, 1958), Francia lo castiga y se marcha llevándose hasta el cableado eléctrico.'),
+          tx('Arquitetura pós-colonial de captura monetária: emissão contratualizada (impressão via Banque de France), centralização de ~50% das reservas no Trésor français (até a reforma UEMOA 2020), paridade fixa ao franco/euro e convertibilidade garantida — em troca de disciplina orçamentária supervisada. Resultado: política monetária e cambial exógena, crédito restrito, desindustrialização e competividade artificial das exportações primárias (TMD aplicada à esfera monetária).', 'Post-colonial architecture of monetary capture: contracted issuance (printing via Banque de France), centralization of ~50% of reserves in the Trésor français (until the 2020 WAEMU reform), fixed parity with the franc/euro and guaranteed convertibility — in exchange for supervised budget discipline. Result: exogenous monetary and exchange-rate policy, restricted credit, deindustrialization and artificial competitiveness of primary exports (dependency theory applied to the monetary sphere).', 'Arquitectura poscolonial de captura monetaria: emisión contractualizada (impresión vía Banque de France), centralización de ~50% de las reservas en el Trésor français (hasta la reforma UEMOA 2020), paridad fija con el franco/euro y convertibilidad garantizada — a cambio de disciplina presupuestaria supervisada. Resultado: política monetaria y cambiaria exógena, crédito restringido, desindustrialización y competitividad artificial de las exportaciones primarias (teoría de la dependencia aplicada a la esfera monetaria).'),
+          tx('Quatorze países africanos usam o franco CFA. Até 2020, cerca de metade das reservas dos países citados ficava no Tesouro francês, e a moeda mantém paridade fixa com o euro. Compare essa regra com a autonomia de cada banco central.', 'Fourteen African countries use the CFA franc. Until 2020, about half of the cited countries’ reserves were held at the French Treasury, and the currency keeps a fixed peg to the euro. Compare that rule with each central bank’s autonomy.', 'Catorce países africanos usan el franco CFA. Hasta 2020, cerca de la mitad de las reservas de los países citados se mantenía en el Tesoro francés, y la moneda conserva una paridad fija con el euro. Compara esa regla con la autonomía de cada banco central.'),
+        )}
       </p>
       <ul className="mt-2 flex flex-wrap gap-1">
         {cfaList.map((a) => (

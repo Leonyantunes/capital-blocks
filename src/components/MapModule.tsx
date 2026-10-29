@@ -134,7 +134,7 @@ export default function MapModule() {
         <Suspense fallback={
           <div className="flex h-[620px] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-400">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-            <span>Carregando motor GPU Deck.gl & MapLibre…</span>
+            <span>Carregando motor GPU Deck.gl & WebGL2…</span>
           </div>
         }>
           <GpuFlowMap />

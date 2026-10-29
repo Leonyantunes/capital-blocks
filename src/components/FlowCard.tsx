@@ -1,5 +1,5 @@
 import { AnimatePresence, m } from 'framer-motion'
-import { flowForLang, flowTypeStyleForLang, type FlowDef } from '../data/flows'
+import { flowForLang, flowSimpleForLang, flowTypeStyleForLang, type FlowDef } from '../data/flows'
 import { BLOCS } from '../lib/world'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
@@ -68,7 +68,7 @@ export default function FlowCard({ flow, onClose }: { flow: FlowDef | null; onCl
 
             {/* mecanismo dual */}
             <p className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 text-xs leading-relaxed text-zinc-200">
-              {textoPorModo(mode, displayFlow.did, displayFlow.adv)}
+              {textoPorModo(mode, displayFlow.did, displayFlow.adv, flowSimpleForLang(displayFlow, lang))}
             </p>
 
             {/* itens */}

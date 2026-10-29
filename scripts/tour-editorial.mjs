@@ -7,7 +7,9 @@
  */
 import { readFileSync } from 'fs'
 
-const src = readFileSync('src/data/tour.ts', 'utf8') + readFileSync('src/data/tours.ts', 'utf8')
+const tourSrc = readFileSync('src/data/tour.ts', 'utf8')
+const toursSrc = readFileSync('src/data/tours.ts', 'utf8')
+const src = tourSrc + toursSrc
 const flowsSrc = readFileSync('src/data/flows.ts', 'utf8')
 
 /* extrai o corpo de cada parada por contagem de chaves */
@@ -93,6 +95,52 @@ if (semSimples.length) erro(`paradas sem texto simples: ${semSimples.join(', ')}
 else ok(`todas as ${paradas.length} paradas têm texto simples explícito`)
 if (simplesTecnico.length) aviso(`jargão técnico no simples: ${simplesTecnico.join(' | ')}`)
 else ok('nenhum jargão técnico bloqueado aparece no texto simples')
+
+console.log('')
+console.log('=== 1C. COBERTURA EN/ES SEM FALLBACK PT ===')
+const localeSources = [
+  tourSrc.slice(tourSrc.indexOf('const TOUR_STOP_I18N')),
+  toursSrc.slice(toursSrc.indexOf('const CUSTOM_STOP_I18N')),
+]
+const semLocale = []
+for (const p of paradas) {
+  const keyA = `${p.id}: {`
+  const keyB = `'${p.id}': {`
+  const blockSource = localeSources.find((s) => s.includes(keyA) || s.includes(keyB))
+  if (!blockSource) {
+    semLocale.push(`${p.id}: sem bloco i18n`)
+    continue
+  }
+  const pos = Math.max(blockSource.indexOf(keyA), blockSource.indexOf(keyB))
+  const next = blockSource.indexOf('\n  },', pos)
+  const block = blockSource.slice(pos, next > pos ? next + 5 : pos + 5000)
+  if (!/\ben:\s*\{/.test(block)) semLocale.push(`${p.id}: sem EN`)
+  if (!/\bes:\s*\{/.test(block)) semLocale.push(`${p.id}: sem ES`)
+}
+if (semLocale.length) erro(`locales ausentes: ${semLocale.join(' | ')}`)
+else ok(`todas as ${paradas.length} paradas têm EN e ES explícitos`)
+
+console.log('')
+console.log('=== 1D. FÓRMULAS E FONTES NO SIMPLES/STATS ===')
+const formulasSimples = []
+const FORMULAS = [/\b[cvmkeg]\s*=\s*/i, /\b[cvmkeg]\s*\/\s*[cvmkeg(]/i, /[∂≡]/, /\bM\s*[—-]\s*M[′']/]
+let statsSemFonte = 0
+for (const p of paradas) {
+  const simples = texto(p.body, 'simples') || ''
+  for (const formula of FORMULAS) {
+    if (formula.test(simples)) formulasSimples.push(`${p.id}: ${formula}`)
+  }
+  const statsBlock = p.body.match(/didStats:\s*\[([\s\S]*?)\]/)?.[1] ?? ''
+  for (const stat of statsBlock.matchAll(/\{\s*v:\s*'([^']*)'\s*,\s*k:\s*'([^']*)'([\s\S]*?)\}/g)) {
+    if (!/sourceIds:\s*\[[^\]]+\]/.test(stat[3])) {
+      statsSemFonte++
+      erro(`${p.id}/${stat[2]}: stat sem sourceIds`)
+    }
+  }
+}
+if (formulasSimples.length) erro(`fórmula no simples: ${formulasSimples.join(' | ')}`)
+else ok('nenhuma fórmula técnica aparece no texto simples')
+if (!statsSemFonte) ok('todas as estatísticas literais auditadas têm sourceIds')
 
 console.log('')
 console.log('=== 2. PROGRESSÃO DID → ADV ===')

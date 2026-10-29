@@ -1,4 +1,4 @@
-import { indicatorsForLang } from '../data/indicators'
+import { indicatorSimpleForLang, indicatorsForLang } from '../data/indicators'
 import Tip from './ui/Tip'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
@@ -23,7 +23,7 @@ export default function IndicatorsStrip() {
       </div>
       <div className="thin-scroll flex gap-3 overflow-x-auto pb-1">
         {indicators.map((ind) => (
-          <Tip key={ind.id} text={textoPorModo(mode, ind.didatico, ind.avancado)}>
+          <Tip key={ind.id} text={textoPorModo(mode, ind.didatico, ind.avancado, indicatorSimpleForLang(ind, lang))}>
             <article className="group w-60 shrink-0 cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-600">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-mono text-xl font-extrabold" style={{ color: ind.color }}>{ind.value}</span>

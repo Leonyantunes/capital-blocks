@@ -50,6 +50,21 @@ const VERIFICATION_LABEL: Record<
 
 const idx = (l: Lang) => (l === 'pt' ? 0 : l === 'en' ? 1 : 2)
 
+function sourceSimple(
+  lang: Lang,
+  source: (typeof SOURCES)[number],
+): string {
+  const name = generatedText(lang, source.nome)
+  const institution = source.instituicao ? generatedText(lang, source.instituicao) : ''
+  const covered = source.cobre.slice(0, 3).map((c) => generatedText(lang, c)).join(', ')
+  return pick(
+    lang,
+    `Esta fonte é ${name}${institution ? `, de ${institution}` : ''}. Os dados indicados são de ${source.ano} e ajudam a conferir: ${covered}.`,
+    `This source is ${name}${institution ? `, from ${institution}` : ''}. The displayed data are from ${source.ano} and help verify: ${covered}.`,
+    `Esta fuente es ${name}${institution ? `, de ${institution}` : ''}. Los datos indicados son de ${source.ano} y ayudan a verificar: ${covered}.`,
+  )
+}
+
 const CATEGORY_LABELS: Record<string, TriText> = {
   macro: ['Macroeconomia', 'Macroeconomics', 'Macroeconomía'],
   moeda: ['Moeda e crédito', 'Money and credit', 'Moneda y crédito'],
@@ -322,7 +337,7 @@ export default function SourcesModule() {
                 <div className="mt-0.5 text-[11px] font-medium text-zinc-400">{generatedText(lang, s.instituicao)}</div>
               )}
               <p className="mt-2 text-xs leading-relaxed text-zinc-300">
-                {textoPorModo(mode, generatedText(lang, s.resumoDidatico), generatedText(lang, s.resumoAvancado))}
+                {textoPorModo(mode, generatedText(lang, s.resumoDidatico), generatedText(lang, s.resumoAvancado), sourceSimple(lang, s))}
               </p>
 
               <div className="mt-2.5 rounded-lg bg-zinc-950/60 p-2.5">

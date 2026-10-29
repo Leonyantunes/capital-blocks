@@ -6,6 +6,54 @@ import { generatedText } from '../data/generatedTranslations'
 import { pick } from '../i18n'
 import MethodologyNote from './ui/MethodologyNote'
 
+function theorySimple(
+  topicId: string,
+  side: 'ortodoxa' | 'heterodoxa',
+  lang: 'pt' | 'en' | 'es',
+): string {
+  const copy: Record<string, Record<'ortodoxa' | 'heterodoxa', [string, string, string]>> = {
+    divida: {
+      ortodoxa: [
+        'Esta visão compara o orçamento do governo ao de uma família e trata dívida alta como sinal de risco.',
+        'This view compares the government budget to a household budget and treats high debt as a sign of risk.',
+        'Esta visión compara el presupuesto del gobierno con el de una familia y trata una deuda alta como señal de riesgo.',
+      ],
+      heterodoxa: [
+        'Outra leitura distingue um governo que emite sua própria moeda de uma família. O limite depende também de inflação, produção e da moeda em que a dívida é paga.',
+        'Another reading distinguishes a government that issues its own currency from a household. Constraints also depend on inflation, production, and the currency in which debt is paid.',
+        'Otra lectura distingue a un gobierno que emite su propia moneda de una familia. Los límites también dependen de inflación, producción y de la moneda en que se paga la deuda.',
+      ],
+    },
+    cambio: {
+      ortodoxa: [
+        'Esta visão diz que o câmbio flutuante tende a se ajustar sozinho conforme oferta e demanda de moeda.',
+        'This view says a floating exchange rate tends to adjust on its own with currency supply and demand.',
+        'Esta visión dice que el tipo de cambio flotante tiende a ajustarse por sí solo según oferta y demanda de moneda.',
+      ],
+      heterodoxa: [
+        'Outra leitura destaca que juros internacionais e entrada ou saída rápida de capital também podem mover muito o câmbio e afetar salários e importações.',
+        'Another reading stresses that global interest rates and fast capital inflows or outflows can also move exchange rates sharply and affect wages and imports.',
+        'Otra lectura destaca que los intereses internacionales y entradas o salidas rápidas de capital también pueden mover mucho el tipo de cambio y afectar salarios e importaciones.',
+      ],
+    },
+    comercio: {
+      ortodoxa: [
+        'Esta visão diz que países ganham ao se especializar no que produzem relativamente melhor e trocar com outros.',
+        'This view says countries gain by specializing in what they produce relatively better and trading with others.',
+        'Esta visión dice que los países ganan al especializarse en lo que producen relativamente mejor e intercambiar con otros.',
+      ],
+      heterodoxa: [
+        'Outra leitura pergunta se uma especialização em produtos básicos pode limitar tecnologia e renda no longo prazo e deslocar valor para etapas mais lucrativas no exterior.',
+        'Another reading asks whether specialization in primary goods can limit technology and income over time and shift value toward more profitable stages abroad.',
+        'Otra lectura pregunta si una especialización en bienes primarios puede limitar tecnología e ingresos a largo plazo y desplazar valor hacia etapas más rentables en el exterior.',
+      ],
+    },
+  }
+  const tri = copy[topicId]?.[side]
+  if (!tri) throw new Error(`Debate sem texto simples explícito: ${topicId}/${side}`)
+  return tri[lang === 'pt' ? 0 : lang === 'en' ? 1 : 2]
+}
+
 /**
  * PILAR 2/3/4 — Card comparativo: interpretação Ortodoxa dominante ×
  * leitura Heterodoxa (MMT · Marx · TMD) + Matriz das 4 Escolas Críticas.
@@ -24,8 +72,8 @@ export default function TheoryCompareCard() {
   const ortoContra = generatedText(lang, topic.ortodoxa.contra)
   const heteroTese = generatedText(lang, topic.heterodoxa.tese)
   const heteroAutores = generatedText(lang, topic.heterodoxa.autores)
-  const ortoBody = textoPorModo(mode, ortoTese, `${ortoTese} ${ortoContra}`)
-  const hetBody = textoPorModo(mode, heteroTese, `${heteroTese} · Ref.: ${heteroAutores}`)
+  const ortoBody = textoPorModo(mode, ortoTese, `${ortoTese} ${ortoContra}`, theorySimple(topic.id, 'ortodoxa', lang))
+  const hetBody = textoPorModo(mode, heteroTese, `${heteroTese} · Ref.: ${heteroAutores}`, theorySimple(topic.id, 'heterodoxa', lang))
 
   const currentSchool = HETERODOX_SCHOOLS.find((s) => s.id === schoolId)!
 

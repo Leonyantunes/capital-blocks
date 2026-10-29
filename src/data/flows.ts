@@ -1043,6 +1043,47 @@ export function flowForLang(flow: FlowDef, lang: FlowLang): FlowDef {
   }
 }
 
+/**
+ * Leitura simples explícita das rotas. Não reutiliza `did`: parte dos campos
+ * estruturados do próprio fluxo para preservar valor anual e natureza da rota.
+ */
+export function flowSimpleForLang(flow: FlowDef, lang: FlowLang): string {
+  const total = flow.totalAnual
+  const byType: Record<FlowType, [pt: string, en: string, es: string]> = {
+    commodities: [
+      `Esta rota leva matérias-primas e movimenta ${total}. Veja quais produtos saem e quem os compra.`,
+      `This route carries raw materials and moves ${total}. See which products leave and who buys them.`,
+      `Esta ruta transporta materias primas y mueve ${total}. Mira qué productos salen y quién los compra.`,
+    ],
+    manufatura: [
+      `Esta rota leva produtos industrializados e movimenta ${total}. Compare onde o produto é fabricado com quem controla marca, tecnologia e venda.`,
+      `This route carries manufactured goods and moves ${total}. Compare where products are made with who controls brand, technology, and sales.`,
+      `Esta ruta lleva productos industrializados y mueve ${total}. Compara dónde se fabrica con quién controla marca, tecnología y venta.`,
+    ],
+    drain: [
+      `Esta rota mostra dinheiro que sai como lucros, juros, dividendos ou royalties. O valor indicado é ${total}.`,
+      `This route shows money leaving as profits, interest, dividends, or royalties. The displayed amount is ${total}.`,
+      `Esta ruta muestra dinero que sale como ganancias, intereses, dividendos o regalías. El valor indicado es ${total}.`,
+    ],
+    dollar: [
+      `Esta rota mostra como dólar, reservas, títulos e pagamentos conectam os países. A escala indicada é ${total}.`,
+      `This route shows how dollars, reserves, bonds, and payments connect countries. The displayed scale is ${total}.`,
+      `Esta ruta muestra cómo dólares, reservas, títulos y pagos conectan países. La escala indicada es ${total}.`,
+    ],
+    brics: [
+      `Esta rota mostra pagamentos que tentam usar menos o dólar. A escala indicada é ${total}.`,
+      `This route shows payments that try to rely less on the dollar. The displayed scale is ${total}.`,
+      `Esta ruta muestra pagos que intentan depender menos del dólar. La escala indicada es ${total}.`,
+    ],
+    fantasma: [
+      `Esta rota mostra lucros registrados em outro lugar por regras fiscais e contábeis. A escala indicada é ${total}.`,
+      `This route shows profits booked elsewhere through tax and accounting rules. The displayed scale is ${total}.`,
+      `Esta ruta muestra ganancias registradas en otro lugar mediante reglas fiscales y contables. La escala indicada es ${total}.`,
+    ],
+  }
+  return byType[flow.type][lang === 'pt' ? 0 : lang === 'en' ? 1 : 2]
+}
+
 export function flowsForLang(lang: FlowLang): FlowDef[] {
   if (lang === 'pt') return FLOWS
   return FLOWS.map((flow) => flowForLang(flow, lang))

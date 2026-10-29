@@ -771,10 +771,16 @@ const GENERATED_TRANSLATIONS: Record<string, readonly [en: string, es: string]> 
   "Prebisch–Singer · Marini · dos Santos · Emmanuel (troca desigual)": ["Prebisch–Singer · Marini · dos Santos · Emmanuel (unequal exchange)", "Prebisch–Singer · Marini · dos Santos · Emmanuel (intercambio desigual)"],
 }
 
+export function hasGeneratedTranslation(value?: string): boolean {
+  return !value || Object.prototype.hasOwnProperty.call(GENERATED_TRANSLATIONS, value)
+}
+
 export function generatedText(lang: Lang, value?: string): string {
   if (!value || lang === 'pt') return value ?? ''
   const translated = GENERATED_TRANSLATIONS[value]
-  if (!translated) return value
+  if (!translated) {
+    throw new Error(`Tradução gerada ausente para ${lang}: ${value.slice(0, 120)}`)
+  }
   return translated[lang === 'en' ? 0 : 1]
 }
 

@@ -21,19 +21,25 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > completou a camada PT-BR/EN/ES do chrome, módulos, tours e metadados editoriais.
 > Como validações/polimentos pós-release permanecem: (1) perfil + comparação visual em Android
 > mid-range real; (2) ampliar a cobertura de empresas quando houver nova rodada editorial;
-> (3) capturar screenshots/GIFs reais para a landing. Revisão das fontes pendentes, proveniência das 101
-> estatísticas dos tours e auditoria editorial (0 erros/0 avisos) foram concluídas em 2026-10-02.
+> (3) capturar screenshots/GIFs reais para a landing. Revisão das fontes pendentes e proveniência
+> foram ampliadas depois daquele fechamento: o estado atual tem 9 tours, 56 paradas e 115 estatísticas.
+> A auditoria editorial deve ser executada novamente a cada rodada; documentação antiga não substitui teste.
 > O globo pode sair do selo
 > BETA depois da validação visual/performance em aparelho real.
 
-> **2026-10-02 — Fecho editorial dos tours + 3º nível de leitura:** as 101 estatísticas
-> dos 6 tours agora carregam `sourceIds` canônicos e os cards 2D/3D abrem diretamente a
-> ficha da fonte no Módulo 10. A auditoria dos tours passou a validar arrays aninhados de
-> `didStats` corretamente; `test:tours` fecha com 101/101 estatísticas conferidas. As 49
-> paradas têm texto `simples` explícito e o teste editorial bloqueia jargões técnicos no
-> nível fundamental/início do médio. A varredura transversal também levou `textoPorModo()`
-> aos principais módulos, simuladores, drawers, gráficos e tooltips. O registro de fontes
-> está sem entradas efetivas em `revisao-pendente` nesta data.
+> **Atualização 2026-10-29 — níveis de leitura/tours:** o estado atual tem **9 tours,
+> 56 paradas e 115 estatísticas**, todas com `sourceIds` validados. `textoPorModo()` agora
+> exige Simples/Didático/Avançado explícitos; fallback entre níveis deixou de ser contrato de UI.
+> EN/ES ausente em conteúdo obrigatório é erro, e a auditoria editorial cobre idioma, jargão,
+> fórmula no Simples e proveniência. O registro histórico de 2026-10-02 tinha 6 tours/49
+> paradas/101 estatísticas e não deve ser usado como contagem atual.
+>
+> **Gate de performance 2026-10-29:** bundle inicial **110,3 KiB gzip** (teto automatizado
+> 128 KiB); CLS desktop medido **~0,024** após reservar altura no fallback lazy; mapa 2D
+> **59,4 FPS ocioso / 58,8 FPS em interação** no perfil 375×812. O globo deixou de baixar
+> `vendor-graph` + `vendor-deck` por associação indevida do `OrbitControls`; esses chunks
+> somavam ~625 KiB gzip. O 3D continua **BETA** até teste em Android/iPhone real, pois o
+> Chrome headless usa Microsoft Basic Render Driver. Detalhes em `PERFORMANCE-GATE.md`.
 
 > **Status (2026-09-12):** P0 concluída (commit 7cc5f7a 2D · e59d585 3D+worker) e P2
 > concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico
@@ -156,18 +162,18 @@ país com 2 handlers cada + `<title>`, `drop-shadow` **por path** no destaque do
     flag `showRefs` no store + `ui/RefTag.tsx` + `fonte` no `MetricCard`
     (proveniência "modelo do app" nos cartões de slider) + toggle nas Configurações.
     Os painéis que já exibiam fonte inline (IndicatorsStrip, FlowCard, drawers,
-    wealth, linhas expandidas do Raio-X) seguem como estão. As 101 estatísticas dos
-    tours agora também têm `sourceIds` canônicos e atalho direto para a ficha da fonte.
+    wealth, linhas expandidas do Raio-X) seguem como estão. As 115 estatísticas dos
+    9 tours também têm `sourceIds` canônicos e atalho direto para a ficha da fonte.
 15. **Página de configurações** — ✅ CONCLUÍDA (2026-09-30): aba `settings` no
     registro canônico (fora da fileira numerada), botão ⚙ na Navbar (desktop,
     mobile e gaveta), página com nível de leitura, tema, idioma, modo referências
     e modo apresentação, com descrições e estado anunciado (role="switch").
-16. **Auditoria didático × avançado × simples** — ✅ CONCLUÍDA na rodada de fechamento
-    da V1: tours, módulos principais, simuladores, drawers, gráficos e tooltips passaram
-    pela varredura; `test:tours:editorial` bloqueia regressões editoriais nas 49 paradas.
-17. **Modo didático simplificado (3º nível)** — ✅ CONCLUÍDA (2026-10-02): `UIMode
-    'simples'` com estratégia `resolve()` (simples → didático → avançado) e
-    traduções curadas em `src/lib/simples.ts` — simplifica a LINGUAGEM sem
+16. **Auditoria didático × avançado × simples** — ✅ REAUDITADA em 2026-10-29:
+    9 tours/56 paradas/115 estatísticas, módulos, simuladores, drawers, gráficos e tooltips;
+    `readingLevels.test.ts` e `test:tours:editorial` bloqueiam regressões de cobertura.
+17. **Modo Simples (3º nível)** — ✅ CONTRATO ESTRITO (2026-10-29): `UIMode
+    'simples'` exige cópia explícita nas superfícies pedagógicas; `resolve()` permanece
+    apenas como legado interno e não pode ser importado por componentes. O nível simplifica a LINGUAGEM sem
     simplificar o NÚMERO.
 18. **Modo claro** — ✅ CONCLUÍDA (2026-09-30): paleta `[data-theme='light']` por
     variáveis em `index.css` (os utilitários Tailwind v4 compilam para

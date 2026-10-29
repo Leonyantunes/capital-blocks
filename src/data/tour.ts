@@ -19,11 +19,19 @@ export interface TourStat {
   sourceIds: string[]
 }
 
-export interface TourQuiz {
-  pergunta: [pt: string, en: string, es: string]
-  opcoes: [pt: string, en: string, es: string][]
+export type TourQuizTriText = [pt: string, en: string, es: string]
+
+export interface TourQuizCopy {
+  pergunta: TourQuizTriText
+  opcoes: TourQuizTriText[]
+  explicacao: TourQuizTriText
+}
+
+export interface TourQuiz extends TourQuizCopy {
   correta: number
-  explicacao: [pt: string, en: string, es: string]
+  /** Mesma resposta factual; linguagem e profundidade adaptadas ao nível. */
+  simples: TourQuizCopy
+  avancado: TourQuizCopy
 }
 
 export interface TourStop {
@@ -43,8 +51,8 @@ export interface TourStop {
   isos?: string[]
   /** narrativa didática (suave, poucos dados no texto) */
   did: string
-  /** versão opcional curada para fundamental / início do ensino médio */
-  simples?: string
+  /** versão curada para fundamental / início do ensino médio */
+  simples: string
   /** números pontuais do card didático */
   didStats: TourStat[]
   /** versão avançada (densa, completa) */
@@ -136,6 +144,40 @@ export const TOUR_STOPS: TourStop[] = [
     adv: 'GVC (cadeias globais de valor): captura de margem pelo detentor da marca/IP; o déficit bilateral estrutura a guerra tecnológica — montar não é o mesmo que mandar.',
     dica: `veja o ${modRef('companies')} para o Raio-X das empresas da rota`,
     quiz: {
+      simples: {
+        pergunta: [
+          'Num smartphone montado na Ásia, quem costuma ficar com a maior parte do preço final?',
+          'In a smartphone assembled in Asia, who usually keeps the largest share of the final price?',
+          'En un smartphone ensamblado en Asia, ¿quién suele quedarse con la mayor parte del precio final?',
+        ],
+        opcoes: [
+          ['A empresa que monta fisicamente o aparelho', 'The company that physically assembles the phone', 'La empresa que ensambla físicamente el teléfono'],
+          ['A empresa que controla a marca, o projeto e as patentes', 'The company controlling the brand, design, and patents', 'La empresa que controla la marca, el diseño y las patentes'],
+          ['Quem extrai os minerais usados nas peças', 'The workers who extract minerals used in its parts', 'Quienes extraen los minerales usados en sus piezas'],
+        ],
+        explicacao: [
+          'Os estudos citados no tour estimam que cerca de 58% a 60% do preço fica ligado à marca, propriedade intelectual, lucro e marketing, enquanto a montagem física retém menos de 5%.',
+          'The studies cited by the tour estimate that about 58% to 60% of the price is tied to brand, intellectual property, profit, and marketing, while physical assembly retains under 5%.',
+          'Los estudios citados en el tour estiman que cerca del 58% al 60% del precio corresponde a marca, propiedad intelectual, beneficio y marketing, mientras el ensamblaje físico retiene menos del 5%.',
+        ],
+      },
+      avancado: {
+        pergunta: [
+          'Na decomposição de valor de uma GVC de smartphones, qual posição tende a capturar a maior margem final?',
+          'In smartphone GVC value decomposition, which position tends to capture the largest final margin?',
+          'En la descomposición de valor de una GVC de smartphones, ¿qué posición tiende a capturar el mayor margen final?',
+        ],
+        opcoes: [
+          ['A firma contratada para montagem, por concentrar o capital fixo fabril', 'The contract assembler, because it concentrates factory fixed capital', 'La firma contratada para el ensamblaje, por concentrar el capital fijo fabril'],
+          ['O detentor de IP, design e marca, que controla ativos intangíveis e distribuição', 'The IP, design, and brand owner controlling intangible assets and distribution', 'El titular de IP, diseño y marca que controla activos intangibles y distribución'],
+          ['O elo extrativo, porque matéria-prima determina sozinho o preço de varejo', 'The extractive link, because raw materials alone determine retail price', 'El eslabón extractivo, porque la materia prima determina por sí sola el precio minorista'],
+        ],
+        explicacao: [
+          'Kraemer et al. e UNCTAD estimam aproximadamente 58%–60% do preço capturado por propriedade intelectual, lucro e marca no centro, contra menos de 5% na montagem. O ponto analítico é separar localização produtiva de controle sobre ativos intangíveis e margem.',
+          'Kraemer et al. and UNCTAD estimate roughly 58%–60% of price captured by intellectual property, profit, and brand functions in the core, versus under 5% in assembly. Analytically, production location must be separated from control over intangibles and margin.',
+          'Kraemer et al. y UNCTAD estiman aproximadamente 58%–60% del precio capturado por propiedad intelectual, beneficio y marca en el centro, frente a menos del 5% en el ensamblaje. Analíticamente, hay que separar localización productiva de control sobre intangibles y margen.',
+        ],
+      },
       pergunta: [
         'Na cadeia global de um smartphone montado na Ásia, quem retém a maior parcela do valor final?',
         'In the global value chain of an Asia-assembled smartphone, who captures the largest share of final value?',
@@ -236,6 +278,40 @@ export const TOUR_STOPS: TourStop[] = [
     adv: 'TSMC→EUA (<7nm) como chokepoint estratégico: o "escudo de silício" estrutura a contenção à China — export controls (ASML/EUV, NVIDIA) sobre o capital constante mais avançado.',
     dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',
     quiz: {
+      simples: {
+        pergunta: [
+          'Por que Taiwan é tão importante para celulares, computadores e inteligência artificial?',
+          'Why is Taiwan so important for phones, computers, and artificial intelligence?',
+          '¿Por qué Taiwán es tan importante para celulares, computadoras e inteligencia artificial?',
+        ],
+        opcoes: [
+          ['Porque concentra grande parte da fabricação dos chips mais avançados', 'Because it concentrates a large share of the most advanced chip manufacturing', 'Porque concentra gran parte de la fabricación de los chips más avanzados'],
+          ['Porque tem as maiores reservas naturais de silício do planeta', 'Because it has the world’s largest natural silicon reserves', 'Porque tiene las mayores reservas naturales de silicio del planeta'],
+          ['Porque é dona de todas as grandes empresas de tecnologia', 'Because it owns all major technology companies', 'Porque es dueña de todas las grandes empresas tecnológicas'],
+        ],
+        explicacao: [
+          'A estatística usada no tour indica que a TSMC concentra mais de 90% da fundição de lógica de ponta. Por isso uma interrupção em Taiwan pode atingir várias indústrias ao mesmo tempo.',
+          'The tour’s cited statistic indicates that TSMC concentrates over 90% of leading-edge logic foundry capacity. That is why a disruption in Taiwan can affect many industries at once.',
+          'La estadística citada por el tour indica que TSMC concentra más del 90% de la fundición de lógica de vanguardia. Por eso una interrupción en Taiwán puede afectar muchas industrias a la vez.',
+        ],
+      },
+      avancado: {
+        pergunta: [
+          'Qual característica transforma a capacidade leading-edge da TSMC em chokepoint sistêmico?',
+          'Which feature turns TSMC’s leading-edge capacity into a systemic chokepoint?',
+          '¿Qué característica convierte la capacidad leading-edge de TSMC en un chokepoint sistémico?',
+        ],
+        opcoes: [
+          ['Concentração superior a 90% da fundição de lógica de ponta (<7 nm) em uma cadeia com baixa substituição de curto prazo', 'Over 90% concentration of leading-edge logic foundry capacity (<7 nm) in a chain with low short-run substitutability', 'Concentración superior al 90% de la fundición de lógica de vanguardia (<7 nm) en una cadena con baja sustitución a corto plazo'],
+          ['Controle das jazidas globais de silício, insumo geologicamente escasso', 'Control of global silicon deposits, a geologically scarce input', 'Control de los yacimientos globales de silicio, un insumo geológicamente escaso'],
+          ['Propriedade acionária majoritária de todas as Big Techs consumidoras de chips', 'Majority equity ownership of all Big Tech chip customers', 'Propiedad accionaria mayoritaria de todas las Big Tech consumidoras de chips'],
+        ],
+        explicacao: [
+          'A vulnerabilidade vem da concentração de capacidade de foundry avançada, combinada a lead times, equipamentos EUV e qualificação fabril que não podem ser substituídos rapidamente. O tour usa a estimativa de mais de 90% para a lógica de ponta.',
+          'The vulnerability comes from concentrated advanced foundry capacity combined with lead times, EUV equipment, and fab qualification that cannot be substituted quickly. The tour uses an estimate above 90% for leading-edge logic.',
+          'La vulnerabilidad proviene de la concentración de capacidad foundry avanzada, combinada con lead times, equipos EUV y calificación fabril que no pueden sustituirse rápidamente. El tour usa una estimación superior al 90% para lógica de vanguardia.',
+        ],
+      },
       pergunta: [
         'Por que a ilha de Taiwan e a empresa TSMC representam o nó mais vulnerável da economia digital global?',
         'Why do Taiwan and TSMC constitute the single most vulnerable node in the global digital economy?',
@@ -280,6 +356,40 @@ export const TOUR_STOPS: TourStop[] = [
     adv: 'Canal 3 da TMD: remessa de rendas de propriedade (ILAESE: R$195–294 bi/ano só do Brasil) — juros, royalties e dividendos capitalizam matrizes do centro (dos Santos: dependência como reprodução do subdesenvolvimento).',
     dica: 'o painel da rota lista empresa por empresa',
     quiz: {
+      simples: {
+        pergunta: [
+          'Qual exemplo mostra dinheiro gerado em um país saindo de forma regular para empresas e credores de outros países?',
+          'Which example shows money generated in one country regularly flowing to firms and creditors in other countries?',
+          '¿Qué ejemplo muestra dinero generado en un país saliendo regularmente hacia empresas y acreedores de otros países?',
+        ],
+        opcoes: [
+          ['Doações humanitárias recebidas do exterior', 'Humanitarian donations received from abroad', 'Donaciones humanitarias recibidas del exterior'],
+          ['Lucros, juros e royalties enviados para fora', 'Profits, interest, and royalties sent abroad', 'Ganancias, intereses y regalías enviados al exterior'],
+          ['Aumento automático dos salários em todos os países', 'Automatic wage increases in every country', 'Aumento automático de salarios en todos los países'],
+        ],
+        explicacao: [
+          'O tour chama de dreno de valor a saída recorrente de lucros, juros e royalties. No caso brasileiro mostrado, a referência citada trabalha com R$ 195–294 bilhões por ano para essas rendas de propriedade.',
+          'The tour calls the recurring outflow of profits, interest, and royalties a value drain. In the Brazilian case shown, the cited reference uses R$195–294 billion per year for these property-income flows.',
+          'El tour llama drenaje de valor a la salida recurrente de ganancias, intereses y regalías. En el caso brasileño mostrado, la referencia citada usa R$195–294 mil millones por año para estas rentas de propiedad.',
+        ],
+      },
+      avancado: {
+        pergunta: [
+          'Na TMD, qual mecanismo corresponde ao canal de remessas de renda de propriedade destacado nesta rota?',
+          'In Marxist Dependency Theory, which mechanism corresponds to the property-income remittance channel highlighted by this route?',
+          'En la TMD, ¿qué mecanismo corresponde al canal de remesas de rentas de propiedad destacado por esta ruta?',
+        ],
+        opcoes: [
+          ['Transferência unilateral Norte→Sul por ajuda oficial', 'A unilateral North→South transfer through official aid', 'Transferencia unilateral Norte→Sur mediante ayuda oficial'],
+          ['Transferência recorrente periferia→centro por lucros, juros, dividendos e royalties', 'Recurring periphery→core transfer through profits, interest, dividends, and royalties', 'Transferencia recurrente periferia→centro mediante ganancias, intereses, dividendos y regalías'],
+          ['Convergência espontânea da produtividade e dos salários internacionais', 'Spontaneous convergence of international productivity and wages', 'Convergencia espontánea de productividad y salarios internacionales'],
+        ],
+        explicacao: [
+          'A rota representa a conta de rendas de propriedade: lucros, dividendos, juros e royalties vinculam produção doméstica à acumulação em matrizes e centros financeiros. A referência do tour registra R$ 195–294 bi/ano para o Brasil; o intervalo e a definição devem permanecer visíveis.',
+          'The route represents the property-income account: profits, dividends, interest, and royalties connect domestic production to accumulation in headquarters and financial centers. The tour’s reference records R$195–294bn/year for Brazil; the range and definition must remain visible.',
+          'La ruta representa la cuenta de rentas de propiedad: ganancias, dividendos, intereses y regalías conectan la producción doméstica con la acumulación en matrices y centros financieros. La referencia del tour registra R$195–294 mil M/año para Brasil; el intervalo y la definición deben permanecer visibles.',
+        ],
+      },
       pergunta: [
         'O que caracteriza o "dreno de valor" e a dependência financeira na Teoria Marxista da Dependência (TMD)?',
         'What characterizes value drainage and financial dependence in Marxist Dependency Theory (TMD)?',
@@ -380,6 +490,40 @@ export const TOUR_STOPS: TourStop[] = [
     adv: 'Hierarquia monetária (Pilar 3): Treasuries + precificação dolarizada + dívida corporativa externa — a política do Fed transmite-se ao custo de vida periférico sem passar por nenhuma urna.',
     dica: 'clique ou toque na rota destacada para abrir os detalhes do fluxo',
     quiz: {
+      simples: {
+        pergunta: [
+          'Por que decisões sobre o dólar e os juros dos EUA podem afetar preços e dívidas em outros países?',
+          'Why can decisions about the dollar and U.S. interest rates affect prices and debt in other countries?',
+          '¿Por qué las decisiones sobre el dólar y los intereses de EE. UU. pueden afectar precios y deudas en otros países?',
+        ],
+        opcoes: [
+          ['Porque muitos preços, reservas e dívidas internacionais usam dólar', 'Because many international prices, reserves, and debts use dollars', 'Porque muchos precios, reservas y deudas internacionales usan dólares'],
+          ['Porque desde 1971 todo dólar precisa ter a mesma quantidade de ouro guardada', 'Because since 1971 every dollar must have the same amount of gold stored behind it', 'Porque desde 1971 cada dólar debe tener la misma cantidad de oro guardada'],
+          ['Porque outros países são proibidos de criar suas próprias moedas', 'Because other countries are prohibited from creating their own currencies', 'Porque otros países tienen prohibido crear sus propias monedas'],
+        ],
+        explicacao: [
+          'Petróleo, grãos, reservas e muitas dívidas usam dólar. Por isso mudanças no dólar e nos juros dos EUA podem alterar câmbio, crédito e preços em outros países.',
+          'Oil, grains, reserves, and many debts use dollars. Changes in the dollar and U.S. interest rates can therefore change exchange rates, credit conditions, and prices elsewhere.',
+          'Petróleo, granos, reservas y muchas deudas usan dólares. Por eso cambios en el dólar y en los intereses de EE. UU. pueden alterar tipos de cambio, crédito y precios en otros países.',
+        ],
+      },
+      avancado: {
+        pergunta: [
+          'Qual mecanismo sustenta o “privilégio exorbitante” no sistema monetário internacional contemporâneo?',
+          'Which mechanism sustains the “exorbitant privilege” in the contemporary international monetary system?',
+          '¿Qué mecanismo sostiene el “privilegio exorbitante” en el sistema monetario internacional contemporáneo?',
+        ],
+        opcoes: [
+          ['Conversibilidade integral dólar-ouro mantida depois de 1971', 'Full dollar-gold convertibility maintained after 1971', 'Convertibilidad integral dólar-oro mantenida después de 1971'],
+          ['Demanda global por passivos denominados em dólar — reservas, Treasuries, clearing e dívida — que permite aos EUA emitir na própria moeda', 'Global demand for dollar-denominated liabilities — reserves, Treasuries, clearing, and debt — allowing the U.S. to issue in its own currency', 'Demanda global por pasivos denominados en dólares — reservas, Treasuries, clearing y deuda — que permite a EE. UU. emitir en su propia moneda'],
+          ['Proibição jurídica de bancos centrais periféricos emitirem moeda nacional', 'A legal ban on peripheral central banks issuing domestic currency', 'Prohibición jurídica a los bancos centrales periféricos de emitir moneda nacional'],
+        ],
+        explicacao: [
+          'A centralidade do dólar combina unidade de conta em commodities, reservas oficiais, Treasuries, infraestrutura de pagamentos e passivos externos. Isso transmite a política do Fed ao custo financeiro global sem depender de conversibilidade em ouro.',
+          'Dollar centrality combines commodity invoicing, official reserves, Treasuries, payment infrastructure, and external liabilities. This transmits Fed policy into global financing conditions without relying on gold convertibility.',
+          'La centralidad del dólar combina facturación de commodities, reservas oficiales, Treasuries, infraestructura de pagos y pasivos externos. Esto transmite la política de la Fed a las condiciones financieras globales sin depender de convertibilidad en oro.',
+        ],
+      },
       pergunta: [
         'Como a hegemonia do dólar (privilégio exorbitante) opera no comércio e na finança internacional?',
         'How does the hegemony of the US dollar (exorbitant privilege) function in international trade and finance?',
@@ -713,10 +857,14 @@ const TOUR_STOP_I18N: Record<string, Record<'en' | 'es', TourStopLocale>> = {
   },
 }
 
+export function hasTourStopLocale(stopId: string, lang: Exclude<TourLang, 'pt'>): boolean {
+  return !!TOUR_STOP_I18N[stopId]?.[lang]
+}
+
 export function tourStopForLang(stop: TourStop, lang: TourLang): TourStop {
   if (lang === 'pt') return stop
   const locale = TOUR_STOP_I18N[stop.id]?.[lang]
-  if (!locale) return stop
+  if (!locale) throw new Error(`Tour stop sem locale ${lang}: ${stop.id}`)
   return {
     ...stop,
     chapter: locale.chapter,

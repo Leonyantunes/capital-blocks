@@ -31,6 +31,10 @@ export default defineConfig({
              importado por three-render-objects (grafo corporativo), NÃO pode
              entrar aqui — dobraria o chunk baixado pelo globo 3D. */
           if (/node_modules\/three\/build\/three\.(core|module)\.js$/.test(id)) return 'vendor-three'
+          /* OrbitControls é usado pelo globo e também por 3d-force-graph. Sem
+             regra própria o Rollup o anexava ao vendor-graph, fazendo o globo
+             baixar o grafo (e dependências dele) sem usar a feature. */
+          if (id.includes('node_modules/three/examples/jsm/controls/OrbitControls.js')) return 'vendor-three-controls'
           if (id.includes('node_modules/cytoscape/') || id.includes('node_modules/3d-force-graph/')) return 'vendor-graph'
           if (id.includes('node_modules/@deck.gl/')) return 'vendor-deck'
           if (id.includes('node_modules/@duckdb/duckdb-wasm/')) return 'vendor-duckdb'

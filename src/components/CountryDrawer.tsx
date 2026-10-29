@@ -15,23 +15,32 @@ function TmdBlock({ countryName }: { countryName: string }) {
     ? {
         title: 'Dependency theory · Value drain toward the Center (Marini/dos Santos)', aria: 'Value flow from the Global South to the Global North', center: 'Center', london: 'NYC / London',
         channels: [
-          { tipo: 'Unequal exchange', did: 'The South exports lower-priced agricultural and mineral goods and imports expensive machinery, medicines and software. More embodied labor can be exchanged for less monetary value.', adv: 'Declining or asymmetric terms of trade for primary goods can transfer embodied labor toward higher-productivity centers, especially when technology, brands and pricing power remain concentrated there.' },
-          { tipo: 'Super-exploitation of labor (Marini)', did: 'Low wages, long hours and intense work help keep export prices competitive while shifting part of the social cost of reproduction onto workers and households.', adv: 'In Marini’s framework, unequal exchange is compensated through labor-power remuneration below its reproduction value plus intensification or extension of the working day.' },
-          { tipo: 'Property income + debt outflow', did: 'Profits, royalties and foreign-currency debt service move hard currency back toward multinational headquarters and creditors instead of remaining available for domestic uses.', adv: 'Profit, dividend and royalty repatriation plus external-debt service drain foreign currency and connect domestic surplus generation to accumulation in core financial centers.' },
+          { tipo: 'Unequal exchange', simples: 'Some countries sell raw materials and labor-intensive goods cheaply and buy more expensive technology and machinery. The difference can move income toward the countries controlling the higher-value stages.', did: 'The South exports lower-priced agricultural and mineral goods and imports expensive machinery, medicines and software. More embodied labor can be exchanged for less monetary value.', adv: 'Declining or asymmetric terms of trade for primary goods can transfer embodied labor toward higher-productivity centers, especially when technology, brands and pricing power remain concentrated there.' },
+          { tipo: 'Super-exploitation of labor (Marini)', simples: 'Low wages and very long or intense working days can make exports cheaper while workers and families carry more of the cost of living.', did: 'Low wages, long hours and intense work help keep export prices competitive while shifting part of the social cost of reproduction onto workers and households.', adv: 'In Marini’s framework, unequal exchange is compensated through labor-power remuneration below its reproduction value plus intensification or extension of the working day.' },
+          { tipo: 'Property income + debt outflow', simples: 'Profits, interest, and technology payments can leave the country and go to foreign companies and creditors.', did: 'Profits, royalties and foreign-currency debt service move hard currency back toward multinational headquarters and creditors instead of remaining available for domestic uses.', adv: 'Profit, dividend and royalty repatriation plus external-debt service drain foreign currency and connect domestic surplus generation to accumulation in core financial centers.' },
         ],
       }
     : lang === 'es'
       ? {
           title: 'Teoría de la dependencia · Drenaje de valor hacia el Centro (Marini/dos Santos)', aria: 'Flujo de valor del Sur Global al Norte Global', center: 'Centro', london: 'NYC / Londres',
           channels: [
-            { tipo: 'Intercambio desigual', did: 'El Sur exporta bienes agrícolas y minerales de menor precio e importa maquinaria, medicamentos y software caros. Puede intercambiarse más trabajo incorporado por menos valor monetario.', adv: 'Términos de intercambio declinantes o asimétricos para bienes primarios pueden transferir trabajo incorporado hacia centros de mayor productividad, especialmente cuando tecnología, marcas y poder de fijación de precios quedan concentrados allí.' },
-            { tipo: 'Superexplotación del trabajo (Marini)', did: 'Salarios bajos, jornadas largas y trabajo intenso ayudan a mantener precios exportadores competitivos mientras trasladan parte del costo social de reproducción a trabajadores y hogares.', adv: 'En el marco de Marini, el intercambio desigual se compensa mediante remuneración de la fuerza de trabajo por debajo de su valor de reproducción más intensificación o extensión de la jornada.' },
-            { tipo: 'Salida de rentas de propiedad + deuda', did: 'Ganancias, regalías y servicio de deuda en moneda extranjera trasladan divisas hacia matrices multinacionales y acreedores en lugar de permanecer disponibles para usos domésticos.', adv: 'La repatriación de ganancias, dividendos y regalías más el servicio de deuda externa drenan divisas y conectan el excedente generado internamente con la acumulación en centros financieros.' },
+            { tipo: 'Intercambio desigual', simples: 'Algunos países venden materias primas y bienes intensivos en trabajo a precios bajos y compran tecnología y maquinaria más caras. La diferencia puede trasladar ingresos hacia quienes controlan las etapas de mayor valor.', did: 'El Sur exporta bienes agrícolas y minerales de menor precio e importa maquinaria, medicamentos y software caros. Puede intercambiarse más trabajo incorporado por menos valor monetario.', adv: 'Términos de intercambio declinantes o asimétricos para bienes primarios pueden transferir trabajo incorporado hacia centros de mayor productividad, especialmente cuando tecnología, marcas y poder de fijación de precios quedan concentrados allí.' },
+            { tipo: 'Superexplotación del trabajo (Marini)', simples: 'Salarios bajos y jornadas muy largas o intensas pueden abaratar las exportaciones mientras trabajadores y familias cargan con una parte mayor del costo de vida.', did: 'Salarios bajos, jornadas largas y trabajo intenso ayudan a mantener precios exportadores competitivos mientras trasladan parte del costo social de reproducción a trabajadores y hogares.', adv: 'En el marco de Marini, el intercambio desigual se compensa mediante remuneración de la fuerza de trabajo por debajo de su valor de reproducción más intensificación o extensión de la jornada.' },
+            { tipo: 'Salida de rentas de propiedad + deuda', simples: 'Ganancias, intereses y pagos de tecnología pueden salir del país hacia empresas y acreedores extranjeros.', did: 'Ganancias, regalías y servicio de deuda en moneda extranjera trasladan divisas hacia matrices multinacionales y acreedores en lugar de permanecer disponibles para usos domésticos.', adv: 'La repatriación de ganancias, dividendos y regalías más el servicio de deuda externa drenan divisas y conectan el excedente generado internamente con la acumulación en centros financieros.' },
           ],
         }
       : {
           title: 'TMD · Vaza de valor ao Centro (Marini/dos Santos)', aria: 'Fluxo de valor do Sul para o Norte', center: 'Centro', london: 'NYC / Londres',
-          channels: TMD_CHANNELS.map((ch) => ({ tipo: ch.tipo, did: ch.textoDidatico, adv: ch.textoAvancado })),
+          channels: TMD_CHANNELS.map((ch, i) => ({
+            tipo: ch.tipo,
+            simples: [
+              'Países podem vender matérias-primas e muito trabalho por preços baixos e comprar tecnologia mais cara. Assim, parte da renda pode ir para quem controla as etapas de maior valor.',
+              'Salários baixos e jornadas longas ou intensas podem baratear exportações enquanto trabalhadores e famílias arcam com uma parte maior do custo de viver.',
+              'Lucros, juros, dividendos e pagamentos de tecnologia podem sair do país e ir para empresas e credores no exterior.',
+            ][i],
+            did: ch.textoDidatico,
+            adv: ch.textoAvancado,
+          })),
         }
   return (
     <section className="rounded-xl border border-labor/40 bg-labor/5 p-3">
@@ -61,7 +70,7 @@ function TmdBlock({ countryName }: { countryName: string }) {
 
       <div className="mt-2 space-y-1.5">
         {copy.channels.map((ch, i) => (
-          <Tip key={ch.tipo} text={textoPorModo(mode, ch.did, ch.adv)}>
+          <Tip key={ch.tipo} text={textoPorModo(mode, ch.did, ch.adv, ch.simples)}>
             <div className="cursor-help rounded-lg border border-zinc-800 bg-zinc-950/60 p-2.5 transition-colors hover:border-zinc-600">
               <div className="flex items-center gap-1.5 text-[11px] font-bold"
                 style={{ color: ['#f44336', '#ba68c8', '#ffc107'][i] }}>
@@ -69,7 +78,7 @@ function TmdBlock({ countryName }: { countryName: string }) {
                 {ch.tipo}
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">
-                {textoPorModo(mode, ch.did, ch.adv)}
+                {textoPorModo(mode, ch.did, ch.adv, ch.simples)}
               </p>
             </div>
           </Tip>

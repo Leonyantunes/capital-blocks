@@ -17,6 +17,44 @@ export interface Indicator {
   color: string
 }
 
+export function indicatorSimpleForLang(indicator: Indicator, lang: 'pt' | 'en' | 'es'): string {
+  const copy: Record<string, [pt: string, en: string, es: string]> = {
+    'cofer-usd': [
+      'De cada US$100 guardados nas reservas dos bancos centrais, cerca de US$57 estão em dólar. Em 2000 eram cerca de US$71.',
+      'Of every US$100 held in central-bank reserves, about US$57 are in dollars. In 2000 it was about US$71.',
+      'De cada US$100 guardados en las reservas de los bancos centrales, cerca de US$57 están en dólares. En 2000 eran unos US$71.',
+    ],
+    'sipri-mil': [
+      'O mundo gastou US$ 2,718 trilhões com forças militares em 2024. Os EUA responderam por 37% desse total.',
+      'The world spent US$2.718 trillion on military forces in 2024. The United States accounted for 37% of the total.',
+      'El mundo gastó US$2,718 billones en fuerzas militares en 2024. Estados Unidos representó el 37% del total.',
+    ],
+    'jpn-debt': [
+      'A dívida pública do Japão está perto de 230–250% do PIB. Ela é majoritariamente na moeda que o próprio país emite, por isso funciona de modo diferente de uma dívida em moeda estrangeira.',
+      'Japan’s public debt is around 230–250% of GDP. It is mostly in the currency the country itself issues, so it works differently from foreign-currency debt.',
+      'La deuda pública de Japón está cerca del 230–250% del PIB. Está mayoritariamente en la moneda que el propio país emite, por eso funciona de modo distinto a una deuda en moneda extranjera.',
+    ],
+    'usa-interest': [
+      'Os juros da dívida dos EUA passaram de US$ 1 trilhão por ano no período indicado. Esse dinheiro é pago a quem possui títulos públicos.',
+      'U.S. debt interest exceeded US$1 trillion per year in the period shown. That money is paid to holders of government bonds.',
+      'Los intereses de la deuda de EE. UU. superaron US$1 billón por año en el período indicado. Ese dinero se paga a quienes poseen títulos públicos.',
+    ],
+    'brics-share': [
+      'Os dez membros do BRICS+ reúnem cerca de 49% da população mundial e aproximadamente 40% do PIB medido por paridade de poder de compra.',
+      'The ten BRICS+ members account for about 49% of the world population and roughly 40% of GDP measured at purchasing-power parity.',
+      'Los diez miembros de BRICS+ reúnen cerca del 49% de la población mundial y aproximadamente el 40% del PIB medido por paridad de poder adquisitivo.',
+    ],
+    'tsmc-advanced': [
+      'A TSMC fabrica mais de 90% dos chips lógicos de ponta na referência usada. Essa concentração faz de Taiwan um ponto importante da cadeia tecnológica.',
+      'TSMC makes more than 90% of leading-edge logic chips in the cited source. That concentration makes Taiwan an important point in the technology chain.',
+      'TSMC fabrica más del 90% de los chips lógicos de vanguardia en la fuente citada. Esa concentración hace de Taiwán un punto importante de la cadena tecnológica.',
+    ],
+  }
+  const tri = copy[indicator.id]
+  if (!tri) throw new Error(`Indicador sem texto simples explícito: ${indicator.id}`)
+  return tri[lang === 'pt' ? 0 : lang === 'en' ? 1 : 2]
+}
+
 export const INDICATORS: Indicator[] = [
   {
     id: 'cofer-usd',

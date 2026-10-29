@@ -117,6 +117,15 @@ const DISASTER_TR: Record<string, DisasterTr> = {
 
 const dtx = (lang: Lang, pt: string, tr: BiText) => pick(lang, pt, tr[0], tr[1])
 
+export function disasterSimpleForLang(d: Disaster, lang: Lang): string {
+  return pick(
+    lang,
+    `Em ${d.ano}, este caso ocorreu em ${d.local}. O painel registra ${d.mortos}. A empresa ou grupo ligado ao caso é ${d.empresa}.`,
+    `In ${d.ano}, this case occurred in ${d.local}. The panel records ${d.mortos}. The company or group linked to the case is ${d.empresa}.`,
+    `En ${d.ano}, este caso ocurrió en ${d.local}. El panel registra ${d.mortos}. La empresa o grupo vinculado al caso es ${d.empresa}.`,
+  )
+}
+
 export function disastersForLang(lang: Lang): Disaster[] {
   return BASE_DISASTERS.map((d) => {
     const tr = DISASTER_TR[d.id]

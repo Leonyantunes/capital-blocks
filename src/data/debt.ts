@@ -59,6 +59,9 @@ export interface FlowStep {
   title: string
   titleEn: string
   titleEs: string
+  simples: string
+  simplesEn: string
+  simplesEs: string
   didatico: string
   didaticoEn: string
   didaticoEs: string
@@ -71,6 +74,9 @@ export interface FlowStep {
 export const DEATH_STEPS: FlowStep[] = [
   {
     n: 1, title: 'A morte do capital', titleEn: 'The death of capital', titleEs: 'La muerte del capital', accent: '#f44336',
+    simples: 'Numa crise, empresas podem reduzir a produção e adiar investimentos porque esperam pouco retorno. O dinheiro que não encontra uso produtivo fica parado.',
+    simplesEn: 'In a crisis, firms may cut production and postpone investment because expected returns are low. Money that finds no productive use can sit idle.',
+    simplesEs: 'En una crisis, las empresas pueden reducir la producción y posponer inversiones porque esperan poco retorno. El dinero sin uso productivo puede quedar ocioso.',
     didatico: 'Na crise, as fábricas param: não há lucro suficiente para valer a pena investir. O dinheiro fica parado, "morto".',
     didaticoEn: 'In a crisis, factories stop: profit is too low to make investment worthwhile. Money sits idle, "dead".',
     didaticoEs: 'En una crisis, las fábricas se detienen: el beneficio es demasiado bajo para justificar la inversión. El dinero queda ocioso, "muerto".',
@@ -80,6 +86,9 @@ export const DEATH_STEPS: FlowStep[] = [
   },
   {
     n: 2, title: 'O Estado vende papéis', titleEn: 'The state sells bonds', titleEs: 'El Estado vende títulos', accent: '#9c27b0',
+    simples: 'O governo vende títulos. Quem compra entrega dinheiro agora e recebe a promessa de pagamento com juros depois.',
+    simplesEn: 'The government sells bonds. Buyers provide money now and receive a promise of repayment with interest later.',
+    simplesEs: 'El gobierno vende títulos. Quien compra entrega dinero ahora y recibe la promesa de pago con intereses después.',
     didatico: 'O governo oferece títulos públicos: "empreste seu dinheiro parado a mim que eu pago juros". O capital sobrante encontra refúgio.',
     didaticoEn: 'The government offers public bonds: "lend me your idle money and I will pay interest." Surplus capital finds a refuge.',
     didaticoEs: 'El gobierno ofrece títulos públicos: "préstame tu dinero ocioso y pagaré intereses". El capital excedente encuentra refugio.',
@@ -89,6 +98,9 @@ export const DEATH_STEPS: FlowStep[] = [
   },
   {
     n: 3, title: 'Impostos sobre o trabalho', titleEn: 'Taxes on labor', titleEs: 'Impuestos sobre el trabajo', accent: '#ffc107',
+    simples: 'Impostos sobre consumo e salários fazem parte da arrecadação pública. O orçamento também paga juros da dívida a quem possui títulos.',
+    simplesEn: 'Taxes on consumption and wages are part of public revenue. The budget also pays debt interest to bondholders.',
+    simplesEs: 'Los impuestos sobre consumo y salarios forman parte de los ingresos públicos. El presupuesto también paga intereses de la deuda a quienes poseen títulos.',
     didatico: 'De onde vem o dinheiro dos juros? Dos impostos que incidem sobre consumo e salários — ou seja, sobre quem trabalha.',
     didaticoEn: 'Where does the money for interest come from? From taxes on consumption and wages — that is, from workers.',
     didaticoEs: '¿De dónde sale el dinero de los intereses? De impuestos sobre el consumo y los salarios — es decir, de quienes trabajan.',
@@ -98,6 +110,9 @@ export const DEATH_STEPS: FlowStep[] = [
   },
   {
     n: 4, title: 'Os bancos ressuscitam', titleEn: 'The banks rise again', titleEs: 'Los bancos resucitan', accent: '#4caf50',
+    simples: 'Bancos, fundos e outras pessoas que possuem títulos recebem juros. Assim, um dinheiro antes parado passa a gerar renda financeira.',
+    simplesEn: 'Banks, funds, and other bondholders receive interest. Money that was idle can therefore start generating financial income.',
+    simplesEs: 'Bancos, fondos y otros tenedores de títulos reciben intereses. Así, un dinero antes ocioso puede empezar a generar renta financiera.',
     didatico: 'Bancos e fundos recebem juros certinhos todo mês. O dinheiro que estava "morto" volta a render — sem produzir nada novo.',
     didaticoEn: 'Banks and funds receive regular interest payments every month. Money that was "dead" starts yielding again — without producing anything new.',
     didaticoEs: 'Bancos y fondos reciben intereses regulares cada mes. El dinero que estaba "muerto" vuelve a rendir — sin producir nada nuevo.',
@@ -107,6 +122,9 @@ export const DEATH_STEPS: FlowStep[] = [
   },
   {
     n: 5, title: 'O ciclo se fecha', titleEn: 'The cycle closes', titleEs: 'El ciclo se cierra', accent: '#ba68c8',
+    simples: 'No exemplo do módulo, cerca de metade do orçamento mostrado está ligada a juros e amortizações. Isso reduz o espaço que a mesma peça orçamentária mostra para outras áreas.',
+    simplesEn: 'In the module’s example, about half of the displayed budget is tied to interest and debt amortization. That leaves less room in the same budget view for other areas.',
+    simplesEs: 'En el ejemplo del módulo, cerca de la mitad del presupuesto mostrado está ligada a intereses y amortización de deuda. Eso deja menos espacio en la misma vista presupuestaria para otras áreas.',
     didatico: 'Resultado: metade do orçamento vai para a dívida, sobra pouco para saúde, educação e infraestrutura — até a próxima crise repetir tudo.',
     didaticoEn: 'Result: half the budget goes to debt, leaving little for health, education and infrastructure — until the next crisis repeats the cycle.',
     didaticoEs: 'Resultado: la mitad del presupuesto va a la deuda, queda poco para salud, educación e infraestructura — hasta que la próxima crisis repita el ciclo.',

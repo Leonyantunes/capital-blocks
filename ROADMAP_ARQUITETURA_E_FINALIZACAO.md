@@ -36,7 +36,7 @@ flowchart TD
    - O mapa 2D deve preservar a **Arquitetura Dourada**: `viewportRef` com aplicação direta do `transform` via `requestAnimationFrame`, `zoomTier` estável (sem re-criar elementos SVG e SMIL no zoom contínuo) e cache de dimensões para eliminar *layout thrashing*.
    - Supressão de filtros caros (`drop-shadow`) e keyframes pesados durante gestos ativos (`isInteracting`).
 4. **Isolamento de Chunks e Carga Dinâmica:**
-   - Todas as novas bibliotecas gráficas e de dados (Deck.gl, MapLibre, Cytoscape, 3D Force Graph, DuckDB-Wasm) devem ser carregadas via `React.lazy()` e dynamic import (`import()`), mantendo o bundle inicial leve (< 150 kB) e garantindo LCP < 1.5s.
+   - Bibliotecas gráficas e de dados pesadas (Deck.gl, Cytoscape, 3D Force Graph, DuckDB-Wasm) devem ser carregadas via `React.lazy()` e dynamic import (`import()`); metas de bundle/LCP precisam ser confirmadas por medição, não pelo roadmap.
 5. **Preservação de Invariantes e Não-Regressão:**
    - Nenhuma mudança pode quebrar os 10 módulos existentes, seus contratos visuais ou os testes pré-existentes.
 
@@ -123,9 +123,9 @@ graph LR
     end
 
     subgraph LazyLibs["Módulos sob Demanda (Dynamic Import)"]
-        Deck["Deck.gl + MapLibre<br/>(Fluxos Densos GPU)"]
+        Deck["Deck.gl / WebGL2<br/>(Fluxos Densos GPU)"]
         Graph["Cytoscape / 3D Force Graph<br/>(Teia Acionária)"]
-        Duck["DuckDB-Wasm<br/>(Analytics Parquet)"]
+        Duck["DuckDB-Wasm<br/>(Analytics in-memory; Parquet planejado)"]
         Driver["Driver.js<br/>(Tour Didático Acessível)"]
     end
 
@@ -133,10 +133,10 @@ graph LR
     UI -.-> LazyLibs
 ```
 
-### A. Deck.gl + MapLibre GL (Fluxos Globais a 60 FPS na GPU)
-- **Função:** Renderização de grandes massas de fluxos bilaterais de comércio global em 60–120 FPS via shaders de vértices da GPU (`ArcLayer`).
-- **Estratégia:** Mantém o mapa SVG nativo leve como padrão (ótimo para celulares simples e carga rápida) e adiciona o botão comutador **"Modo GPU (Alta Densidade)"**.
-- **Licenças:** Deck.gl (MIT) e MapLibre GL (BSD 3-Clause) — permissivas e sem necessidade de tokens de terceiros.
+### A. Deck.gl / WebGL2 (Fluxos Globais na GPU)
+- **Função:** Renderização GPU dos fluxos bilaterais com camadas Deck.gl.
+- **Estratégia:** Mantém o mapa SVG nativo como fallback e oferece o comutador **"Modo GPU (Deck.gl)"**. A implementação atual não usa MapLibre.
+- **Licença:** Deck.gl (MIT).
 
 ### B. Cytoscape.js + 3D Force Graph (Teias de Controle Acionário)
 - **Função:** Visualização interativa da rede de controle corporativo e participações cruzadas dos fundos transnacionais ("Big Three": BlackRock, Vanguard, State Street) nos conglomerados mundiais e na B3.
@@ -145,9 +145,9 @@ graph LR
   - *3D (3D Force Graph):* Modo imersivo WebGL com gravidade nodal para explorar conglomerados por fração de capital.
 - **Licenças:** Cytoscape.js (MIT) e 3D Force Graph (MIT).
 
-### C. DuckDB-Wasm (Processamento Analítico no Browser via Parquet)
-- **Função:** Executar consultas SQL analíticas em tempo real sobre arquivos `.parquet` estáticos (MDIC Comex Stat, Penn World Table 10.0, BEA) via requisições HTTP Range no cliente, sem necessidade de backend.
-- **Implementação:** Web Worker isolado integrado ao Módulo 10 (`SourcesModule.tsx`), com consultas pré-programadas para sala de aula e terminal SQL aberto para pesquisadores universitários.
+### C. DuckDB-Wasm (Laboratório SQL — implementação parcial)
+- **Objetivo:** executar consultas SQL no navegador sem backend.
+- **Estado atual (2026-10-29):** existe cliente DuckDB-Wasm e UI no Módulo 10, mas a inicialização real ainda precisa ser corrigida/validada no browser. Não há arquivos `.parquet` em `public/data/`; Parquet permanece planejado. O fallback não deve ser apresentado como SQL real.
 - **Licença:** DuckDB-Wasm (MIT).
 
 ### D. Driver.js (Tours Didáticos Acessíveis com Sincronia de Câmera)
@@ -227,12 +227,12 @@ graph LR
 
 ---
 
-### ETAPA 4: Renderização de Fluxos Globais a 60 FPS na GPU (Deck.gl + MapLibre GL)
+### ETAPA 4: Renderização de Fluxos Globais na GPU (Deck.gl / WebGL2)
 
-**Objetivo:** Disponibilizar visualização de altíssima densidade para centenas de fluxos de comércio e cabos submarinos sem degradação de FPS.
+**Objetivo:** Disponibilizar visualização GPU dos fluxos sem substituir o fallback SVG.
 
-- [x] **4.1. Configuração do Deck.gl com ArcLayer:**
-  - Criar componente `<GpuFlowMap />` com renderização WebGL2/WebGPU via `DeckGL` e basemap vetorial MapLibre GL.
+- [x] **4.1. Configuração do Deck.gl:**
+  - `<GpuFlowMap />` usa Deck.gl/WebGL2; a implementação atual não depende de MapLibre.
 - [x] **4.2. Shaders e Animação de Fluxo na GPU:**
   - Animação de partículas e arcos calculada diretamente nos shaders, mantendo 60–120 FPS mesmo com alta densidade de rotas.
 - [x] **4.3. Chave de Comutação Transparente:**
@@ -245,27 +245,27 @@ graph LR
 - [x] `npm run test:framing` aprovado para todas as 52 rotas.
 - [x] Teste prático de navegação: alternar entre o mapa SVG e o mapa GPU, navegar pelas rotas, inspecionar tooltips e alternar para o Globo 3D mantendo as coordenadas.
 - [x] `npm run build` executado com sucesso.
-- [x] Commit e push: `feat(gpu-map): renderizacao de fluxos massivos via deck.gl e maplibre`.
+- [x] Registro histórico de implementação GPU; o renderer atual usa Deck.gl/WebGL2, sem MapLibre.
 
 ---
 
-### ETAPA 5: Processamento Analítico no Browser (DuckDB-Wasm)
+### ETAPA 5: Processamento Analítico no Browser (DuckDB-Wasm) — P0 ABERTO
 
-**Objetivo:** Capacitar estudantes e pesquisadores a analisar datasets reais (comércio exterior Comex Stat, Penn World Table) via SQL no client.
+**Objetivo:** Capacitar estudantes e pesquisadores a analisar datasets reais via SQL no cliente.
 
-- [x] **5.1. Setup do DuckDB-Wasm e Web Worker:**
-  - Inicialização sob demanda com isolamento em Web Worker dedicado (`src/lib/duckdb/`).
-- [x] **5.2. Geração e Hospedagem de Arquivos Parquet Otimizados:**
-  - Converter bases históricas de comércio bilateral e indicadores macroeconômicos em arquivos `.parquet` particionados em `public/data/`.
+- [ ] **5.1. Inicialização real do DuckDB-Wasm:**
+  - O cliente e a UI existem, mas a inicialização precisa funcionar no browser e falhar com mensagem honesta quando indisponível.
+- [ ] **5.2. Dados analíticos reais / Parquet:**
+  - Não há `.parquet` em `public/data/` no estado auditado. Definir formato e proveniência antes de publicar datasets.
 - [x] **5.3. Interface do Laboratório de Dados em SourcesModule:**
-  - Adicionar aba com queries didáticas pré-programadas e console SQL interativo com exportação CSV.
+  - A aba, editor e tabela existem; isso não significa que o motor SQL esteja homologado.
 
 #### Checklist de Homologação da Etapa 5:
-- [x] Testes automatizados executando queries SQL básicas sobre arquivos Parquet.
-- [x] Teste prático de navegação: abrir o Módulo 10 (`sources`), selecionar o Laboratório de Dados, executar uma consulta SQL pronta, verificar a montagem da tabela em menos de 100ms e testar exportação.
-- [x] Monitoramento de memória: verificar no DevTools Memory que a instância WASM não causa vazamentos após execução de múltiplas queries.
-- [x] `npm run build` executado com sucesso.
-- [x] Commit e push: `feat(analytics): motor duckdb-wasm e laboratorio sql sobre dados parquet`.
+- [ ] Testes automatizados executando SQL real sobre o motor DuckDB-Wasm.
+- [ ] Smoke no Módulo 10 provando inicialização, consulta, resultado e erro honesto.
+- [ ] Monitoramento de memória após múltiplas queries.
+- [x] `npm run build` executa com sucesso.
+- [ ] Commit/tag/deploy somente após homologação e autorização.
 
 ---
 

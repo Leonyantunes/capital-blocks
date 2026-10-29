@@ -97,7 +97,6 @@ export function OrthodoxPanel() {
 export function SovereignPanel() {
   const { mode, lang } = useApp()
   const tr = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
-  const didatico = mode !== 'avancado'
   const trap = tr(MMT_BR.armadilhaRentista,
     'A large share of domestic debt is remunerated at the Selic rate: high interest can expand the stock without new primary spending — a structural transfer to interest-bearing capital.',
     'Una gran parte de la deuda interna se remunera a la tasa Selic: intereses altos pueden ampliar el stock sin nuevo gasto primario — una transferencia estructural al capital que devenga intereses.')
@@ -106,6 +105,11 @@ export function SovereignPanel() {
     t: i === 0 ? tr(st.t, '1 · The state spends by CREATING reais', '1 · El Estado gasta CREANDO reales')
       : i === 1 ? tr(st.t, '2 · Taxes REMOVE reais', '2 · Los impuestos RETIRAN reales')
         : tr(st.t, '3 · Bonds = interest-bearing private saving', '3 · Títulos = ahorro privado remunerado'),
+    simples: i === 0
+      ? tr('Quando o governo faz um pagamento, reais aparecem na conta de quem recebeu. Esse é um dos caminhos pelos quais a moeda entra na economia.', 'When the government makes a payment, reais appear in the recipient’s account. This is one way money enters the economy.', 'Cuando el gobierno hace un pago, aparecen reales en la cuenta de quien lo recibe. Esta es una forma en que el dinero entra en la economía.')
+      : i === 1
+        ? tr('Impostos retiram parte do dinheiro que está circulando e ajudam a organizar a demanda por reais.', 'Taxes remove part of the money in circulation and help sustain demand for the currency.', 'Los impuestos retiran parte del dinero en circulación y ayudan a sostener la demanda por la moneda.')
+        : tr('Títulos públicos são aplicações emitidas pelo governo. Para quem compra, eles são um ativo que paga juros.', 'Government bonds are investments issued by the state. For buyers, they are assets that pay interest.', 'Los títulos públicos son inversiones emitidas por el Estado. Para quien compra, son activos que pagan intereses.'),
     didatico: i === 0
       ? tr(st.didatico, 'When the government pays a hospital or retiree, it credits reais into bank accounts. The monetary balance is created through that payment operation.', 'Cuando el gobierno paga a un hospital o jubilado, acredita reales en las cuentas bancarias. El saldo monetario se crea mediante esa operación de pago.')
       : i === 1
@@ -125,7 +129,7 @@ export function SovereignPanel() {
         {sovereignSteps.map((st) => (
           <article key={st.t} className="rounded-xl border border-emerald-400/40 bg-emerald-400/5 p-3">
             <h4 className="text-xs font-bold text-emerald-300">{st.t}</h4>
-            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">{textoPorModo(mode, st.didatico, st.avancado)}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">{textoPorModo(mode, st.didatico, st.avancado, st.simples)}</p>
           </article>
         ))}
       </div>
@@ -145,9 +149,12 @@ export function SovereignPanel() {
           <MiniStat label={tr('Restrição REAL', 'REAL constraint', 'Restricción REAL')} value={tr('Recursos', 'Resources', 'Recursos')} sub={textoPorModo(mode, tr('inflação + capacidade produtiva + câmbio', 'inflation + productive capacity + exchange rate', 'inflación + capacidad productiva + tipo de cambio'), tr(MMT_BR.restricaoReal, 'Spare productive capacity + foreign-exchange bottleneck for essential imports + inflation from distributive conflict', 'Capacidad productiva ociosa + cuello de botella cambiario para importaciones esenciales + inflación por conflicto distributivo'), tr('preços + capacidade de produzir + dólares', 'prices + capacity to produce + foreign currency', 'precios + capacidad de producir + divisas'))} tip={tr('O limite do gasto público brasileiro é inflação e gargalo cambial — não escassez de reais.', 'Brazilian public spending is constrained by inflation and foreign-exchange bottlenecks — not by a physical scarcity of reais.', 'El gasto público brasileño está limitado por la inflación y los cuellos de botella cambiarios — no por una escasez física de reales.')} />
         </div>
         <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
-          {didatico
-            ? tr('Tradução: o Brasil não enfrenta a mesma restrição de solvência em reais de quem deve numa moeda estrangeira, mas pode sofrer com inflação e falta de dólares — e juros altos transferem renda aos donos dos títulos. São restrições diferentes.', 'Translation: Brazil does not face the same solvency constraint in reais as a borrower in foreign currency, but it can face inflation and foreign-currency shortages — while high interest transfers income to bondholders. These are different constraints.', 'Traducción: Brasil no enfrenta la misma restricción de solvencia en reales que quien debe en moneda extranjera, pero puede sufrir inflación y escasez de divisas — mientras tasas altas transfieren ingreso a los tenedores de títulos. Son restricciones distintas.')
-            : `${trap} ${tr('Restrição externa (TMD): serviços de dívida/remessas drenam divisas — ver bloco TMD no drawer do Brasil.', 'External constraint (dependency theory): debt service and remittances drain foreign currency — see the dependency block in the Brazil drawer.', 'Restricción externa (teoría de la dependencia): el servicio de la deuda y las remesas drenan divisas — véase el bloque de dependencia en el panel de Brasil.')}`}
+          {textoPorModo(
+            mode,
+            tr('Tradução: o Brasil não enfrenta a mesma restrição de solvência em reais de quem deve numa moeda estrangeira, mas pode sofrer com inflação e falta de dólares — e juros altos transferem renda aos donos dos títulos. São restrições diferentes.', 'Translation: Brazil does not face the same solvency constraint in reais as a borrower in foreign currency, but it can face inflation and foreign-currency shortages — while high interest transfers income to bondholders. These are different constraints.', 'Traducción: Brasil no enfrenta la misma restricción de solvencia en reales que quien debe en moneda extranjera, pero puede sufrir inflación y escasez de divisas — mientras tasas altas transfieren ingreso a los tenedores de títulos. Son restricciones distintas.'),
+            `${trap} ${tr('Restrição externa (TMD): serviços de dívida/remessas drenam divisas — ver bloco TMD no drawer do Brasil.', 'External constraint (dependency theory): debt service and remittances drain foreign currency — see the dependency block in the Brazil drawer.', 'Restricción externa (teoría de la dependencia): el servicio de la deuda y las remesas drenan divisas — véase el bloque de dependencia en el panel de Brasil.')}`,
+            tr('O Brasil cria reais e paga títulos em reais, mas ainda pode enfrentar inflação e falta de moeda estrangeira para importações. Juros altos também aumentam o dinheiro pago a quem possui títulos.', 'Brazil creates reais and pays real-denominated bonds in reais, but it can still face inflation and shortages of foreign currency for imports. High interest rates also increase payments to bondholders.', 'Brasil crea reales y paga títulos en reales, pero aún puede enfrentar inflación y falta de moneda extranjera para importaciones. Los intereses altos también aumentan los pagos a quienes poseen títulos.'),
+          )}
         </p>
       </div>
 
@@ -166,9 +173,12 @@ export function SovereignPanel() {
         </div>
         <div className="mx-auto my-2 h-6 w-px bg-gradient-to-b from-fuchsia-400 to-emerald-400" />
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">
-          {didatico
-            ? tr('A “dívida” do governo corresponde ao ativo financeiro acumulado por empresas, bancos e famílias em títulos públicos. Cortar o déficit reduz esse fluxo de ativos líquidos.', 'Government “debt” corresponds to financial assets accumulated by firms, banks and households in public bonds. Cutting the deficit reduces that flow of net financial assets.', 'La “deuda” del gobierno corresponde a activos financieros acumulados por empresas, bancos y familias en títulos públicos. Reducir el déficit disminuye ese flujo de activos financieros netos.')
-            : tr('(S−I) ≡ (G−T)+(X−M): austeridade transfere o ajuste para o balanço privado — quem absorve o encaixe negativo decide a crise.', '(S−I) ≡ (G−T)+(X−M): austerity shifts the adjustment onto private-sector balance sheets — which sector absorbs the negative position shapes the crisis.', '(S−I) ≡ (G−T)+(X−M): la austeridad traslada el ajuste a los balances privados — qué sector absorbe la posición negativa determina la forma de la crisis.')}
+          {textoPorModo(
+            mode,
+            tr('A “dívida” do governo corresponde ao ativo financeiro acumulado por empresas, bancos e famílias em títulos públicos. Cortar o déficit reduz esse fluxo de ativos líquidos.', 'Government “debt” corresponds to financial assets accumulated by firms, banks and households in public bonds. Cutting the deficit reduces that flow of net financial assets.', 'La “deuda” del gobierno corresponde a activos financieros acumulados por empresas, bancos y familias en títulos públicos. Reducir el déficit disminuye ese flujo de activos financieros netos.'),
+            tr('(S−I) ≡ (G−T)+(X−M): austeridade transfere o ajuste para o balanço privado — quem absorve o encaixe negativo decide a crise.', '(S−I) ≡ (G−T)+(X−M): austerity shifts the adjustment onto private-sector balance sheets — which sector absorbs the negative position shapes the crisis.', '(S−I) ≡ (G−T)+(X−M): la austeridad traslada el ajuste a los balances privados — qué sector absorbe la posición negativa determina la forma de la crisis.'),
+            tr('Quando alguém compra um título público, esse título vira um ativo para quem o possui. O saldo do governo e o saldo dos outros setores estão ligados nas contas da economia.', 'When someone buys a government bond, that bond is an asset for its holder. Government balances and the balances of other sectors are linked in the economy’s accounts.', 'Cuando alguien compra un título público, ese título es un activo para quien lo posee. El saldo del gobierno y los saldos de los otros sectores están conectados en las cuentas de la economía.'),
+          )}
         </p>
       </div>
     </m.section>

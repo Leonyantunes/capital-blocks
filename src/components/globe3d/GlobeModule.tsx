@@ -7,14 +7,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Globe3DCanvas, { type GlobeFocus } from './Globe3DCanvas'
 import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
-import { FLOWS, TYPE_STYLE, flowForLang, flowTypeStyleForLang, flowsForLang, type FlowDef, type FlowType } from '../../data/flows'
+import { FLOWS, TYPE_STYLE, flowForLang, flowSimpleForLang, flowTypeStyleForLang, flowsForLang, type FlowDef, type FlowType } from '../../data/flows'
 import { getTourForLang, stopColor, stopIsos, toursForLang } from '../../data/tours'
 import { distFromK } from '../../data/tour'
-import { NIVEIS, textoPorModo } from '../../lib/simples'
+import { conflictSimpleForLang } from '../../data/conflictSimple'
+import { textoPorModo } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
 import { useApp } from '../../store/useApp'
-import SourceLinks from '../ui/SourceLinks'
-import TourQuizCard from '../ui/TourQuizCard'
+import TourPanel from '../ui/TourPanel'
 
 /** Chips de conflito locais (mesmos do mapa 2D, sem puxar o chunk do MapWorld). */
 const GLOBE_CONFLICTS: { id: 'semis' | 'energia' | 'reprimaria'; chip: string; title: string; didatico: string; avancado: string; color: string }[] = [
@@ -115,7 +115,7 @@ function GlobeConflictChips() {
       {active && (
         <div className="rounded-lg border p-3 text-xs leading-relaxed" style={{ borderColor: `${active.color}55`, background: `${active.color}0d` }}>
           <div className="font-semibold" style={{ color: active.color }}>{active.title}</div>
-          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado)}</p>
+          <p className="mt-1 text-zinc-300">{textoPorModo(mode, active.didatico, active.avancado, conflictSimpleForLang(active.id, lang))}</p>
         </div>
       )}
     </div>
@@ -201,7 +201,7 @@ function FlowCard({ flow, onClose }: { flow: FlowDef; onClose: () => void }) {
         <div className="text-[9px] uppercase tracking-widest text-zinc-500">{copy.annualScale}</div>
         <div className="font-mono text-xl font-extrabold" style={{ color: st.color }}>{localizedFlow.totalAnual}</div>
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, localizedFlow.did, localizedFlow.adv)}</p>
+      <p className="mt-2 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, localizedFlow.did, localizedFlow.adv, flowSimpleForLang(localizedFlow, lang))}</p>
       <div className="mt-2.5 space-y-1.5">
         {localizedFlow.itens.map((it) => (
           <div key={it.rotulo} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-2">
@@ -390,9 +390,12 @@ export default function GlobeModule() {
     const s = STOPS[i]
     if (!s) return
     /* parada com rota: enquadra as duas pontas; senão, o ponto da parada com
-       distância derivada do k do 2D (paridade entre os mapas) */
-    if (s.flowId) flyToFlow(s.flowId, 0.55)
-    else flyTo(s.lng, s.lat, s.dist ?? distFromK(s.k), 0.55)
+       distância derivada do k do 2D (paridade entre os mapas).
+       Em tela larga o card fica AO LADO do globo (sem sobreposição), então o
+       alvo pode ficar centrado; no bottom sheet ele sobe para não ficar atrás. */
+    const lift = window.matchMedia('(min-width: 768px)').matches ? 0.18 : 0.55
+    if (s.flowId) flyToFlow(s.flowId, lift)
+    else flyTo(s.lng, s.lat, s.dist ?? distFromK(s.k), lift)
     setSelFlow(s.flowId ?? null)
     setConflict((s.conflict as typeof conflict) ?? null)
     setSharedMap({ tourStep: i, activeTourId, selFlow: s.flowId ?? null })
@@ -560,7 +563,9 @@ export default function GlobeModule() {
             background: 'radial-gradient(ellipse 90% 80% at 50% 42%, #0a1428 0%, #04070f 55%, #000000 100%)',
           }}
       >
-        <div className="absolute inset-0">
+        {/* com o tour ancorado à direita, o palco do globo encolhe — o card
+            nunca cobre o planeta (antes ele crescia até 108% da altura) */}
+        <div className={`absolute inset-0 ${tourStep !== null ? 'md:right-[392px]' : ''}`}>
           <Globe3DCanvas
             opts={opts}
             visibleLayers={visibleLayers}
@@ -981,89 +986,28 @@ export default function GlobeModule() {
           <button onClick={toggleFullscreen} className="flex flex-1 items-center justify-center rounded-lg text-base text-zinc-300">⛶</button>
         </div>
 
-        {/* tour 3D — mesmo tour do 2D; o modo global alterna simples/completa */}
-        {tourStep !== null && STOPS[tourStep] && (() => {
-          const s = STOPS[tourStep]
-          const tour = activeTour
-          const A = tour.accent
-          const setMode = useApp.getState().setMode
-          return (
-            <div className="absolute bottom-14 left-1/2 z-30 w-[min(94%,620px)] -translate-x-1/2 rounded-xl border bg-[#060b16]/95 p-4 shadow-2xl backdrop-blur max-md:bottom-16 max-md:p-3"
-              style={{ borderColor: `${A}88`, boxShadow: `0 0 28px ${A}22, 0 18px 50px rgba(0,0,0,.6)` }}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 font-mono text-[9.5px] uppercase tracking-widest" style={{ color: A }}>
-                    <span>{s.chapter} · {copy.step} {tourStep + 1}/{STOPS.length}</span>
-                    <span className="inline-flex overflow-hidden rounded border border-zinc-700">
-                      {NIVEIS.map((n) => (
-                        <button key={n.id} onClick={() => setMode(n.id)} title={copy.levels[n.id][1]}
-                          className={`px-1.5 py-px text-[9px] font-bold normal-case tracking-normal transition-colors ${mode === n.id ? 'text-onaccent' : 'text-zinc-500 hover:text-zinc-200'}`}
-                          style={mode === n.id ? { background: A } : undefined}>
-                          {copy.levels[n.id][0]}
-                        </button>
-                      ))}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 text-sm font-bold text-zinc-100">{s.titulo}</div>
-                  <select value={activeTourId} onChange={(e) => { setActiveTourId(e.target.value); setTourStep(0) }}
-                    title={copy.chooseTour} aria-label={copy.chooseTour}
-                    className="mt-1.5 max-w-full cursor-pointer truncate rounded-md border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[10.5px] font-semibold text-zinc-200 outline-none hover:border-zinc-500">
-                    {localizedTours.map((td) => (
-                      <option key={td.id} value={td.id}>{td.titulo}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex gap-1">
-                  <button onClick={() => gotoTour(Math.max(0, tourStep - 1))} aria-label={copy.previousStep} className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">←</button>
-                  <button onClick={endTour} aria-label={copy.endTour} className="rounded border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-200 max-md:px-3.5 max-md:py-2">✕</button>
-                </div>
-              </div>
-              {mode !== 'avancado' ? (
-                <>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, s.did, s.adv, s.simples)}</p>
-                  <div className="mt-2.5 grid grid-cols-3 gap-1.5">
-                    {s.didStats.map((d) => (
-                      <div key={d.k} className="rounded-lg border px-2 py-1.5 text-center" style={{ borderColor: `${A}44`, background: `${A}0d` }}>
-                        <div className="font-mono text-sm font-extrabold leading-tight" style={{ color: A }}>{d.v}</div>
-                        <div className="mt-0.5 text-[9px] leading-tight text-zinc-400">{textoPorModo(mode, d.k, d.k)}</div>
-                        <SourceLinks sourceIds={d.sourceIds} />
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-2 text-xs leading-relaxed text-zinc-300">{s.adv}</p>
-              )}
-              {s.dica && (
-                <p className="mt-2 font-mono text-[10px] leading-snug text-zinc-500">💡 {s.dica}</p>
-              )}
-              {s.quiz && <TourQuizCard quiz={s.quiz} accentColor={A} />}
-              <div className="mt-2.5 flex items-center justify-between gap-2">
-                <div className="flex max-w-[55%] flex-wrap items-center gap-1 overflow-hidden">
-                  {STOPS.map((st, i) => (
-                    <button key={st.id} onClick={() => gotoTour(i)} title={st.titulo} aria-label={`${copy.goStep} ${i + 1}`}
-                      className={`h-1.5 shrink-0 rounded-full transition-all ${i === tourStep ? 'w-5' : 'w-1.5 bg-zinc-700 hover:bg-zinc-500'}`}
-                      style={i === tourStep ? { background: A } : undefined} />
-                  ))}
-                </div>
-                <button
-                  onClick={() => (tourStep < STOPS.length - 1 ? gotoTour(tourStep + 1) : endTour())}
-                  className="rounded border px-3 py-1 text-[11px] font-bold hover:bg-white/5 max-md:px-4 max-md:py-2"
-                  style={{ borderColor: `${A}99`, color: A }}
-                >
-                  {tourStep < STOPS.length - 1 ? copy.next : copy.finish}
-                </button>
-              </div>
-              {tourStep === STOPS.length - 1 && (
-                <button onClick={() => { endTour(); useApp.getState().setTab(tour.finalTab) }}
-                  className="mt-2 w-full rounded-lg px-3 py-1.5 text-[11px] font-bold text-onaccent hover:brightness-110"
-                  style={{ background: A }}>
-                  {tour.finalLabel}
-                </button>
-              )}
-            </div>
-          )
-        })()}
+        {/* tour 3D — mesmo tour do 2D; card compartilhado (coluna à direita
+            em telas largas, bottom sheet limitado no mobile) */}
+        {tourStep !== null && STOPS[tourStep] && (
+          <TourPanel
+            stop={STOPS[tourStep]}
+            stepIndex={tourStep}
+            total={STOPS.length}
+            accent={activeTour.accent}
+            tourId={activeTourId}
+            tours={localizedTours}
+            copy={copy}
+            surface="3d"
+            dockAt="md"
+            onPrev={() => gotoTour(Math.max(0, tourStep - 1))}
+            onNext={() => (tourStep < STOPS.length - 1 ? gotoTour(tourStep + 1) : endTour())}
+            onEnd={endTour}
+            onSelectStep={gotoTour}
+            onSelectTour={(id) => { setActiveTourId(id); setTourStep(0) }}
+            onFinish={() => { endTour(); useApp.getState().setTab(activeTour.finalTab) }}
+            finalLabel={activeTour.finalLabel}
+          />
+        )}
 
         {/* card do fluxo ativo (estética do globo; o giro pausa sozinho) */}
         {selFlowObj && tourStep === null && (

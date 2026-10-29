@@ -57,6 +57,8 @@ jobs:
           # Pages de projeto serve em /<repo>/ — assets via base; o SW deriva o
           # escopo da própria localização (public/ não é reescrito pelo Vite)
           VITE_BASE: /${{ github.event.repository.name }}/
+      - name: Orçamento de bytes e isolamento dos chunks pesados
+        run: npm run test:perf:budget
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

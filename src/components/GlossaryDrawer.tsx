@@ -4,6 +4,7 @@ import { glossaryForLang, type GlossaryTerm } from '../data/glossary'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
+import { glossarySimpleForLang } from '../data/glossarySimple'
 
 const CAT_COLOR: Record<GlossaryTerm['categoria'], string> = {
   valor: '#f44336', moeda: '#ffc107', dependencia: '#ba68c8', crise: '#42a5f5',
@@ -77,7 +78,7 @@ export default function GlossaryDrawer() {
                       {copy.categories[g.categoria]}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, g.didatico, g.avancado)}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-zinc-200">{textoPorModo(mode, g.didatico, g.avancado, glossarySimpleForLang(g.id, lang))}</p>
                   <p className="mt-1.5 font-mono text-[9.5px] text-zinc-600">
                     {textoPorModo(mode, `${copy.bookSimple} ${g.formal}`, copy.bookAdvanced || g.formal, `${copy.bookPlain} ${g.formal}`)}
                   </p>

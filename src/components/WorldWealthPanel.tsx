@@ -30,6 +30,29 @@ function claimCopy(lang: Lang, claim: (typeof CLAIMS)[number]) {
   }
 }
 
+function claimSimple(lang: Lang, claim: (typeof CLAIMS)[number]): string {
+  const copy: Record<string, [pt: string, en: string, es: string]> = {
+    equities: [
+      'As ações de empresas listadas no mundo somam cerca de US$ 124 trilhões na referência usada. O preço representa direitos sobre ganhos futuros, não máquinas ou produtos já feitos.',
+      'Listed-company shares worldwide total about US$124 trillion in the cited reference. Their price represents claims on future income, not machines or goods already produced.',
+      'Las acciones de empresas cotizadas del mundo suman cerca de US$124 billones en la referencia usada. Su precio representa derechos sobre ingresos futuros, no máquinas o bienes ya producidos.',
+    ],
+    pubdebt: [
+      'A dívida pública mundial está perto de US$ 100 trilhões. Para quem compra os títulos, essa dívida é um ativo que paga juros.',
+      'Global public debt is close to US$100 trillion. For bondholders, that debt is an asset that pays interest.',
+      'La deuda pública mundial está cerca de US$100 billones. Para quienes poseen los títulos, esa deuda es un activo que paga intereses.',
+    ],
+    privdebt: [
+      'Empresas e famílias devem cerca de US$ 95 trilhões a bancos e mercados de crédito na referência usada.',
+      'Companies and households owe about US$95 trillion to banks and credit markets in the cited reference.',
+      'Empresas y hogares deben cerca de US$95 billones a bancos y mercados de crédito en la referencia usada.',
+    ],
+  }
+  const tri = copy[claim.key]
+  if (!tri) throw new Error(`Ativo mundial sem texto simples explícito: ${claim.key}`)
+  return tri[lang === 'pt' ? 0 : lang === 'en' ? 1 : 2]
+}
+
 /**
  * RIQUEZA MUNDIAL SOB RAIO-X — quanto do patrimônio do planeta é
  * base real × esfera de títulos (capital fictício), com fontes.
@@ -37,7 +60,6 @@ function claimCopy(lang: Lang, claim: (typeof CLAIMS)[number]) {
 export default function WorldWealthPanel() {
   const mode = useApp((s) => s.mode)
   const lang = useApp((s) => s.lang)
-  const didatico = mode !== 'avancado'
   const loc = locale(lang)
   const tx = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
   const triUnit = tx('tri', 'tn', 'bill.')
@@ -56,9 +78,12 @@ export default function WorldWealthPanel() {
           {tx('A riqueza do planeta: base real × esfera de títulos', 'The planet’s wealth: real base × claims sphere', 'La riqueza del planeta: base real × esfera de títulos')}
         </h3>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? tx('Quanto vale TUDO o que existe de papel (ações, dívidas, derivativos) comparado com o que o mundo realmente PRODUZ num ano? Quando o papel cresce muito mais rápido que a produção, a riqueza vira promessa — e promessa pode virar bolha.', 'How much are ALL financial claims — shares, debt, derivatives — worth compared with what the world actually PRODUCES in a year? When claims grow much faster than production, more wealth rests on promises — and promises can become bubbles.', '¿Cuánto valen TODOS los derechos financieros — acciones, deudas, derivados — frente a lo que el mundo realmente PRODUCE en un año? Cuando esos derechos crecen mucho más rápido que la producción, una parte mayor de la riqueza descansa en promesas — y las promesas pueden convertirse en burbujas.')
-            : tx('A esfera de titularidade (fictício) cresce sobre a base produtivo-rentista; quando o múltiplo título/PIB se estica, a sobreacumulação de pretensões antecede as crises de realização (2000, 2008).', 'The sphere of financial claims (fictitious capital) expands over the productive/rentier base; when the claims-to-GDP multiple stretches, overaccumulated claims can precede realization crises (2000, 2008).', 'La esfera de derechos financieros (capital ficticio) crece sobre la base productiva/rentista; cuando se estira el múltiplo derechos/PIB, la sobreacumulación de derechos puede preceder crisis de realización (2000, 2008).')}
+          {textoPorModo(
+            mode,
+            tx('Quanto vale TUDO o que existe de papel (ações, dívidas, derivativos) comparado com o que o mundo realmente PRODUZ num ano? Quando o papel cresce muito mais rápido que a produção, a riqueza vira promessa — e promessa pode virar bolha.', 'How much are ALL financial claims — shares, debt, derivatives — worth compared with what the world actually PRODUCES in a year? When claims grow much faster than production, more wealth rests on promises — and promises can become bubbles.', '¿Cuánto valen TODOS los derechos financieros — acciones, deudas, derivados — frente a lo que el mundo realmente PRODUCE en un año? Cuando esos derechos crecen mucho más rápido que la producción, una parte mayor de la riqueza descansa en promesas — y las promesas pueden convertirse en burbujas.'),
+            tx('A esfera de titularidade (fictício) cresce sobre a base produtivo-rentista; quando o múltiplo título/PIB se estica, a sobreacumulação de pretensões antecede as crises de realização (2000, 2008).', 'The sphere of financial claims (fictitious capital) expands over the productive/rentier base; when the claims-to-GDP multiple stretches, overaccumulated claims can precede realization crises (2000, 2008).', 'La esfera de derechos financieros (capital ficticio) crece sobre la base productiva/rentista; cuando se estira el múltiplo derechos/PIB, la sobreacumulación de derechos puede preceder crisis de realización (2000, 2008).'),
+            tx('Compare o que o mundo produz em um ano com o valor de ações, dívidas e outros contratos. Os números abaixo mantêm as mesmas fontes; muda apenas a explicação.', 'Compare what the world produces in one year with the value of shares, debt, and other contracts. The figures below keep the same sources; only the explanation changes.', 'Compara lo que el mundo produce en un año con el valor de acciones, deudas y otros contratos. Los datos de abajo mantienen las mismas fuentes; solo cambia la explicación.'),
+          )}
         </p>
       </header>
 
@@ -76,7 +101,7 @@ export default function WorldWealthPanel() {
             <ul className="min-w-[220px] flex-1 space-y-2">
               {localizedClaims.map((c) => (
                 <li key={c.key}>
-                  <Tip text={textoPorModo(mode, c.didatico, c.avancado)}>
+                  <Tip text={textoPorModo(mode, c.didatico, c.avancado, claimSimple(lang, c))}>
                     <div className="flex cursor-help items-center justify-between gap-2 rounded-md border border-zinc-800 px-2 py-1.5 hover:border-zinc-600">
                       <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-zinc-300">
                         <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: c.color }} />
@@ -100,21 +125,33 @@ export default function WorldWealthPanel() {
         {/* Razões estruturais */}
         <div className="grid grid-cols-2 content-start gap-2">
           <RatioCard label={tx('Riqueza líquida privada', 'Private net wealth', 'Riqueza neta privada')} value={`US$ ${PRIVATE_NET_WEALTH_TRI.toLocaleString(loc)} ${triUnit}`} sub={`≈ ${wealthYears.toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}× ${tx('o PIB anual do planeta', 'the planet’s annual GDP', 'el PIB anual del planeta')}`} source={tx('UBS GWR · fim-2023', 'UBS GWR · end-2023', 'UBS GWR · fin de 2023')}
-            tip={didatico
-              ? tx('Somando casas, ações e contas das famílias (menos dívidas), os privados do mundo guardam o equivalente a ~4 anos de TODA produção mundial.', 'Adding homes, shares, and household accounts (minus debts), private net wealth equals roughly four years of total world output.', 'Sumando viviendas, acciones y cuentas de los hogares (menos deudas), la riqueza neta privada equivale a unos cuatro años de toda la producción mundial.')
-              : tx('Ativos financeiros + reais − dívidas dos households: a riqueza privada vale múltiplos do fluxo anual que a gera — assinatura da dominância rentista.', 'Financial + real assets − household debts: private wealth is worth multiples of the annual flow that supports it — a signature of rentier dominance.', 'Activos financieros + reales − deudas de los hogares: la riqueza privada vale múltiplos del flujo anual que la sostiene — una señal de dominancia rentista.')} />
+            tip={textoPorModo(
+              mode,
+              tx('Somando casas, ações e contas das famílias (menos dívidas), os privados do mundo guardam o equivalente a ~4 anos de TODA produção mundial.', 'Adding homes, shares, and household accounts (minus debts), private net wealth equals roughly four years of total world output.', 'Sumando viviendas, acciones y cuentas de los hogares (menos deudas), la riqueza neta privada equivale a unos cuatro años de toda la producción mundial.'),
+              tx('Ativos financeiros + reais − dívidas dos households: a riqueza privada vale múltiplos do fluxo anual que a gera — assinatura da dominância rentista.', 'Financial + real assets − household debts: private wealth is worth multiples of the annual flow that supports it — a signature of rentier dominance.', 'Activos financieros + reales − deudas de los hogares: la riqueza privada vale múltiplos del flujo anual que la sostiene — una señal de dominancia rentista.'),
+              tx('Casas, ações e contas das famílias, menos as dívidas, somam aproximadamente quatro anos de toda a produção mundial.', 'Homes, shares, and household accounts minus debts add up to roughly four years of total world output.', 'Viviendas, acciones y cuentas de los hogares menos las deudas suman aproximadamente cuatro años de toda la producción mundial.'),
+            )} />
           <RatioCard label={tx('Imobiliário mundial', 'Global real estate', 'Inmobiliario mundial')} value={`US$ ${(380).toLocaleString(loc)} ${triUnit}`} sub={tx('maior ativo real do globo', 'largest real asset class worldwide', 'mayor clase de activo real del mundo')} source="Savills · 2023"
-            tip={didatico
-              ? tx('Tijolo é a maior "poupança" da humanidade — e o colateral por trás de grande parte dos empréstimos bancários.', 'Property is humanity’s largest store of wealth — and collateral behind a large share of bank lending.', 'El inmueble es la mayor reserva de riqueza de la humanidad — y el colateral detrás de gran parte del crédito bancario.')
-              : tx('Ativo real não-produtivo (renda fundiária); funciona como colateral-chave do crédito, acoplando ciclos imobiliário e financeiro.', 'A non-productive real asset in the strict sense (ground rent); it acts as key credit collateral, coupling property and financial cycles.', 'Activo real no productivo en sentido estricto (renta del suelo); funciona como colateral clave del crédito y acopla los ciclos inmobiliario y financiero.')} />
+            tip={textoPorModo(
+              mode,
+              tx('Tijolo é a maior "poupança" da humanidade — e o colateral por trás de grande parte dos empréstimos bancários.', 'Property is humanity’s largest store of wealth — and collateral behind a large share of bank lending.', 'El inmueble es la mayor reserva de riqueza de la humanidad — y el colateral detrás de gran parte del crédito bancario.'),
+              tx('Ativo real não-produtivo (renda fundiária); funciona como colateral-chave do crédito, acoplando ciclos imobiliário e financeiro.', 'A non-productive real asset in the strict sense (ground rent); it acts as key credit collateral, coupling property and financial cycles.', 'Activo real no productivo en sentido estricto (renta del suelo); funciona como colateral clave del crédito y acopla los ciclos inmobiliario y financiero.'),
+              tx('Imóveis são a maior classe de patrimônio real do mundo e também servem como garantia para muitos empréstimos.', 'Real estate is the world’s largest class of real wealth and also serves as collateral for many loans.', 'Los inmuebles son la mayor clase de patrimonio real del mundo y también sirven de garantía para muchos préstamos.'),
+            )} />
           <RatioCard label={tx('Derivativos (nocional)', 'Derivatives (notional)', 'Derivados (nocional)')} value={`US$ ${DERIV_NOTIONAL_TRI.toLocaleString(loc)} ${triUnit}`} sub={`${derivMultiple.toLocaleString(loc, { maximumFractionDigits: 0 })}× ${tx('o PIB · apostas s/ apostas', 'GDP · bets on bets', 'el PIB · apuestas sobre apuestas')}`} source={tx('BIS · jun/2024', 'BIS · Jun/2024', 'BIS · jun/2024')}
-            tip={didatico
-              ? tx('Contratos de derivativos somam quase US$700 tri em "valor de face". Não é dinheiro no bolso — é o tamanho das APOSTAS feitas sobre juros, câmbio e preços.', 'Derivative contracts total nearly US$700 tn in notional value. That is not cash in a vault — it is the reference amount behind positions on rates, currencies, and prices.', 'Los contratos de derivados suman casi US$700 bill. de valor nocional. No es dinero guardado — es el monto de referencia detrás de posiciones sobre tipos, divisas y precios.')
-              : tx('Nocional ≠ valor de mercado (MV ≈ US$ 15–20 tri): mede exposição. Rede de interdependência cuja falha sincronizada materializa crises (AIG 2008).', 'Notional ≠ market value (MV ≈ US$15–20 tn): it measures exposure. A network of interdependence whose synchronized failure can materialize crises (AIG 2008).', 'Nocional ≠ valor de mercado (MV ≈ US$15–20 bill.): mide exposición. Una red de interdependencia cuya falla sincronizada puede materializar crisis (AIG 2008).')} />
+            tip={textoPorModo(
+              mode,
+              tx('Contratos de derivativos somam quase US$700 tri em "valor de face". Não é dinheiro no bolso — é o tamanho das APOSTAS feitas sobre juros, câmbio e preços.', 'Derivative contracts total nearly US$700 tn in notional value. That is not cash in a vault — it is the reference amount behind positions on rates, currencies, and prices.', 'Los contratos de derivados suman casi US$700 bill. de valor nocional. No es dinero guardado — es el monto de referencia detrás de posiciones sobre tipos, divisas y precios.'),
+              tx('Nocional ≠ valor de mercado (MV ≈ US$ 15–20 tri): mede exposição. Rede de interdependência cuja falha sincronizada materializa crises (AIG 2008).', 'Notional ≠ market value (MV ≈ US$15–20 tn): it measures exposure. A network of interdependence whose synchronized failure can materialize crises (AIG 2008).', 'Nocional ≠ valor de mercado (MV ≈ US$15–20 bill.): mide exposición. Una red de interdependencia cuya falla sincronizada puede materializar crisis (AIG 2008).'),
+              tx('Os contratos usam quase US$700 tri como valor de referência. Isso não significa US$700 tri em dinheiro guardado: é a escala usada para calcular pagamentos entre as partes.', 'Contracts use nearly US$700 tn as a reference amount. That does not mean US$700 tn in stored cash: it is the scale used to calculate payments between parties.', 'Los contratos usan casi US$700 bill. como valor de referencia. Eso no significa US$700 bill. en efectivo guardado: es la escala usada para calcular pagos entre las partes.'),
+            )} />
           <RatioCard label={tx('Mega-caps no Raio-X', 'Mega-caps in X-Ray', 'Megacaps en Rayos-X')} value={`US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 1 })} ${triUnit}`} sub={`${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% ${tx('de todo o mercado acionário', 'of the entire stock market', 'de todo el mercado bursátil')}`} source={tx('10-K/FY24 · dez/2025', '10-K/FY24 · Dec/2025', '10-K/FY24 · dic/2025')}
-            tip={didatico
-              ? tx(`As ${WORLD_COMPANIES.length} maiores empresas rastreadas juntas valem cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% do valor de TODAS as empresas listadas do mundo.`, `The ${WORLD_COMPANIES.length} tracked mega-companies together are worth about US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% of the value of ALL listed companies worldwide.`, `Las ${WORLD_COMPANIES.length} megaempresas seguidas valen juntas cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% del valor de TODAS las empresas cotizadas del mundo.`)
-              : tx(`Σ cap das rastreadas = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% do market cap global; Σ receitas = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% do PIB mundial.`, `Σ tracked market cap = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% of global market cap; Σ revenue = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% of world GDP.`, `Σ capitalización seguida = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% de la capitalización global; Σ ingresos = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% del PIB mundial.`)} />
+            tip={textoPorModo(
+              mode,
+              tx(`As ${WORLD_COMPANIES.length} maiores empresas rastreadas juntas valem cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% do valor de TODAS as empresas listadas do mundo.`, `The ${WORLD_COMPANIES.length} tracked mega-companies together are worth about US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% of the value of ALL listed companies worldwide.`, `Las ${WORLD_COMPANIES.length} megaempresas seguidas valen juntas cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit} — ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% del valor de TODAS las empresas cotizadas del mundo.`),
+              tx(`Σ cap das rastreadas = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% do market cap global; Σ receitas = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% do PIB mundial.`, `Σ tracked market cap = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% of global market cap; Σ revenue = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% of world GDP.`, `Σ capitalización seguida = ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% de la capitalización global; Σ ingresos = ${ws.pctPibMundial.toLocaleString(loc, { maximumFractionDigits: 1 })}% del PIB mundial.`),
+              tx(`As ${WORLD_COMPANIES.length} empresas rastreadas somam cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit}, ou ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% do valor das empresas listadas do mundo.`, `The ${WORLD_COMPANIES.length} tracked companies total about US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit}, or ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% of the value of listed companies worldwide.`, `Las ${WORLD_COMPANIES.length} empresas seguidas suman cerca de US$ ${ws.capTri.toLocaleString(loc, { maximumFractionDigits: 0 })} ${triUnit}, o ${ws.pctMarketCapMundial.toLocaleString(loc, { maximumFractionDigits: 0 })}% del valor de las empresas cotizadas del mundo.`),
+            )} />
         </div>
       </div>
 
@@ -127,9 +164,12 @@ export default function WorldWealthPanel() {
           <StackedRatio label={tx('Riqueza líquida privada', 'Private net wealth', 'Riqueza neta privada')} value={PRIVATE_NET_WEALTH_TRI} max={Math.max(claims, PRIVATE_NET_WEALTH_TRI)} color="#ffc107" lang={lang} />
         </div>
         <p className="mt-2 text-[10.5px] leading-relaxed text-zinc-600">
-          {didatico
-            ? tx('Leitura: para cada US$100 que o mundo produz em um ano, existem ~US$280 em papéis prometendo pedaços desse bolo nos próximos anos. O sistema não quebra enquanto as promessas forem acreditadas — Marx chamava isso de capital fictício.', 'Reading: for every US$100 the world produces in a year, there are about US$280 in financial claims on pieces of future income. The system holds while those claims remain credible — Marx called this fictitious capital.', 'Lectura: por cada US$100 que el mundo produce en un año, existen unos US$280 en derechos financieros sobre partes de ingresos futuros. El sistema se sostiene mientras esos derechos mantengan credibilidad — Marx llamó a esto capital ficticio.')
-            : tx(`Claims/PIB ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: a titularização corre à frente da valorização real. Historicamente o múltiplo se comprime via crise (destruição de capital fictício) — ver Timeline 1929/2008.`, `Claims/GDP ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: securitized claims run ahead of real valorization. Historically the multiple compresses through crises that destroy fictitious capital — see the 1929/2008 timeline.`, `Derechos/PIB ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: la titularización avanza por delante de la valorización real. Históricamente el múltiplo se comprime mediante crisis que destruyen capital ficticio — ver la línea de tiempo 1929/2008.`)}
+          {textoPorModo(
+            mode,
+            tx('Leitura: para cada US$100 que o mundo produz em um ano, existem ~US$280 em papéis prometendo pedaços desse bolo nos próximos anos. O sistema não quebra enquanto as promessas forem acreditadas — Marx chamava isso de capital fictício.', 'Reading: for every US$100 the world produces in a year, there are about US$280 in financial claims on pieces of future income. The system holds while those claims remain credible — Marx called this fictitious capital.', 'Lectura: por cada US$100 que el mundo produce en un año, existen unos US$280 en derechos financieros sobre partes de ingresos futuros. El sistema se sostiene mientras esos derechos mantengan credibilidad — Marx llamó a esto capital ficticio.'),
+            tx(`Claims/PIB ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: a titularização corre à frente da valorização real. Historicamente o múltiplo se comprime via crise (destruição de capital fictício) — ver Timeline 1929/2008.`, `Claims/GDP ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: securitized claims run ahead of real valorization. Historically the multiple compresses through crises that destroy fictitious capital — see the 1929/2008 timeline.`, `Derechos/PIB ≈ ${(claims / WORLD_GDP_TRI).toLocaleString(loc, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}×: la titularización avanza por delante de la valorización real. Históricamente el múltiplo se comprime mediante crisis que destruyen capital ficticio — ver la línea de tiempo 1929/2008.`),
+            tx('Para cada US$100 produzidos no ano, o gráfico compara cerca de US$280 em ações e dívidas. Esses papéis são direitos sobre renda futura, não produção nova feita hoje.', 'For every US$100 produced in a year, the chart compares about US$280 in shares and debt. These claims are rights to future income, not new output produced today.', 'Por cada US$100 producidos en un año, el gráfico compara cerca de US$280 en acciones y deudas. Estos derechos son promesas sobre ingresos futuros, no producción nueva hecha hoy.'),
+          )}
         </p>
         <button
           onClick={() => useApp.getState().setTab('wealth')}

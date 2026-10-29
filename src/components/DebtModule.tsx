@@ -61,7 +61,6 @@ export default function DebtModule() {
   const { mode, lang } = useApp()
   const tr = (pt: string, en: string, es: string) => pick(lang, pt, en, es)
   const [lens, setLens] = useState<FiscalLens>('mmt')
-  const didatico = mode !== 'avancado'
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,9 +71,12 @@ export default function DebtModule() {
         </div>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-zinc-100">{mt(lang, 'debt').title}</h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-zinc-400">
-          {didatico
-            ? tr('O que o Estado faz dentro do capitalismo? Quem paga — e quem recebe? Aqui a dívida é explicada em DUAS lentes: a ortodoxa (dominante) e a heterodoxa (MMT), sempre com a leitura marxista de quem captura os juros.', 'What does the state do within capitalism? Who pays — and who receives? Here debt is explained through TWO lenses: the orthodox (dominant) view and the heterodox (MMT) view, while retaining the Marxist question of who captures interest.', '¿Qué hace el Estado dentro del capitalismo? ¿Quién paga — y quién recibe? Aquí la deuda se explica con DOS lentes: la ortodoxa (dominante) y la heterodoxa (MMT), manteniendo la lectura marxista de quién captura los intereses.')
-            : tr('Ciclo da sobreacumulação → título público → capitalização de juros; operacionalidade monetária soberana (MMT) e equação kaleckiana dos lucros. Três lentes sobre o mesmo fluxo fiscal.', 'Overaccumulation → public bond → capitalization of interest; sovereign monetary operations (MMT) and Kalecki’s profit equation. Three lenses on the same fiscal flow.', 'Sobreacumulación → título público → capitalización de intereses; operativa monetaria soberana (MMT) y ecuación kaleckiana de los beneficios. Tres lentes sobre el mismo flujo fiscal.')}
+          {textoPorModo(
+            mode,
+            tr('O que o Estado faz dentro do capitalismo? Quem paga — e quem recebe? Aqui a dívida é explicada em DUAS lentes: a ortodoxa (dominante) e a heterodoxa (MMT), sempre com a leitura marxista de quem captura os juros.', 'What does the state do within capitalism? Who pays — and who receives? Here debt is explained through TWO lenses: the orthodox (dominant) view and the heterodox (MMT) view, while retaining the Marxist question of who captures interest.', '¿Qué hace el Estado dentro del capitalismo? ¿Quién paga — y quién recibe? Aquí la deuda se explica con DOS lentes: la ortodoxa (dominante) y la heterodoxa (MMT), manteniendo la lectura marxista de quién captura los intereses.'),
+            tr('Ciclo da sobreacumulação → título público → capitalização de juros; operacionalidade monetária soberana (MMT) e equação kaleckiana dos lucros. Três lentes sobre o mesmo fluxo fiscal.', 'Overaccumulation → public bond → capitalization of interest; sovereign monetary operations (MMT) and Kalecki’s profit equation. Three lenses on the same fiscal flow.', 'Sobreacumulación → título público → capitalización de intereses; operativa monetaria soberana (MMT) y ecuación kaleckiana de los beneficios. Tres lentes sobre el mismo flujo fiscal.'),
+            tr('Compare como o governo arrecada, gasta e vende títulos. Depois veja por que uma dívida na própria moeda funciona de modo diferente de uma dívida em moeda estrangeira e quem recebe os juros.', 'Compare how government collects revenue, spends, and sells bonds. Then see why debt in its own currency works differently from foreign-currency debt and who receives the interest.', 'Compara cómo el gobierno recauda, gasta y vende títulos. Luego mira por qué una deuda en su propia moneda funciona de forma distinta a una deuda en moneda extranjera y quién recibe los intereses.'),
+          )}
         </p>
       </header>
 
@@ -102,7 +104,7 @@ export default function DebtModule() {
                   {s.n}
                 </span>
                 <h4 className="text-sm font-semibold" style={{ color: s.accent }}>{pick(lang, s.title, s.titleEn, s.titleEs)}</h4>
-                <p className="mt-1 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, pick(lang, s.didatico, s.didaticoEn, s.didaticoEs), pick(lang, s.avancado, s.avancadoEn, s.avancadoEs))}</p>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-300">{textoPorModo(mode, pick(lang, s.didatico, s.didaticoEn, s.didaticoEs), pick(lang, s.avancado, s.avancadoEn, s.avancadoEs), pick(lang, s.simples, s.simplesEn, s.simplesEs))}</p>
               </m.li>
             ))}
           </ol>

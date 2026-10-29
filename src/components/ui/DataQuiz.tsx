@@ -9,7 +9,7 @@ const l = (lang: Lang, x: LText) => pick(lang, x.pt, x.en, x.es)
 
 interface Q {
   pergunta: LText
-  perguntaSimples?: LText
+  perguntaSimples: LText
   unidade: LText
   min: number
   max: number
@@ -18,7 +18,8 @@ interface Q {
   formato?: (n: number) => string
   fonte: string
   did: LText
-  simples?: LText
+  simples: LText
+  adv: LText
 }
 
 const QS: Q[] = [
@@ -29,6 +30,7 @@ const QS: Q[] = [
     fonte: 'UBS Global Wealth Report 2024',
     did: { pt: 'Quase metade de tudo — e a fatia cresce a cada ano desde 1980.', en: 'Almost half of all wealth — and the share has risen strongly since 1980.', es: 'Casi la mitad de toda la riqueza — y la proporción ha aumentado con fuerza desde 1980.' },
     simples: { pt: 'Quase metade da riqueza está com o 1% mais rico. O gráfico seguinte mostra como essa divisão mudou ao longo do tempo.', en: 'Almost half of wealth belongs to the richest 1%. The next chart shows how that distribution changed over time.', es: 'Casi la mitad de la riqueza pertenece al 1% más rico. El gráfico siguiente muestra cómo cambió esa distribución.' },
+    adv: { pt: 'O valor de 47,5% deve ser lido como participação patrimonial estimada pelo UBS Global Wealth Report 2024, dependente de cobertura, preços de ativos e metodologia de imputação.', en: 'The 47.5% figure should be read as a wealth-share estimate from the UBS Global Wealth Report 2024, dependent on coverage, asset prices, and imputation methodology.', es: 'El 47,5% debe leerse como una estimación de participación patrimonial del UBS Global Wealth Report 2024, dependiente de cobertura, precios de activos y metodología de imputación.' },
   },
   {
     pergunta: { pt: 'Quantos US$ bilhões/ano de lucro de multinacionais são deslocados para paraísos fiscais?', en: 'How many US$ billions of multinational profits are shifted to tax havens each year?', es: '¿Cuántos miles de millones de US$ de beneficios multinacionales se trasladan a paraísos fiscales cada año?' },
@@ -37,6 +39,7 @@ const QS: Q[] = [
     fonte: 'Tørsløv–Wier–Zucman (Missing Profits)',
     did: { pt: '≈ 1 trilhão por ano — 36 a 40% de TODOS os lucros multinacionais do planeta.', en: '≈ US$1 trillion per year — roughly 36–40% of global multinational profits.', es: '≈ US$1 billón al año — alrededor del 36–40% de los beneficios multinacionales mundiales.' },
     simples: { pt: 'A estimativa é de cerca de US$ 1 trilhão por ano. A fonte calcula quanto lucro é registrado em países com tributação muito baixa.', en: 'The estimate is about US$1 trillion per year. The source measures profits booked in very low-tax jurisdictions.', es: 'La estimación ronda US$1 billón al año. La fuente calcula los beneficios registrados en jurisdicciones de tributación muy baja.' },
+    adv: { pt: 'A estimativa de ≈US$ 1 tri/ano vem da metodologia Missing Profits e equivale a cerca de 36–40% dos lucros multinacionais na referência usada; trata-se de lucro deslocado contabilmente, não de um fluxo físico único.', en: 'The ≈US$1tn/year estimate comes from the Missing Profits methodology and corresponds to roughly 36–40% of multinational profits in the cited reference; it measures accounting profit shifting, not one physical flow.', es: 'La estimación de ≈US$1 billón/año proviene de la metodología Missing Profits y equivale a cerca del 36–40% de los beneficios multinacionales en la referencia citada; mide traslado contable de beneficios, no un flujo físico único.' },
   },
   {
     pergunta: { pt: 'Quantas pessoas morrem por ano de causas ligadas ao TRABALHO (acidentes + doenças)?', en: 'How many people die each year from WORK-related causes (accidents + diseases)?', es: '¿Cuántas personas mueren al año por causas relacionadas con el TRABAJO (accidentes + enfermedades)?' },
@@ -46,6 +49,7 @@ const QS: Q[] = [
     fonte: 'ILO, 2023',
     did: { pt: 'Quase 3 milhões por ano — mais que guerras. E é tratado como custo operacional.', en: 'Almost 3 million per year — an enormous recurring human cost of work.', es: 'Casi 3 millones al año — un enorme costo humano recurrente del trabajo.' },
     simples: { pt: 'A OIT estima quase 3 milhões de mortes por ano por acidentes e doenças ligados ao trabalho.', en: 'The ILO estimates almost 3 million deaths per year from work-related accidents and diseases.', es: 'La OIT estima casi 3 millones de muertes al año por accidentes y enfermedades relacionados con el trabajo.' },
+    adv: { pt: 'A estimativa OIT 2023 agrega acidentes fatais e doenças atribuíveis ao trabalho, categorias com métodos de mensuração distintos; o total de 2,9 mi/ano deve permanecer ligado a essa definição.', en: 'The ILO 2023 estimate aggregates fatal accidents and work-attributable diseases, categories measured with different methods; the 2.9m/year total must remain tied to that definition.', es: 'La estimación OIT 2023 agrega accidentes fatales y enfermedades atribuibles al trabajo, categorías medidas con métodos distintos; el total de 2,9 millones/año debe permanecer ligado a esa definición.' },
   },
   {
     pergunta: { pt: 'Quantos bilhões de horas de trabalho de cuidado NÃO PAGO são realizadas por dia no mundo?', en: 'How many billions of hours of UNPAID care work are performed every day worldwide?', es: '¿Cuántos miles de millones de horas de trabajo de cuidados NO REMUNERADO se realizan cada día en el mundo?' },
@@ -54,6 +58,7 @@ const QS: Q[] = [
     fonte: 'ILO, 2018 (~9% do PIB mundial, 80% por mulheres)',
     did: { pt: 'A economia invisível que sustenta a visível — e não aparece em nenhum PIB.', en: 'The invisible economy that sustains the visible one — much of it never appears in GDP.', es: 'La economía invisible que sostiene a la visible — gran parte de ella no aparece en el PIB.' },
     simples: { pt: 'São bilhões de horas por dia cuidando de crianças, idosos, casas e famílias sem pagamento direto.', en: 'Billions of hours are spent every day caring for children, older people, homes and families without direct pay.', es: 'Cada día se dedican miles de millones de horas a cuidar niños, personas mayores, hogares y familias sin pago directo.' },
+    adv: { pt: 'A OIT estima 16,4 bi de horas/dia de cuidado não remunerado; a valoração equivalente a ~9% do PIB mundial depende do método de imputação e não transforma automaticamente trabalho não mercantil em produção observada no SNA.', en: 'The ILO estimates 16.4bn hours/day of unpaid care; the valuation equivalent to ~9% of world GDP depends on the imputation method and does not automatically turn non-market work into observed SNA output.', es: 'La OIT estima 16,4 mil millones de horas/día de cuidados no remunerados; la valoración equivalente a ~9% del PIB mundial depende del método de imputación y no convierte automáticamente trabajo no mercantil en producción observada en el SCN.' },
   },
   {
     pergunta: { pt: 'Quantos milhões de pessoas vivem hoje em ESCRAVIDÃO CONTEMPORÂNEA?', en: 'How many millions of people live in MODERN SLAVERY today?', es: '¿Cuántos millones de personas viven hoy en ESCLAVITUD MODERNA?' },
@@ -62,6 +67,7 @@ const QS: Q[] = [
     fonte: 'ILO / Walk Free, 2021',
     did: { pt: '50 milhões — pessoas em trabalho forçado ou casamento forçado segundo a estimativa conjunta.', en: '50 million — people in forced labor or forced marriage in the joint estimate.', es: '50 millones — personas en trabajo forzoso o matrimonio forzoso según la estimación conjunta.' },
     simples: { pt: 'A estimativa é de 50 milhões de pessoas em trabalho forçado ou casamento forçado.', en: 'The estimate is 50 million people in forced labor or forced marriage.', es: 'La estimación es de 50 millones de personas en trabajo forzoso o matrimonio forzoso.' },
+    adv: { pt: 'Os 50 milhões são a estimativa conjunta OIT/Walk Free para 2021 e agregam trabalho forçado e casamento forçado; comparações históricas exigem manter definição, ano-base e método constantes.', en: 'The 50 million figure is the joint ILO/Walk Free estimate for 2021 and combines forced labor and forced marriage; historical comparisons require consistent definitions, base year, and method.', es: 'Los 50 millones son la estimación conjunta OIT/Walk Free para 2021 y agregan trabajo forzoso y matrimonio forzoso; las comparaciones históricas requieren mantener constantes definición, año base y método.' },
   },
 ]
 
@@ -104,7 +110,7 @@ export default function DataQuiz() {
       </p>
 
       <p className="mt-3 text-sm font-semibold text-zinc-100">
-        {l(lang, mode === 'simples' ? (q.perguntaSimples ?? q.pergunta) : q.pergunta)}
+        {l(lang, mode === 'simples' ? q.perguntaSimples : q.pergunta)}
       </p>
 
       {!revealed ? (
@@ -141,7 +147,7 @@ export default function DataQuiz() {
               )}
             </div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-300">
-              {textoPorModo(mode, l(lang, q.did), l(lang, q.did), q.simples ? l(lang, q.simples) : undefined)}
+              {textoPorModo(mode, l(lang, q.did), l(lang, q.adv), l(lang, q.simples))}
             </p>
             <div className="mt-1 font-mono text-[9px] uppercase tracking-wider text-zinc-600">{pick(lang, 'fonte', 'source', 'fuente')}: {q.fonte}</div>
           </div>

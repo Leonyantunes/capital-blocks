@@ -147,6 +147,33 @@ describe('validação do rehydrate (localStorage corrompido)', () => {
     expect(s.mode).toBe('avancado') // preferência ainda reidratada
   })
 
+  it('?m= e ?l= na URL vencem preferências salvas (link pedagógico reproduzível)', async () => {
+    window.history.replaceState(null, '', '/?t=debt&m=simples&l=es')
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ state: { mode: 'avancado', lang: 'en' }, version: 1 }),
+    )
+    vi.resetModules()
+    const s = (await import('../store/useApp')).useApp.getState()
+    expect(s.tab).toBe('debt')
+    expect(s.mode).toBe('simples')
+    expect(s.lang).toBe('es')
+  })
+
+  it('setTab/setMode/setLang mantêm a URL sincronizada sem apagar parâmetros existentes', async () => {
+    window.history.replaceState(null, '', '/?v=2.00,10,20')
+    vi.resetModules()
+    const store = (await import('../store/useApp')).useApp
+    store.getState().setTab('wealth')
+    store.getState().setMode('avancado')
+    store.getState().setLang('en')
+    const p = new URLSearchParams(window.location.search)
+    expect(p.get('v')).toBe('2.00,10,20')
+    expect(p.get('t')).toBe('wealth')
+    expect(p.get('m')).toBe('avancado')
+    expect(p.get('l')).toBe('en')
+  })
+
   it('?t= desconhecido cai na home em vez de quebrar', async () => {
     window.history.replaceState(null, '', '/?t=nao-existe')
     vi.resetModules()
