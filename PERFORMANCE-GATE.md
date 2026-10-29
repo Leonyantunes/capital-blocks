@@ -36,25 +36,45 @@ Baseline atual:
 - `vendor-three`: **139,6 KiB gzip**;
 - `vendor-three-controls`: cerca de **4,5 KiB gzip**.
 
+### DuckDB-Wasm local
+
+O laboratório SQL continua **fora do preload inicial**. Ao abrir a sub-aba analítica,
+o browser escolhe um bundle DuckDB compatível e carrega Worker/WASM sob demanda. O
+artefato de deploy inclui as duas variantes por compatibilidade:
+
+- Worker EH: **~184 KiB gzip**;
+- Worker MVP: **~189 KiB gzip**;
+- WASM EH: **~35,9 MB raw / 8,1 MB gzip**;
+- WASM MVP: **~41,3 MB raw / 9,3 MB gzip**.
+
+Esse custo é alto, mas isolado do Módulo 01 e dos demais fluxos iniciais. O gate bloqueia
+qualquer retorno do DuckDB ao preload; reduzir o footprint do laboratório exige uma
+decisão explícita de compatibilidade/distribuição, não deve ser feito ocultando o custo.
+
 ## Carregamento e estabilidade visual
 
 Build de produção, origem local limpa, sem cache prévio:
 
 | Cenário | FCP | LCP | CLS |
 | --- | ---: | ---: | ---: |
-| Desktop 1440×1000, CPU 1× | ~0,53 s | ~1,28 s | ~0,024 |
-| Mobile 375×812, CPU 1× | ~0,14 s | ~0,70 s | 0 |
-| Mobile 375×812, CPU 4× | — | **2,24–2,40 s** em 3 repetições | baixo |
+| Desktop 1440×1000, CPU 1× | ~0,17 s | ~0,43 s | ~0,058 |
+| Mobile 375×812, CPU 1× | ~0,10 s | ~0,22 s | 0 |
+| Mobile 375×812, CPU 4× | 0,24–0,28 s | **0,39–1,54 s em 5 repetições** | **0** no trace dedicado |
 
-O candidato de LCP mobile é o parágrafo introdutório do Módulo 01. A reserva de altura
-do fallback lazy reduziu o CLS desktop medido de aproximadamente **0,99 para 0,024**.
+O candidato de LCP mobile é o parágrafo introdutório do Módulo 01. O `MapModule`
+agora entrega o cabeçalho antes de montar o mapa pesado e carrega `MapWorld` em um
+chunk lazy separado. No perfil controlado de CPU 4×, cinco repetições produziram
+**0,388 / 0,388 / 0,400 / 0,484 / 1,536 s** (mediana **0,400 s**) e o trace dedicado
+de layout shift fechou em **CLS 0**. O `MapModule` caiu de aproximadamente **154 KiB
+raw para 49 KiB raw**; o SVG ficou em `MapWorld` (~101 KiB raw) carregado depois do
+primeiro paint.
 
 ## Mapa 2D
 
 Viewport 375×812, DPR 2, CPU 1×, Chrome:
 
-- ocioso: **59,4 FPS**, p95 ~16,7 ms;
-- zoom/interação sintética: **58,8 FPS**, p95 ~16,8 ms.
+- ocioso: próximo de **60 FPS** no perfil do navegador;
+- zoom/interação sintética: **59,9 FPS**, p95 ~16,8 ms.
 
 O mapa 2D atende a meta de 60 FPS de forma prática no laboratório e permanece acima da
 meta de 45 FPS durante interação.
@@ -72,9 +92,10 @@ No ambiente headless usado na auditoria, o WebGL identifica:
 ANGLE (Microsoft Basic Render Driver, Direct3D11)
 ```
 
-Esse é um renderer de software. O HUD do globo ficou em torno de **33 FPS** nesse
-ambiente, portanto esse número **não é critério de aprovação ou reprovação de GPU
-mobile real**.
+Esse é um renderer de software. Na rodada final, o `requestAnimationFrame` ficou em
+cerca de **48 FPS** e o HUD do globo em torno de **25 FPS** nesse ambiente. Esses
+números **não são critério de aprovação ou reprovação de GPU mobile real** porque o
+renderer não representa uma GPU móvel real.
 
 O globo deve continuar marcado como **BETA** até validar em pelo menos:
 

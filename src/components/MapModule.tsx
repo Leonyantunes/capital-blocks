@@ -1,5 +1,4 @@
-import { lazy, Suspense } from 'react'
-import MapWorld, { ConflictSelector } from './MapWorld'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import IndicatorsStrip from './IndicatorsStrip'
 import WorldWealthPanel from './WorldWealthPanel'
 import { COUNTRIES, countriesForLang, fmtTriLang, fractionMetaForLang, type Country, type FractionKey } from '../data/countries'
@@ -8,6 +7,10 @@ import ModeBadge from './ui/ModeBadge'
 import { useApp } from '../store/useApp'
 import { modRef } from '../data/modules'
 
+const MapWorld = lazy(() => import('./MapWorld'))
+const ConflictSelector = lazy(() =>
+  import('./MapWorld').then((module) => ({ default: module.ConflictSelector })),
+)
 const GpuFlowMap = lazy(() => import('./map/GpuFlowMap'))
 
 /** Segmentos da rosca com os rótulos do nível de leitura atual. */
@@ -31,6 +34,14 @@ export default function MapModule() {
   const lang = useApp((s) => s.lang)
   const segmentsOf = useSegmentsOf()
   const countries = countriesForLang(lang)
+  const [mapReady, setMapReady] = useState(false)
+
+  /* Primeiro commit leve: permite que cabeçalho/intro pintem antes do SVG pesado. */
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMapReady(true), 0)
+    return () => window.clearTimeout(timer)
+  }, [])
+
   const copy = lang === 'en'
     ? {
         title: 'The global capitalism board',
@@ -130,7 +141,15 @@ export default function MapModule() {
         </div>
       </header>
 
-      {mapRenderer === 'gpu' ? (
+      {!mapReady ? (
+        <div
+          aria-hidden="true"
+          className={`w-full rounded-2xl border border-zinc-800 bg-[#0d1117] ${mapRenderer === 'gpu' ? 'h-[620px]' : ''}`}
+          style={mapRenderer === 'svg' ? { aspectRatio: '980 / 540' } : undefined}
+        />
+      ) : (
+        <>
+          {mapRenderer === 'gpu' ? (
         <Suspense fallback={
           <div className="flex h-[620px] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-400">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
@@ -140,7 +159,15 @@ export default function MapModule() {
           <GpuFlowMap />
         </Suspense>
       ) : (
-        <MapWorld />
+        <Suspense fallback={
+          <div
+            aria-hidden="true"
+            className="w-full rounded-2xl border border-zinc-800 bg-[#0d1117]"
+            style={{ aspectRatio: '980 / 540' }}
+          />
+        }>
+          <MapWorld />
+        </Suspense>
       )}
 
       <details className="group rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
@@ -164,7 +191,9 @@ export default function MapModule() {
         <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
           {copy.wars}
         </h3>
-        <ConflictSelector />
+        <Suspense fallback={null}>
+          <ConflictSelector />
+        </Suspense>
       </section>
 
       <ComparisonStrip />
@@ -198,6 +227,8 @@ export default function MapModule() {
           )
         })}
       </div>
+        </>
+      )}
     </div>
   )
 }

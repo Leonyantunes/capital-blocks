@@ -65,7 +65,7 @@ interface Props {
   spot: { isos: string[]; color: string } | null
   onSelectFlow: (id: string | null) => void
   onSelectBloc: (blocId: string) => void
-  onStats: (s: { fps: number; lat: number; lng: number; alt: number }) => void
+  onStats: (s: { fps: number; lat: number; lng: number; alt: number; dist: number }) => void
   onReady: (dotCount: number) => void
   focus: GlobeFocus | null
 }
@@ -1115,7 +1115,13 @@ export default function Globe3DCanvas(props: Props) {
         let lng = (theta * 180) / Math.PI - 180
         if (lng < -180) lng += 360
         if (lng > 180) lng -= 360
-        live.current.onStats({ fps, lat, lng, alt: Math.max(400, Math.round((r - 1) * 38000 + 400)) })
+        live.current.onStats({
+          fps,
+          lat,
+          lng,
+          dist: r,
+          alt: Math.max(400, Math.round((r - 1) * 38000 + 400)),
+        })
       }
 
       /* DPR adaptativo: segura 60fps em GPU fraca sem tocar nos toggles */

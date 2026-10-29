@@ -35,11 +35,22 @@ mid-range (perfis DevTools mobile + device real), com aparência idêntica lado 
 > paradas/101 estatísticas e não deve ser usado como contagem atual.
 >
 > **Gate de performance 2026-10-29:** bundle inicial **110,3 KiB gzip** (teto automatizado
-> 128 KiB); CLS desktop medido **~0,024** após reservar altura no fallback lazy; mapa 2D
-> **59,4 FPS ocioso / 58,8 FPS em interação** no perfil 375×812. O globo deixou de baixar
+> 128 KiB); `MapWorld` foi separado do shell do Home e o LCP mobile CPU 4× fechou em
+> **0,388–1,536 s em 5/5 repetições**, com mediana 0,400 s e **CLS 0** no trace dedicado.
+> O mapa 2D sustentou **59,9 FPS em interação** no perfil 375×812. O globo deixou de baixar
 > `vendor-graph` + `vendor-deck` por associação indevida do `OrbitControls`; esses chunks
 > somavam ~625 KiB gzip. O 3D continua **BETA** até teste em Android/iPhone real, pois o
 > Chrome headless usa Microsoft Basic Render Driver. Detalhes em `PERFORMANCE-GATE.md`.
+
+> **Fecho dos P0 técnicos 2026-10-29:** o Laboratório SQL agora inicializa DuckDB-Wasm
+> real (Worker/WASM locais), não simula SQL quando o engine falha e passou smoke com erro
+> real de parser seguido de recuperação (`SELECT COUNT(*) ...` → 18). O mapa GPU converte
+> o ISO numérico do GeoJSON via `ISO_TO_BLOC` antes de abrir o drawer e o smoke abriu o
+> painel dos **Estados Unidos** em clique projetado determinístico. O retorno 3D→2D agora
+> preserva também o zoom `k`; após zoom no globo, o 2D voltou em `scale(3.5)`, não em
+> `k=1`. URL/aba/modo/idioma já são restauráveis.
+> Permanecem fora do fecho de release: validação 3D em aparelho real, a11y completa,
+> Parquet/datasets analíticos externos e alinhamento final de push/tag/deploy.
 
 > **Status (2026-09-12):** P0 concluída (commit 7cc5f7a 2D · e59d585 3D+worker) e P2
 > concluída (8e2a90a rápido · e7b8bcb médio). Verificado no navegador: render idêntico

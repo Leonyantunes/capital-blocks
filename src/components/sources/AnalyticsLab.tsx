@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { PRESET_QUERIES, type PresetQuery } from '../../data/analyticsDatasets'
-import { runSqlQuery, type QueryResult } from '../../lib/duckdb/duckdbClient'
+import {
+  DuckDBQueryError,
+  DuckDBUnavailableError,
+  runSqlQuery,
+  type QueryResult,
+} from '../../lib/duckdb/duckdbClient'
 import { pick } from '../../i18n'
 import { useApp } from '../../store/useApp'
 
@@ -11,6 +16,7 @@ export default function AnalyticsLab() {
   const [result, setResult] = useState<QueryResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [engineStatus, setEngineStatus] = useState<'initializing' | 'ready' | 'unavailable'>('initializing')
 
   const handleExecute = async (customSql?: string) => {
     const queryToRun = customSql ?? sql
@@ -19,8 +25,28 @@ export default function AnalyticsLab() {
     try {
       const res = await runSqlQuery(queryToRun)
       setResult(res)
-    } catch (err: any) {
-      setError(err?.message || 'Erro ao executar consulta SQL.')
+      setEngineStatus('ready')
+    } catch (err: unknown) {
+      setResult(null)
+      if (err instanceof DuckDBUnavailableError) {
+        setEngineStatus('unavailable')
+        setError(pick(
+          lang,
+          'DuckDB-Wasm não pôde iniciar neste navegador. O laboratório foi desativado e nenhuma consulta foi simulada.',
+          'DuckDB-Wasm could not start in this browser. The lab is disabled and no query was simulated.',
+          'DuckDB-Wasm no pudo iniciarse en este navegador. El laboratorio está desactivado y no se simuló ninguna consulta.',
+        ))
+      } else if (err instanceof DuckDBQueryError) {
+        setEngineStatus('ready')
+        setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : pick(
+          lang,
+          'Erro inesperado ao executar SQL.',
+          'Unexpected error while running SQL.',
+          'Error inesperado al ejecutar SQL.',
+        ))
+      }
     } finally {
       setIsLoading(false)
     }
@@ -63,7 +89,13 @@ export default function AnalyticsLab() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className={`flex h-2 w-2 rounded-full ${
+              engineStatus === 'ready'
+                ? 'bg-emerald-400'
+                : engineStatus === 'unavailable'
+                  ? 'bg-red-400'
+                  : 'animate-pulse bg-amber-400'
+            }`} />
             <h3 className="text-base font-bold text-zinc-100">
               {pick(
                 lang,
@@ -76,19 +108,27 @@ export default function AnalyticsLab() {
           <p className="mt-1 max-w-2xl text-xs text-zinc-400">
             {pick(
               lang,
-              'Execute consultas relacionais de alto desempenho diretamente na memória do seu dispositivo. Zero requisições a servidores externos; privacidade e processamento colunar de alta velocidade.',
-              'Execute high-performance relational queries directly in your device memory. Zero external server requests; full privacy and fast columnar analytics.',
-              'Ejecute consultas relacionales de alto rendimiento directamente en la memoria de su dispositivo. Cero solicitudes a servidores externos.'
+              'Execute SQL real diretamente na memória do seu dispositivo. O Worker e o WASM são servidos pelo próprio app; nenhuma consulta é enviada a um servidor.',
+              'Run real SQL directly in your device memory. The Worker and WASM are served by the app itself; no query is sent to a server.',
+              'Ejecute SQL real directamente en la memoria de su dispositivo. El Worker y el WASM son servidos por la propia app; ninguna consulta se envía a un servidor.'
             )}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="rounded-md border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-1 font-mono text-[11px] font-semibold text-emerald-400">
-            WASM SIMD 64-bit
+            WASM local · Web Worker
           </span>
-          <span className="rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1 font-mono text-[11px] text-zinc-300">
-            Engine: DuckDB-Wasm
+          <span className={`rounded-md border px-2.5 py-1 font-mono text-[11px] ${
+            engineStatus === 'unavailable'
+              ? 'border-red-500/40 bg-red-950/30 text-red-300'
+              : 'border-zinc-700 bg-zinc-900 text-zinc-300'
+          }`}>
+            {engineStatus === 'initializing'
+              ? pick(lang, 'Inicializando DuckDB…', 'Initializing DuckDB…', 'Inicializando DuckDB…')
+              : engineStatus === 'unavailable'
+                ? pick(lang, 'DuckDB indisponível', 'DuckDB unavailable', 'DuckDB no disponible')
+                : 'Engine: DuckDB-Wasm'}
           </span>
         </div>
       </div>
@@ -103,7 +143,8 @@ export default function AnalyticsLab() {
             <button
               key={preset.id}
               onClick={() => handleSelectPreset(preset)}
-              className={`flex flex-col rounded-xl border p-3 text-left transition-all ${
+              disabled={engineStatus === 'unavailable'}
+              className={`flex flex-col rounded-xl border p-3 text-left transition-all disabled:cursor-not-allowed disabled:opacity-45 ${
                 selectedPreset.id === preset.id
                   ? 'border-money bg-money/10 shadow-md'
                   : 'border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 hover:bg-zinc-900'
@@ -139,7 +180,11 @@ export default function AnalyticsLab() {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800/80 bg-zinc-900/80 px-3 py-2">
             <span className="font-mono text-[10px] text-zinc-500">
-              {result?.isFallback ? '⚡ Modo fallback analítico em memória JS' : '🚀 Executando nativamente no DuckDB Web Worker'}
+              {engineStatus === 'unavailable'
+                ? pick(lang, '⚠ SQL desativado — nenhum fallback simulado', '⚠ SQL disabled — no simulated fallback', '⚠ SQL desactivado — sin fallback simulado')
+                : engineStatus === 'initializing'
+                  ? pick(lang, '⏳ Inicializando DuckDB-Wasm local…', '⏳ Initializing local DuckDB-Wasm…', '⏳ Inicializando DuckDB-Wasm local…')
+                  : pick(lang, '🚀 SQL real no DuckDB Web Worker', '🚀 Real SQL in the DuckDB Web Worker', '🚀 SQL real en el DuckDB Web Worker')}
             </span>
 
             <div className="flex items-center gap-2">
@@ -155,7 +200,7 @@ export default function AnalyticsLab() {
               <button
                 type="button"
                 onClick={() => handleExecute()}
-                disabled={isLoading}
+                disabled={isLoading || engineStatus === 'unavailable'}
                 className="rounded-lg bg-money px-4 py-1.5 text-xs font-bold text-onaccent shadow-md transition-colors hover:bg-money/90 disabled:opacity-50"
               >
                 {isLoading ? '⏳ Processando…' : '▶ Executar SQL'}

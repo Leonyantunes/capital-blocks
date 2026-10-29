@@ -71,6 +71,15 @@ export interface TourStop {
  */
 export const distFromK = (k: number): number => Math.min(4.6, Math.max(1.7, 5.4 - 1.1 * k))
 
+/**
+ * Inversa operacional da paridade 2D ⇄ 3D.
+ * O globo permite distância 1.55–5 via OrbitControls; o mapa 2D aceita k 1–10.
+ * Distâncias além da faixa útil do 2D são clampadas em k=1. A saturação de
+ * distFromK perto do globo é inevitável: distâncias ≤1.7 representam k≈3.36+.
+ */
+export const kFromDist = (dist: number): number =>
+  Math.min(10, Math.max(1, (5.4 - dist) / 1.1))
+
 export const TOUR_STOPS: TourStop[] = [
   {
     id: 'tabuleiro',

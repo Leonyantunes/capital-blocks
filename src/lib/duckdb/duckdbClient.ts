@@ -1,53 +1,91 @@
 /**
- * MOTOR DE PROCESSAMENTO ANALÍTICO NO BROWSER (DuckDB-Wasm).
- * Executa consultas SQL ultrarrápidas em memória WebAssembly isolada em Web Worker.
- * Inclui fallback gracioso para ambientes sem WebWorker/WASM (ex.: testes ou mobile antigo).
+ * MOTOR SQL REAL NO BROWSER (DuckDB-Wasm).
+ *
+ * Contrato:
+ * - assets WASM/Worker são servidos pelo próprio build (sem CDN);
+ * - SQL livre só é executado pelo DuckDB;
+ * - se WASM/Worker não iniciar, falha de forma explícita — nunca simula SQL.
  */
 
 import { COMEX_DATA, PWT_DATA, OWNERSHIP_DATA, DEBT_DATA } from '../../data/analyticsDatasets'
 
 export interface QueryResult {
   columns: string[]
-  rows: Record<string, any>[]
+  rows: Record<string, unknown>[]
   rowCount: number
   durationMs: number
-  isFallback?: boolean
 }
 
-let duckdbInstance: any = null
+export class DuckDBUnavailableError extends Error {
+  readonly code = 'DUCKDB_UNAVAILABLE'
+  constructor(message: string) {
+    super(message)
+    this.name = 'DuckDBUnavailableError'
+  }
+}
+
+export class DuckDBQueryError extends Error {
+  readonly code = 'DUCKDB_QUERY_ERROR'
+  constructor(message: string) {
+    super(message)
+    this.name = 'DuckDBQueryError'
+  }
+}
+
 let connectionInstance: any = null
 let initPromise: Promise<any> | null = null
 
+const errorMessage = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err)
+
 /**
- * Inicializa a instância Singleton do DuckDB-Wasm sob demanda.
+ * Inicializa uma única conexão DuckDB-Wasm usando bundles locais gerenciados
+ * pelo Vite. Os arquivos grandes continuam lazy: só são buscados ao abrir/usar
+ * o laboratório.
  */
 export async function getDuckDBConnection() {
   if (connectionInstance) return connectionInstance
   if (initPromise) return initPromise
 
   initPromise = (async () => {
-    // Verificação de ambiente: no Node / SSR / Vitest sem worker real, retorna null para ativar fallback
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
-      return null
+      throw new DuckDBUnavailableError(
+        'DuckDB-Wasm requer um navegador com suporte a Web Worker e WebAssembly.',
+      )
     }
 
+    let worker: Worker | null = null
     try {
-      const duckdb = await import('@duckdb/duckdb-wasm')
-      const bundles = duckdb.getJsDelivrBundles()
-      const bundle = await duckdb.selectBundle(bundles)
+      const [duckdb, mvpWasmMod, mvpWorkerMod, ehWasmMod, ehWorkerMod] = await Promise.all([
+        import('@duckdb/duckdb-wasm'),
+        import('@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url'),
+        import('@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url'),
+        import('@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url'),
+        import('@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url'),
+      ])
 
-      if (!bundle || !bundle.mainWorker) {
-        return null
+      const bundle = await duckdb.selectBundle({
+        mvp: {
+          mainModule: mvpWasmMod.default,
+          mainWorker: mvpWorkerMod.default,
+        },
+        eh: {
+          mainModule: ehWasmMod.default,
+          mainWorker: ehWorkerMod.default,
+        },
+      })
+
+      if (!bundle?.mainWorker || !bundle.mainModule) {
+        throw new Error('nenhum bundle DuckDB compatível foi selecionado')
       }
 
-      const worker = new Worker(bundle.mainWorker)
+      worker = new Worker(bundle.mainWorker)
       const logger = new duckdb.ConsoleLogger()
       const db = new duckdb.AsyncDuckDB(logger, worker)
       await db.instantiate(bundle.mainModule, bundle.pthreadWorker)
 
       const conn = await db.connect()
 
-      // Registrar tabelas canônicas em memória
       await db.registerFileText('comex.json', JSON.stringify(COMEX_DATA))
       await conn.query(`CREATE TABLE comex_fluxos AS SELECT * FROM read_json_auto('comex.json')`)
 
@@ -60,157 +98,46 @@ export async function getDuckDBConnection() {
       await db.registerFileText('debt.json', JSON.stringify(DEBT_DATA))
       await conn.query(`CREATE TABLE divida_soberana AS SELECT * FROM read_json_auto('debt.json')`)
 
-      duckdbInstance = db
       connectionInstance = conn
       return conn
     } catch (err) {
-      console.warn('[DuckDB] Falha na inicialização do WASM Worker, operando no modo fallback analítico em memória JS:', err)
-      return null
+      worker?.terminate()
+      if (err instanceof DuckDBUnavailableError) throw err
+      throw new DuckDBUnavailableError(
+        `DuckDB-Wasm não pôde ser inicializado: ${errorMessage(err)}`,
+      )
     }
   })()
 
   return initPromise
 }
 
-/**
- * Executa uma consulta SQL.
- * Se DuckDB-Wasm estiver operacional, roda no WASM a 100k+ linhas/s.
- * Caso contrário, processa com o motor analítico fallback JS.
- */
+/** Executa SQL real. Não existe fallback que tente adivinhar a consulta. */
 export async function runSqlQuery(sql: string): Promise<QueryResult> {
   const start = performance.now()
+  const conn = await getDuckDBConnection()
 
   try {
-    const conn = await getDuckDBConnection()
-    if (conn) {
-      const arrowTable = await conn.query(sql)
-      const columns = arrowTable.schema.fields.map((f: any) => f.name)
-      const rows: Record<string, any>[] = []
+    const arrowTable = await conn.query(sql)
+    const columns = arrowTable.schema.fields.map((field: any) => field.name)
+    const rows: Record<string, unknown>[] = []
 
-      for (let i = 0; i < arrowTable.numRows; i++) {
-        const row: Record<string, any> = {}
-        for (const col of columns) {
-          const val = arrowTable.getChild(col)?.get(i)
-          row[col] = typeof val === 'bigint' ? Number(val) : val
-        }
-        rows.push(row)
+    for (let i = 0; i < arrowTable.numRows; i++) {
+      const row: Record<string, unknown> = {}
+      for (const col of columns) {
+        const val = arrowTable.getChild(col)?.get(i)
+        row[col] = typeof val === 'bigint' ? Number(val) : val
       }
-
-      const durationMs = Math.round((performance.now() - start) * 10) / 10
-      return {
-        columns,
-        rows,
-        rowCount: rows.length,
-        durationMs,
-        isFallback: false,
-      }
+      rows.push(row)
     }
-  } catch (wasmError) {
-    console.warn('[DuckDB] Erro de execução WASM, utilizando resolvedor de fallback:', wasmError)
-  }
-
-  // MOTOR FALLBACK ANALÍTICO EM MEMÓRIA
-  const fallback = executeFallbackQuery(sql)
-  const durationMs = Math.round((performance.now() - start) * 10) / 10
-  return {
-    ...fallback,
-    durationMs,
-    isFallback: true,
-  }
-}
-
-/**
- * Resolvedor analítico fallback para testes locais e dispositivos sem suporte a WASM threads.
- */
-function executeFallbackQuery(sql: string): { columns: string[]; rows: Record<string, any>[]; rowCount: number } {
-  const normalized = sql.toLowerCase()
-
-  if (normalized.includes('comex_fluxos')) {
-    const grouped = new Map<string, { bloco_origem: string; bloco_destino: string; categoria: string; total_usd_bi: number; drenagem_liquida_bi: number }>()
-
-    for (const r of COMEX_DATA) {
-      const key = `${r.bloco_origem}|${r.bloco_destino}|${r.categoria}`
-      const existing = grouped.get(key) || {
-        bloco_origem: r.bloco_origem,
-        bloco_destino: r.bloco_destino,
-        categoria: r.categoria,
-        total_usd_bi: 0,
-        drenagem_liquida_bi: 0,
-      }
-      existing.total_usd_bi += r.usd_bi
-      existing.drenagem_liquida_bi += r.drenagem_bi
-      grouped.set(key, existing)
-    }
-
-    const rows = Array.from(grouped.values())
-      .map((r) => ({
-        bloco_origem: r.bloco_origem,
-        bloco_destino: r.bloco_destino,
-        categoria: r.categoria,
-        total_usd_bi: Math.round(r.total_usd_bi * 10) / 10,
-        drenagem_liquida_bi: Math.round(r.drenagem_liquida_bi * 10) / 10,
-      }))
-      .sort((a, b) => b.drenagem_liquida_bi - a.drenagem_liquida_bi)
 
     return {
-      columns: ['bloco_origem', 'bloco_destino', 'categoria', 'total_usd_bi', 'drenagem_liquida_bi'],
+      columns,
       rows,
       rowCount: rows.length,
+      durationMs: Math.round((performance.now() - start) * 10) / 10,
     }
-  }
-
-  if (normalized.includes('penn_world_table')) {
-    const rows = PWT_DATA.filter((r) => ['Brasil', 'Estados Unidos', 'China'].includes(r.pais))
-      .sort((a, b) => a.pais.localeCompare(b.pais) || b.ano - a.ano)
-      .map((r) => ({
-        pais: r.pais,
-        ano: r.ano,
-        composicao_k: Math.round(r.composicao_organica_k * 100) / 100,
-        taxa_mais_valia: `${Math.round(r.taxa_exploracao_e * 1000) / 10}%`,
-        taxa_lucro_r: `${Math.round(r.taxa_lucro_r * 1000) / 10}%`,
-      }))
-
-    return {
-      columns: ['pais', 'ano', 'composicao_k', 'taxa_mais_valia', 'taxa_lucro_r'],
-      rows,
-      rowCount: rows.length,
-    }
-  }
-
-  if (normalized.includes('corporate_ownership')) {
-    const rows = [...OWNERSHIP_DATA]
-      .map((r) => ({
-        empresa: r.empresa,
-        pais: r.pais,
-        setor: r.setor,
-        fracao_capital: r.fracao_capital,
-        total_big_three: `${Math.round((r.pct_blackrock + r.pct_vanguard + r.pct_statestreet) * 10) / 10}%`,
-        market_cap_bi: r.market_cap_bi,
-      }))
-      .sort((a, b) => parseFloat(b.total_big_three) - parseFloat(a.total_big_three))
-
-    return {
-      columns: ['empresa', 'pais', 'setor', 'fracao_capital', 'total_big_three', 'market_cap_bi'],
-      rows,
-      rowCount: rows.length,
-    }
-  }
-
-  // Padrão: Dívida
-  const rows = [...DEBT_DATA]
-    .map((r) => ({
-      pais: r.pais,
-      regiao: r.regiao,
-      divida_pib: `${r.divida_pib_pct}%`,
-      divida_em_dolar: `${r.divida_dolar_pct}%`,
-      juros_orcamento: `${r.juros_orcamento_pct}%`,
-      reservas_usd_bi: r.reservas_bi,
-    }))
-    .sort((a, b) => parseFloat(b.divida_em_dolar) - parseFloat(a.divida_em_dolar))
-
-  return {
-    columns: ['pais', 'regiao', 'divida_pib', 'divida_em_dolar', 'juros_orcamento', 'reservas_usd_bi'],
-    rows,
-    rowCount: rows.length,
+  } catch (err) {
+    throw new DuckDBQueryError(`Consulta SQL rejeitada pelo DuckDB: ${errorMessage(err)}`)
   }
 }

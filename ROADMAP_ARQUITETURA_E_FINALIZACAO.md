@@ -50,7 +50,7 @@ No encerramento de cada uma das 6 etapas, o desenvolvedor/agente deve executar a
 
 | Teste | Comando | Objetivo e Invariantes |
 | :--- | :--- | :--- |
-| **Testes Unitários / Integração** | `npm test` | Executar todas as 9 suites do Vitest (107+ testes). Garantir 100% de aprovação em lógica de Marx, métricas financeiras, conversão BRAPI, dualmode e store Zustand. |
+| **Testes Unitários / Integração** | `npm test` | Executar toda a suíte Vitest descoberta no estado atual do repositório. Garantir 100% de aprovação nos testes executáveis; integrações live deliberadamente opt-in devem permanecer explicitamente `skipped`. |
 | **Voo e Câmera 3D do Globo** | `npm run test:globe` | Testar todos os 448 voos de câmera entre paradas. Garantir `destino exato + zero roll + nunca invertido`. |
 | **Enquadramento de Fluxos** | `npm run test:framing` | Testar todas as 52 rotas de fluxo internacional. Garantir cálculo de ponto médio 3D e enquadramento dentro do frustum da câmera. |
 | **Contratos Estruturais de Tours** | `npm run test:tours` | Validar todas as paradas dos tours: unicidade de IDs, cobertura de paradas, saídas de tour e consistência dos números. |
@@ -145,9 +145,9 @@ graph LR
   - *3D (3D Force Graph):* Modo imersivo WebGL com gravidade nodal para explorar conglomerados por fração de capital.
 - **Licenças:** Cytoscape.js (MIT) e 3D Force Graph (MIT).
 
-### C. DuckDB-Wasm (Laboratório SQL — implementação parcial)
+### C. DuckDB-Wasm (Laboratório SQL — engine real homologado; Parquet pendente)
 - **Objetivo:** executar consultas SQL no navegador sem backend.
-- **Estado atual (2026-10-29):** existe cliente DuckDB-Wasm e UI no Módulo 10, mas a inicialização real ainda precisa ser corrigida/validada no browser. Não há arquivos `.parquet` em `public/data/`; Parquet permanece planejado. O fallback não deve ser apresentado como SQL real.
+- **Estado atual (2026-10-29):** o Módulo 10 inicializa DuckDB-Wasm real com Worker + WASM servidos pelo próprio build, executa SQL livre no cliente e falha de forma explícita quando o engine está indisponível. O fallback JS que simulava SQL foi removido. Smoke em browser confirmou erro real de parser e recuperação subsequente com `SELECT COUNT(*) AS total FROM comex_fluxos` retornando 18 linhas-base agregadas em uma linha de resultado. Não há arquivos `.parquet` em `public/data/`; Parquet permanece planejado.
 - **Licença:** DuckDB-Wasm (MIT).
 
 ### D. Driver.js (Tours Didáticos Acessíveis com Sincronia de Câmera)
@@ -175,7 +175,7 @@ graph LR
   - Propagar a lente ativa (`geral`, `geografia`, `historia`, `economia`) para filtros e cards nos 10 módulos.
 
 #### Checklist de Homologação da Etapa 1:
-- [x] `npm test` aprovado (107+ testes).
+- [x] `npm test` aprovado no estado atual do repositório; contagem é derivada pela suíte, não fixada na documentação.
 - [x] `npm run test:tours:editorial` executado com 0 erros e 0 avisos.
 - [x] Teste prático de navegação: alternar entre Simples, Didático e Avançado em todos os 10 módulos e verificar a mudança contextual sem erros de renderização.
 - [x] `npm run build` executado com sucesso (zero erros de TypeScript).
@@ -249,23 +249,23 @@ graph LR
 
 ---
 
-### ETAPA 5: Processamento Analítico no Browser (DuckDB-Wasm) — P0 ABERTO
+### ETAPA 5: Processamento Analítico no Browser (DuckDB-Wasm) — ENGINE HOMOLOGADO; DADOS/PARQUET PENDENTES
 
 **Objetivo:** Capacitar estudantes e pesquisadores a analisar datasets reais via SQL no cliente.
 
-- [ ] **5.1. Inicialização real do DuckDB-Wasm:**
-  - O cliente e a UI existem, mas a inicialização precisa funcionar no browser e falhar com mensagem honesta quando indisponível.
+- [x] **5.1. Inicialização real do DuckDB-Wasm:**
+  - Worker e WASM são assets locais lazy do build; SQL livre roda no DuckDB real. Se WASM/Worker falhar, a UI desativa o laboratório com mensagem honesta e não simula resultado.
 - [ ] **5.2. Dados analíticos reais / Parquet:**
   - Não há `.parquet` em `public/data/` no estado auditado. Definir formato e proveniência antes de publicar datasets.
 - [x] **5.3. Interface do Laboratório de Dados em SourcesModule:**
-  - A aba, editor e tabela existem; isso não significa que o motor SQL esteja homologado.
+  - Aba, editor, presets, tabela, CSV e estados de inicialização/erro refletem o motor real.
 
 #### Checklist de Homologação da Etapa 5:
-- [ ] Testes automatizados executando SQL real sobre o motor DuckDB-Wasm.
-- [ ] Smoke no Módulo 10 provando inicialização, consulta, resultado e erro honesto.
-- [ ] Monitoramento de memória após múltiplas queries.
-- [x] `npm run build` executa com sucesso.
-- [ ] Commit/tag/deploy somente após homologação e autorização.
+- [ ] Teste automatizado de browser executando WASM/Worker real (Vitest cobre contrato e ausência de fallback, mas não instancia o engine).
+- [x] Smoke no Módulo 10 provando inicialização, consulta válida, erro real de parser e recuperação do engine.
+- [ ] Monitoramento de memória após múltiplas queries em device/browser alvo.
+- [x] `npm run build` executa com sucesso e mantém DuckDB fora do preload inicial.
+- [ ] Parquet/datasets externos somente após definição de proveniência e autorização editorial.
 
 ---
 
@@ -275,20 +275,21 @@ graph LR
 
 - [x] **6.1. Otimização Final de Bundles (Vite Rollup Chunking):**
   - Configurar `manualChunks` estritos para garantir que nenhum chunk individual exceda os limites recomendados de performance web.
-- [x] **6.2. Auditoria Completa de Acessibilidade (a11y):**
-  - Contraste de cores conforme WCAG AA e anúncios para leitores de tela em seleções de mapa e tours.
+- [ ] **6.2. Auditoria Completa de Acessibilidade (a11y):**
+  - Há melhorias já implementadas (foco, tooltips por teclado, `html lang`, dialogs/tours), mas a homologação WCAG AA completa em teclado, leitor de tela e mobile real ainda não foi executada nesta release.
 - [x] **6.3. Bateria Completa de Testes de Regressão:**
   - Execução sequencial de todos os scripts de auditoria (`test`, `test:globe`, `test:framing`, `test:tours`, `test:tours:editorial`).
   - Varredura prática completa em desktop e mobile.
 - [x] **6.4. Documentação de Uso e Guia do Professor:**
-  - Criação do Guia Didático do Professor e Nota Metodológica Consolidada em Markdown.
-  - Tag de lançamento final `v1.1.0-release`.
+  - Guia Didático do Professor e Nota Metodológica Consolidada existem em Markdown.
+  - A tag de lançamento **ainda não foi criada**; o pacote está em 1.1.0, mas o único tag existente é `v1.0.0`.
 
 #### Checklist de Homologação da Etapa 6:
 - [x] 0 erros e 0 warnings em todos os testes e builds.
 - [x] Console do navegador 100% limpo em todos os 10 módulos.
 - [x] Build verde em produção (`npm run build`).
-- [x] Commit e push: `release: conclusao definitiva do capital-blocks v1.1.0`.
+- [x] Commit local de consolidação: `a8aa02c feat: harden reading levels and release gates`.
+- [ ] Push, tag v1.1.0 e deploy — pendentes de gate final e autorização explícita.
 
 ---
 
@@ -298,5 +299,5 @@ graph LR
 | :--- | :---: | :---: | :--- |
 | **Inchaço do Bundle por bibliotecas pesadas (Three, Deck.gl, DuckDB)** | Alta | Alto | Dynamic imports (`import()`) obrigatórios para todas as bibliotecas novas; isolamento em chunks lazy que só baixam se o usuário abrir o módulo. |
 | **Regressão de Performance no Mapa 2D SVG** | Média | Alto | Manter as diretrizes da Arquitetura Dourada: `viewportRef` com transform nativo, `zoomTier` estrito (sem re-criar SMILs) e throttling de layouts. |
-| **Incompatibilidade de WebAssembly / WebGL em aparelhos antigos** | Média | Médio | Fallback gracioso automático: se WebGL2 ou WASM falharem, o app mantém os mapas SVG e os cálculos locais em memória JS pura. |
+| **Incompatibilidade de WebAssembly / WebGL em aparelhos antigos** | Média | Médio | WebGL2 mantém fallback SVG. Para SQL, falha de WASM/Worker desativa explicitamente o laboratório; não há emulação de SQL em JS. |
 | **Quebra de Testes Legados de Tours** | Alta | Médio | Manter a API pública de `TOURES` e `TOUR_STOPS` inalterada; novos metadados devem ser estritamente aditivos (propriedades opcionais). |

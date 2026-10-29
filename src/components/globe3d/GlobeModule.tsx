@@ -9,7 +9,7 @@ import Globe3DCanvas, { type GlobeFocus } from './Globe3DCanvas'
 import { GLOBE_THEMES, GLOW_SWATCHES, REGION_SETS } from './globeThemes'
 import { FLOWS, TYPE_STYLE, flowForLang, flowSimpleForLang, flowTypeStyleForLang, flowsForLang, type FlowDef, type FlowType } from '../../data/flows'
 import { getTourForLang, stopColor, stopIsos, toursForLang } from '../../data/tours'
-import { distFromK } from '../../data/tour'
+import { distFromK, kFromDist } from '../../data/tour'
 import { conflictSimpleForLang } from '../../data/conflictSimple'
 import { textoPorModo } from '../../lib/simples'
 import { BLOCS, flowIsos } from '../../lib/world'
@@ -283,7 +283,13 @@ export default function GlobeModule() {
   const themeDot = warTheme ? '#f87171' : themeDotBase
   const themeGlow = warTheme ? '#ef4444' : themeGlowBase
   const [focus, setFocus] = useState<GlobeFocus | null>(null)
-  const [hud, setHud] = useState({ fps: 60, lat: 14, lng: -30, alt: 44693 })
+  const [hud, setHud] = useState({
+    fps: 60,
+    lat: 14,
+    lng: -30,
+    alt: 44693,
+    dist: distFromK(sharedMap.k),
+  })
   const [dotCount, setDotCount] = useState(0)
   /* painel lateral: fechado por padrão; abre na aba de infos */
   const [panelOpen, setPanelOpen] = useState(false)
@@ -355,7 +361,10 @@ export default function GlobeModule() {
     [themeDot, themeGlow, dotSize, atmosphere, atmoIntensity, glowColor, bloom, bloomIntensity, autoRotate, tourStep, selFlow, rotateSpeed, arcSpeed, showArcs, showMarkers, showLabels, showGraticule, showBorders, showCountryTip, showStars, regionOn, regionKey, highlightFill, baseLayer, showArrows],
   )
 
-  const onStats = useCallback((s: { fps: number; lat: number; lng: number; alt: number }) => setHud(s), [])
+  const onStats = useCallback(
+    (s: { fps: number; lat: number; lng: number; alt: number; dist: number }) => setHud(s),
+    [],
+  )
   const onReady = useCallback((n: number) => setDotCount(n), [])
 
   const flyNonce = useRef(1)
@@ -448,6 +457,7 @@ export default function GlobeModule() {
     setSharedMap({
       lng: hudRef.current.lng,
       lat: hudRef.current.lat,
+      k: kFromDist(hudRef.current.dist),
       selFlow: selFlowRef.current,
       activeTourId: activeTourIdRef.current,
       tourStep: tourStepRef.current,

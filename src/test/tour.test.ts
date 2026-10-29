@@ -9,7 +9,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { TOURES, getTour, stopIsos, stopColor } from '../data/tours'
-import { TOUR_STOPS, distFromK } from '../data/tour'
+import { TOUR_STOPS, distFromK, kFromDist } from '../data/tour'
 import { FLOWS } from '../data/flows'
 import { sourceById } from '../data/sources'
 import { TOUR_SOURCE_USAGE } from '../data/sourceUsage'
@@ -115,6 +115,18 @@ describe('paridade 2D ↔ 3D (distFromK)', () => {
       .filter((k): k is number => typeof k === 'number')
     const distintas = new Set(ks.map(distFromK))
     expect(distintas.size, 'câmeras 3D distintas demais — k pode estar saturado').toBeGreaterThan(5)
+  })
+
+  it('faz round-trip k → distância → k na faixa não saturada', () => {
+    for (const k of [1, 1.3, 1.8, 2.2, 2.8, 3.2]) {
+      expect(kFromDist(distFromK(k)), `k=${k}`).toBeCloseTo(k, 10)
+    }
+  })
+
+  it('clampa o retorno do globo aos limites úteis do mapa 2D', () => {
+    expect(kFromDist(5)).toBe(1)
+    expect(kFromDist(1.55)).toBeGreaterThan(3.4)
+    expect(kFromDist(1.55)).toBeLessThan(3.6)
   })
 
   it('dist explícito na parada tem precedência sobre distFromK', () => {

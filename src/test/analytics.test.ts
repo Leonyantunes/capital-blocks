@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { COMEX_DATA, PWT_DATA, OWNERSHIP_DATA, DEBT_DATA, PRESET_QUERIES } from '../data/analyticsDatasets'
-import { runSqlQuery } from '../lib/duckdb/duckdbClient'
+import { DuckDBUnavailableError, runSqlQuery } from '../lib/duckdb/duckdbClient'
 
 describe('Motor Analítico SQL e Datasets (DuckDB-Wasm)', () => {
   it('garante que o dataset Comex possui fluxos válidos e consistência contábil', () => {
@@ -47,13 +47,16 @@ describe('Motor Analítico SQL e Datasets (DuckDB-Wasm)', () => {
     }
   })
 
-  it('executa todas as consultas didáticas SQL pré-programadas com sucesso', async () => {
-    for (const preset of PRESET_QUERIES) {
-      const res = await runSqlQuery(preset.sql)
-      expect(res.columns.length).toBeGreaterThan(0)
-      expect(res.rows.length).toBeGreaterThan(0)
-      expect(res.rowCount).toBeGreaterThan(0)
-      expect(typeof res.durationMs).toBe('number')
-    }
+  it('mantém os presets como SQL explícito sobre as quatro tabelas canônicas', () => {
+    const tables = ['comex_fluxos', 'penn_world_table', 'corporate_ownership', 'divida_soberana']
+    expect(PRESET_QUERIES).toHaveLength(4)
+    PRESET_QUERIES.forEach((preset, index) => {
+      expect(preset.sql.trim().toLowerCase().startsWith('select')).toBe(true)
+      expect(preset.sql.toLowerCase()).toContain(tables[index])
+    })
+  })
+
+  it('não simula SQL quando DuckDB não está disponível no ambiente de teste', async () => {
+    await expect(runSqlQuery(PRESET_QUERIES[0].sql)).rejects.toBeInstanceOf(DuckDBUnavailableError)
   })
 })

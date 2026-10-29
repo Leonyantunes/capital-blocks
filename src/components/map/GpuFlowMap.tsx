@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import DeckGL from '@deck.gl/react'
 import { ArcLayer, GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers'
-import { COUNTRIES_GEOJSON, BLOCS } from '../../lib/world'
+import { COUNTRIES_GEOJSON, BLOCS, ISO_TO_BLOC } from '../../lib/world'
 import { FLOWS, TYPE_STYLE, type FlowDef, type FlowType } from '../../data/flows'
 import { useApp } from '../../store/useApp'
 import { pick } from '../../i18n'
@@ -61,9 +61,11 @@ export default function GpuFlowMap() {
       autoHighlight: true,
       highlightColor: [16, 185, 129, 60],
       onClick: (info: any) => {
-        if (info.object?.id) {
-          openCountry(String(info.object.id))
-        }
+        const iso = info.object?.id === null || info.object?.id === undefined
+          ? null
+          : String(info.object.id)
+        const bloc = iso ? ISO_TO_BLOC[iso] : null
+        if (bloc) openCountry(bloc)
       },
     })
 
