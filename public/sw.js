@@ -7,6 +7,12 @@
  * • demais GET same-origin (manifest, ícone): cache-first com atualização em fundo.
  */
 const CACHE = 'cb-v3'
+/**
+ * Prefixo de namespace dos caches pertencentes ao Capital Blocks.
+ * Caches de outras aplicações na mesma origem NUNCA devem ser deletados.
+ */
+const CACHE_NAMESPACES = ['cb-', 'capital-blocks-']
+const isAppCache = (name) => CACHE_NAMESPACES.some((prefix) => name.startsWith(prefix))
 /* BASE derivado da localização do PRÓPRIO sw.js (o Vite não reescreve arquivos
  * de public/): funciona tanto na raiz do domínio quanto em deploy de subpath
  * (GitHub Pages /repo/) — caminhos absolutos ('/', '/index.html') quebrariam
@@ -30,7 +36,13 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => isAppCache(k) && k !== CACHE)
+            .map((k) => caches.delete(k)),
+        ),
+      )
       .then(() => self.clients.claim()),
   )
 })

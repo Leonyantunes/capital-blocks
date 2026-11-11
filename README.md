@@ -1,6 +1,6 @@
 # Capital Blocks
 
-**Versão 1.0.0** — primeira versão pública estável.
+**Versão 1.1.0** — em preparação para lançamento (tag Git `v1.0.0` publicada).
 
 **A anatomia do capitalismo global** — um visualizador interativo trilíngue (PT-BR/EN/ES) que
 traduz categorias de *O Capital* em componentes visuais alimentados por dados

@@ -9,11 +9,21 @@
 
 import { COMEX_DATA, PWT_DATA, OWNERSHIP_DATA, DEBT_DATA } from '../../data/analyticsDatasets'
 
+export const DEFAULT_MAX_ROWS = 1000
+
+export interface QueryOptions {
+  maxRows?: number
+  signal?: AbortSignal
+  cancelPrevious?: boolean
+}
+
 export interface QueryResult {
   columns: string[]
   rows: Record<string, unknown>[]
   rowCount: number
+  totalRowCount: number
   durationMs: number
+  truncated: boolean
 }
 
 export class DuckDBUnavailableError extends Error {
@@ -33,10 +43,97 @@ export class DuckDBQueryError extends Error {
 }
 
 let connectionInstance: any = null
+let dbInstance: any = null
+let workerInstance: Worker | null = null
 let initPromise: Promise<any> | null = null
+
+let activeQueryPromise: Promise<QueryResult> | null = null
+let activeAbortController: AbortController | null = null
 
 const errorMessage = (err: unknown): string =>
   err instanceof Error ? err.message : String(err)
+
+/** Permite que testes injetem uma conexão mockada */
+export function __setConnectionForTesting(conn: any) {
+  connectionInstance = conn
+}
+
+/** Permite que testes ou a UI verifiquem se há consulta ativa */
+export function isQueryInProgress(): boolean {
+  return activeQueryPromise !== null
+}
+
+/**
+ * Cancela a consulta em andamento no DuckDB de forma graciosa.
+ */
+export async function cancelCurrentQuery(): Promise<boolean> {
+  if (!activeAbortController && !activeQueryPromise) {
+    return false
+  }
+
+  if (activeAbortController) {
+    activeAbortController.abort()
+  }
+
+  if (connectionInstance && typeof connectionInstance.cancelSent === 'function') {
+    try {
+      await connectionInstance.cancelSent()
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    await activeQueryPromise
+  } catch {
+    // expected abort/cancellation error
+  }
+
+  activeQueryPromise = null
+  activeAbortController = null
+  return true
+}
+
+/**
+ * Reseta o estado global da conexão e limpa workers/banco.
+ * Útil para testes e recuperação de falhas críticas.
+ */
+export async function resetDuckDBConnection(): Promise<void> {
+  initPromise = null
+  const conn = connectionInstance
+  const db = dbInstance
+  const worker = workerInstance
+
+  connectionInstance = null
+  dbInstance = null
+  workerInstance = null
+  activeQueryPromise = null
+  activeAbortController = null
+
+  if (conn && typeof conn.close === 'function') {
+    try {
+      await conn.close()
+    } catch {
+      // ignore
+    }
+  }
+
+  if (db && typeof db.terminate === 'function') {
+    try {
+      await db.terminate()
+    } catch {
+      // ignore
+    }
+  }
+
+  if (worker && typeof worker.terminate === 'function') {
+    try {
+      worker.terminate()
+    } catch {
+      // ignore
+    }
+  }
+}
 
 /**
  * Inicializa uma única conexão DuckDB-Wasm usando bundles locais gerenciados
@@ -48,14 +145,15 @@ export async function getDuckDBConnection() {
   if (initPromise) return initPromise
 
   initPromise = (async () => {
-    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
-      throw new DuckDBUnavailableError(
-        'DuckDB-Wasm requer um navegador com suporte a Web Worker e WebAssembly.',
-      )
-    }
-
     let worker: Worker | null = null
+    let db: any = null
     try {
+      if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+        throw new DuckDBUnavailableError(
+          'DuckDB-Wasm requer um navegador com suporte a Web Worker e WebAssembly.',
+        )
+      }
+
       const [duckdb, mvpWasmMod, mvpWorkerMod, ehWasmMod, ehWorkerMod] = await Promise.all([
         import('@duckdb/duckdb-wasm'),
         import('@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url'),
@@ -80,8 +178,10 @@ export async function getDuckDBConnection() {
       }
 
       worker = new Worker(bundle.mainWorker)
+      workerInstance = worker
       const logger = new duckdb.ConsoleLogger()
-      const db = new duckdb.AsyncDuckDB(logger, worker)
+      db = new duckdb.AsyncDuckDB(logger, worker)
+      dbInstance = db
       await db.instantiate(bundle.mainModule, bundle.pthreadWorker)
 
       const conn = await db.connect()
@@ -101,7 +201,29 @@ export async function getDuckDBConnection() {
       connectionInstance = conn
       return conn
     } catch (err) {
-      worker?.terminate()
+      // AUD-007: Reset initPromise and clean up partially initialized references
+      // so transient failures can be retried without requiring a page reload.
+      initPromise = null
+      connectionInstance = null
+
+      if (db && typeof db.terminate === 'function') {
+        try {
+          await db.terminate()
+        } catch {
+          // ignore cleanup error
+        }
+      }
+      dbInstance = null
+
+      if (worker && typeof worker.terminate === 'function') {
+        try {
+          worker.terminate()
+        } catch {
+          // ignore cleanup error
+        }
+      }
+      workerInstance = null
+
       if (err instanceof DuckDBUnavailableError) throw err
       throw new DuckDBUnavailableError(
         `DuckDB-Wasm não pôde ser inicializado: ${errorMessage(err)}`,
@@ -112,32 +234,108 @@ export async function getDuckDBConnection() {
   return initPromise
 }
 
-/** Executa SQL real. Não existe fallback que tente adivinhar a consulta. */
-export async function runSqlQuery(sql: string): Promise<QueryResult> {
-  const start = performance.now()
-  const conn = await getDuckDBConnection()
-
-  try {
-    const arrowTable = await conn.query(sql)
-    const columns = arrowTable.schema.fields.map((field: any) => field.name)
-    const rows: Record<string, unknown>[] = []
-
-    for (let i = 0; i < arrowTable.numRows; i++) {
-      const row: Record<string, unknown> = {}
-      for (const col of columns) {
-        const val = arrowTable.getChild(col)?.get(i)
-        row[col] = typeof val === 'bigint' ? Number(val) : val
-      }
-      rows.push(row)
+/** Executa SQL real com limite de memória, rastreio de duração e proteção de concorrência. */
+export async function runSqlQuery(
+  sql: string,
+  options?: QueryOptions,
+): Promise<QueryResult> {
+  // AUD-006: Proteção contra consultas concorrentes sobrepostas
+  if (activeQueryPromise) {
+    if (options?.cancelPrevious) {
+      await cancelCurrentQuery()
+    } else {
+      throw new DuckDBQueryError(
+        'Já existe uma consulta em andamento no DuckDB. Aguarde a conclusão ou cancele a consulta ativa.',
+      )
     }
-
-    return {
-      columns,
-      rows,
-      rowCount: rows.length,
-      durationMs: Math.round((performance.now() - start) * 10) / 10,
-    }
-  } catch (err) {
-    throw new DuckDBQueryError(`Consulta SQL rejeitada pelo DuckDB: ${errorMessage(err)}`)
   }
+
+  const abortController = new AbortController()
+  activeAbortController = abortController
+
+  if (options?.signal) {
+    if (options.signal.aborted) {
+      activeAbortController = null
+      throw new DuckDBQueryError('Consulta cancelada pelo usuário.')
+    }
+    options.signal.addEventListener(
+      'abort',
+      () => {
+        abortController.abort()
+        if (connectionInstance && typeof connectionInstance.cancelSent === 'function') {
+          connectionInstance.cancelSent().catch(() => {})
+        }
+      },
+      { once: true },
+    )
+  }
+
+  let queryExecution: Promise<QueryResult> | null = null
+  queryExecution = (async () => {
+    const start = performance.now()
+    const conn = await getDuckDBConnection()
+
+    if (abortController.signal.aborted) {
+      throw new DuckDBQueryError('Consulta cancelada pelo usuário.')
+    }
+
+    try {
+      const arrowTable = await conn.query(sql)
+
+      if (abortController.signal.aborted) {
+        throw new DuckDBQueryError('Consulta cancelada pelo usuário.')
+      }
+
+      const columns: string[] =
+        arrowTable.schema?.fields?.map((field: any) => field.name) ?? []
+      const totalRowCount = arrowTable.numRows ?? 0
+
+      // AUD-006: Limitar registros materializados na memória JS (máx. 1000 por padrão)
+      const maxRows = options?.maxRows ?? DEFAULT_MAX_ROWS
+      const rowsToMaterialize = Math.min(totalRowCount, maxRows)
+      const truncated = totalRowCount > maxRows
+      const rows: Record<string, unknown>[] = []
+
+      for (let i = 0; i < rowsToMaterialize; i++) {
+        if (abortController.signal.aborted) {
+          throw new DuckDBQueryError('Consulta cancelada pelo usuário.')
+        }
+        const row: Record<string, unknown> = {}
+        for (const col of columns) {
+          const val = arrowTable.getChild(col)?.get(i)
+          row[col] = typeof val === 'bigint' ? Number(val) : val
+        }
+        rows.push(row)
+      }
+
+      const durationMs = Math.round((performance.now() - start) * 10) / 10
+
+      return {
+        columns,
+        rows,
+        rowCount: rows.length,
+        totalRowCount,
+        durationMs,
+        truncated,
+      }
+    } catch (err) {
+      if (abortController.signal.aborted) {
+        throw new DuckDBQueryError('Consulta cancelada pelo usuário.')
+      }
+      if (err instanceof DuckDBQueryError) throw err
+      throw new DuckDBQueryError(
+        `Consulta SQL rejeitada pelo DuckDB: ${errorMessage(err)}`,
+      )
+    } finally {
+      if (activeAbortController === abortController) {
+        activeAbortController = null
+      }
+      if (activeQueryPromise === queryExecution) {
+        activeQueryPromise = null
+      }
+    }
+  })()
+
+  activeQueryPromise = queryExecution
+  return queryExecution
 }

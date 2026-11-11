@@ -1,0 +1,41 @@
+[
+  {
+    "name": "sources",
+    "term": "World Economic Outlook",
+    "before": {
+      "counter": "54 de 54",
+      "rows": 0,
+      "articles": 54
+    },
+    "focus": {
+      "placeholder": "Buscar fonte, instituição, dataset ou módulo…",
+      "value": ""
+    },
+    "after": {
+      "value": "World Economic Outlook",
+      "counter": "1 de 54",
+      "rows": 0,
+      "articles": 1,
+      "hasSearch": true
+    }
+  },
+  {
+    "name": "companies",
+    "term": "Microsoft",
+    "before": {
+      "counter": "40 de 151",
+      "rows": 40,
+      "articles": 0
+    },
+    "focus": {
+      "placeholder": "Pesquisar empresa/país…",
+      "value": ""
+    },
+    "after": {
+      "value": "Microsoft",
+      "rows": 1,
+      "articles": 0,
+      "hasSearch": true
+    }
+  }
+]

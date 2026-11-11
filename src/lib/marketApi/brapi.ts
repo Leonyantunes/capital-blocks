@@ -134,11 +134,15 @@ export async function fetchBrapiQuotes(token: string | undefined): Promise<{
   }
 
   /* ── COM TOKEN: universo completo, fatiado ────────────────────────────── */
-  const grupos = lotes(universo, LOTE_COM_TOKEN)
+  // AUD-003: O primeiro lote inclui USD-BRL sem ultrapassar o teto de 20 símbolos.
+  // Reserva 1 vaga no 1º lote para USD-BRL e fatia o restante do universo em lotes de até 20.
+  const primeiroLote = ['USD-BRL', ...universo.slice(0, LOTE_COM_TOKEN - 1)]
+  const restante = universo.slice(LOTE_COM_TOKEN - 1)
+  const grupos = [primeiroLote, ...lotes(restante, LOTE_COM_TOKEN)]
   const resultados: BrapiResult[] = []
   let falhas = 0
   for (let i = 0; i < grupos.length; i++) {
-    const lote = i === 0 ? [...grupos[i], 'USD-BRL'] : grupos[i]
+    const lote = grupos[i]
     const { results, erro } = await buscarLote(lote, token)
     if (erro) {
       falhas++

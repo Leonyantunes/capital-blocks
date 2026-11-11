@@ -158,16 +158,55 @@ export default function CorporateNetworkGraph() {
   }, [viewMode, filteredData])
 
   // --- 3D FORCE GRAPH RENDERING ---
+  const safeCleanupForceGraph = (fg: any) => {
+    if (!fg) return
+    try {
+      if (typeof fg.pauseAnimation === 'function') {
+        fg.pauseAnimation()
+      }
+    } catch {
+      // Ignore animation pause errors
+    }
+
+    try {
+      if (typeof fg._destructor === 'function') {
+        fg._destructor()
+      }
+    } catch (err) {
+      console.warn('Error during ForceGraph3D _destructor:', err)
+    }
+
+    try {
+      const renderer = typeof fg.renderer === 'function' ? fg.renderer() : null
+      if (renderer) {
+        if (typeof renderer.dispose === 'function') {
+          renderer.dispose()
+        }
+        if (typeof renderer.forceContextLoss === 'function') {
+          renderer.forceContextLoss()
+        }
+      }
+    } catch {
+      // Ignore renderer disposal errors
+    }
+
+    if (container3DRef.current) {
+      container3DRef.current.innerHTML = ''
+    }
+  }
+
   useEffect(() => {
     if (viewMode !== '3d' || !container3DRef.current) return
 
     let isMounted = true
+    let localFgInstance: any = null
 
     import('3d-force-graph').then(({ default: ForceGraph3D }) => {
       if (!isMounted || !container3DRef.current) return
 
       if (forceGraphInstanceRef.current) {
-        forceGraphInstanceRef.current._destructor?.()
+        safeCleanupForceGraph(forceGraphInstanceRef.current)
+        forceGraphInstanceRef.current = null
       }
 
       const gData = {
@@ -195,14 +234,23 @@ export default function CorporateNetworkGraph() {
           setSelectedNode(node)
         })
 
+      if (!isMounted) {
+        safeCleanupForceGraph(fg)
+        return
+      }
+
       forceGraphInstanceRef.current = fg
+      localFgInstance = fg
     })
 
     return () => {
       isMounted = false
       if (forceGraphInstanceRef.current) {
-        forceGraphInstanceRef.current._destructor?.()
+        safeCleanupForceGraph(forceGraphInstanceRef.current)
         forceGraphInstanceRef.current = null
+      } else if (localFgInstance) {
+        safeCleanupForceGraph(localFgInstance)
+        localFgInstance = null
       }
     }
   }, [viewMode, filteredData])
@@ -285,11 +333,15 @@ export default function CorporateNetworkGraph() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[10px] text-zinc-500 uppercase">{pick(lang, 'Foco no Fundo:', 'Focus on Fund:', 'Foco en Fondo:')}</span>
+          <label htmlFor="corporate-network-fund-select" className="font-mono text-[10px] text-zinc-500 uppercase">
+            {pick(lang, 'Foco no Fundo:', 'Focus on Fund:', 'Foco en Fondo:')}
+          </label>
           <select
+            id="corporate-network-fund-select"
+            aria-label={pick(lang, 'Foco no Fundo', 'Focus on Fund', 'Foco en Fondo')}
             value={selectedInvestor}
             onChange={(e) => setSelectedInvestor(e.target.value)}
-            className="rounded-md border border-zinc-800 bg-zinc-950 px-2 py-1 font-mono text-[11px] text-zinc-300 outline-none focus:border-money/60"
+            className="rounded-md border border-zinc-800 bg-zinc-950 px-2 py-1 font-mono text-[11px] text-zinc-300 outline-none focus:border-money/60 focus-visible:ring-2 focus-visible:ring-money/70"
           >
             <option value="todos">{pick(lang, 'Todos os Investidores', 'All Investors', 'Todos los Inversores')}</option>
             <option value="vanguard">Vanguard Group</option>

@@ -1,0 +1,31 @@
+﻿COMMAND: npm run test EXIT: 0
+
+> capital-blocks@1.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/leony/AppData/Local/Temp/capital-blocks-audit-20261110[39m
+
+ [32mÔ£ô[39m src/test/brapi.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 4335[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m cobre os 4 isentos e converte cap para US$ usando o c├ómbio [33m 1068[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m respeita o teto de 20 tickers por requisi├º├úo [33m 1067[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m token inv├ílido: informa o erro sem quebrar a aplica├º├úo [33m 1063[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m falha de rede vira aviso, n├úo exce├º├úo (o app n├úo pode quebrar) [33m 1063[2mms[22m[39m
+ [32mÔ£ô[39m src/test/readingLevels.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 265[2mms[22m[39m
+ [32mÔ£ô[39m src/test/companies.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 473[2mms[22m[39m
+ [32mÔ£ô[39m src/test/store.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+ [32mÔ£ô[39m src/test/tour.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32mÔ£ô[39m src/test/marx.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32mÔ£ô[39m src/test/ownership.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32mÔ£ô[39m src/test/analytics.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mÔ£ô[39m src/test/companyMetrics.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mÔ£ô[39m src/test/dualmode.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32mÔ£ô[39m src/test/simples.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32mÔ£ô[39m src/test/mapContracts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [2m[90mÔåô[39m[22m src/test/brapiLive.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (13)[39m
+[2m      Tests [22m [1m[32m131 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (132)[39m
+[2m   Start at [22m 20:33:41
+[2m   Duration [22m 67.46s[2m (transform 1.27s, setup 0ms, import 3.38s, tests 5.48s, environment 53.07s)[22m
+

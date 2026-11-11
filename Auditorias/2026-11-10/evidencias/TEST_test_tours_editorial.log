@@ -1,0 +1,35 @@
+﻿COMMAND: npm run test:tours:editorial EXIT: 0
+
+> capital-blocks@1.1.0 test:tours:editorial
+> node scripts/tour-editorial.mjs
+
+=== 1. TEXTOS DID├üTICO E AVAN├çADO ===
+  ok     todas as 56 paradas t├¬m did e adv
+
+=== 1B. MODO SIMPLES (FUNDAMENTAL / IN├ìCIO DO M├ëDIO) ===
+  ok     todas as 56 paradas t├¬m texto simples expl├¡cito
+  ok     nenhum jarg├úo t├®cnico bloqueado aparece no texto simples
+
+=== 1C. COBERTURA EN/ES SEM FALLBACK PT ===
+  ok     todas as 56 paradas t├¬m EN e ES expl├¡citos
+
+=== 1D. F├ôRMULAS E FONTES NO SIMPLES/STATS ===
+  ok     nenhuma f├│rmula t├®cnica aparece no texto simples
+  ok     todas as estat├¡sticas literais auditadas t├¬m sourceIds
+
+=== 2. PROGRESS├âO DID ÔåÆ ADV ===
+  ok     todo adv ou ├® mais longo, ou ├® mais denso (terminologia t├®cnica)
+
+=== 3. VOCABUL├üRIO MARXISTA SEM EXPLICA├ç├âO NO DID ===
+  ok     nenhum termo marxista solto no texto did├ítico
+
+=== 4. PEDIDO DE A├ç├âO (o tour precisa convidar) ===
+  ok     toda parada tem a├º├úo ou dica
+
+=== 5. N├ÜMERO NO TEXTO vs DESTACAQUE ===
+  ok     toda men├º├úo a pa├¡s vem acompanhada de destaque no mapa
+
+=== 6. DIDSTATS: CONTEXTO POR N├ÜMERO ===
+  ok     toda estat├¡stica num├®rica tem r├│tulo descritivo
+
+=== RESULTADO: 0 erro(s), 0 aviso(s) ===

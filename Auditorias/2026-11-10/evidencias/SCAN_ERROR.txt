@@ -1,0 +1,57 @@
+﻿src\components\consequences\AffectedMap.tsx:36: } catch {
+src\components\consequences\AffectedMap.tsx:78: try { featureName = displayNames?.of(f.id) ?? f.name } catch { /* fallback Natural Earth */ }
+src\components\globe3d\Globe3DCanvas.tsx:142: } catch {
+src\components\globe3d\Globe3DCanvas.tsx:508: } catch {
+src\components\globe3d\Globe3DCanvas.tsx:932: } catch {
+src\components\globe3d\GlobeModule.tsx:389: p?.catch(() => {})
+src\components\globe3d\GlobeModule.tsx:391: } catch {
+src\components\globe3d\GlobeModule.tsx:424: p?.catch(() => {})
+src\components\globe3d\GlobeModule.tsx:426: } catch {
+src\components\globe3d\GlobeModule.tsx:496: if (document.fullscreenElement) document.exitFullscreen().catch(() => setIsFs(false))
+src\components\globe3d\GlobeModule.tsx:497: else boxRef.current?.requestFullscreen?.().catch(() => {})
+src\components\globe3d\landPoints.ts:41: } catch {
+src\components\globe3d\landPoints.ts:92: } catch {
+src\components\globe3d\landPoints.ts:125: } catch {
+src\components\globe3d\landPoints.ts:148: } catch (err) {
+src\components\globe3d\landPoints.ts:182: .catch(() => viaChunks(step, onProgress))
+src\components\globe3d\landSample.ts:67: } catch {
+src\components\globe3d\landSample.ts:116: } catch {
+src\components\sources\AnalyticsLab.tsx:29: } catch (err: unknown) {
+src\components\CompaniesModule.tsx:173: } catch (e) {
+src\components\ErrorBoundary.tsx:16: componentDidCatch(error: Error) {
+src\components\ErrorBoundary.tsx:17: console.error('[Capital Blocks] erro capturado:', error)
+src\components\MapWorld.tsx:451: p?.catch(() => {})
+src\components\MapWorld.tsx:452: } catch {
+src\components\MapWorld.tsx:468: p?.catch(() => {})
+src\components\MapWorld.tsx:470: } catch {
+src\components\MapWorld.tsx:544: if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+src\components\MapWorld.tsx:545: else containerRef.current?.requestFullscreen?.().catch(() => {})
+src\components\MapWorld.tsx:694: .catch(() => { /* offline: mantém círculos */ })
+src\components\MapWorld.tsx:1249: } catch {
+src\components\MapWorld.tsx:1398: <button onClick={() => { navigator.clipboard?.writeText(window.location.href).catch(() => {}) }}
+src\components\MapWorld.tsx:1518: <button onClick={() => { navigator.clipboard?.writeText(window.location.href).catch(() => {}) }}
+src\components\TheoryCompareCard.tsx:53: if (!tri) throw new Error(`Debate sem texto simples explícito: ${topicId}/${side}`)
+src\components\WorldWealthPanel.tsx:52: if (!tri) throw new Error(`Ativo mundial sem texto simples explícito: ${claim.key}`)
+src\data\consequenceSimple.ts:82: if (!copy) throw new Error(`Mecanismo sem texto simples explícito: ${episodeId}/${mechanismIndex}`)
+src\data\consequenceSimple.ts:88: if (!copy) throw new Error(`Aprofundamento sem texto simples explícito: ${episodeId}`)
+src\data\generatedTranslations.ts:782: throw new Error(`Tradução gerada ausente para ${lang}: ${value.slice(0, 120)}`)
+src\data\glossarySimple.ts:88: if (!tri) throw new Error(`Termo do glossário sem texto simples explícito: ${id}`)
+src\data\indicators.ts:54: if (!tri) throw new Error(`Indicador sem texto simples explícito: ${indicator.id}`)
+src\data\tour.ts:876: if (!locale) throw new Error(`Tour stop sem locale ${lang}: ${stop.id}`)
+src\data\tours.ts:38: if (!s) throw new Error(`parada do tour não encontrada: ${id}`)
+src\data\tours.ts:708: if (!locale) throw new Error(`Tour custom stop sem locale ${lang}: ${stop.id}`)
+src\data\tours.ts:725: if (!meta) throw new Error(`Tour sem metadados ${lang}: ${tour.id}`)
+src\lib\duckdb\duckdbClient.ts:52: throw new DuckDBUnavailableError(
+src\lib\duckdb\duckdbClient.ts:79: throw new Error('nenhum bundle DuckDB compatível foi selecionado')
+src\lib\duckdb\duckdbClient.ts:103: } catch (err) {
+src\lib\duckdb\duckdbClient.ts:106: throw new DuckDBUnavailableError(
+src\lib\duckdb\duckdbClient.ts:140: } catch (err) {
+src\lib\duckdb\duckdbClient.ts:141: throw new DuckDBQueryError(`Consulta SQL rejeitada pelo DuckDB: ${errorMessage(err)}`)
+src\lib\marketApi\alphavantage.ts:44: } catch {
+src\lib\marketApi\brapi.ts:64: const corpo = (await res.json().catch(() => null)) as { message?: string } | null
+src\lib\marketApi\brapi.ts:69: } catch (e) {
+src\lib\marketApi\sync.ts:34: } catch {
+src\lib\marketApi\sync.ts:42: } catch {
+src\lib\marketApi\sync.ts:54: } catch {
+src\lib\marketApi\sync.ts:62: } catch {
+src\main.tsx:30: navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})

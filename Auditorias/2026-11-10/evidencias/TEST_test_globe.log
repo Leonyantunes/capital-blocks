@@ -1,0 +1,9 @@
+﻿COMMAND: npm run test:globe EXIT: 0
+
+> capital-blocks@1.1.0 test:globe
+> node scripts/flight-test.mjs
+
+paradas testadas: 56
+
+RESULTADO: 448 ok, 0 falhas em 448 voos | maxRoll=6.1e-16 minUp=0.010
+GARANTIA: destino exato + zero roll + nunca invertido.

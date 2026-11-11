@@ -1,0 +1,267 @@
+{
+  "generated": "2026-11-10T23:43:06.927Z",
+  "cases": [
+    {
+      "tab": "debt",
+      "fields": [
+        {
+          "i": 0,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Déficit público (G − T)6%"
+        },
+        {
+          "i": 1,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Superávit externo (X − M)2,5%"
+        },
+        {
+          "i": 2,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Investimento I ?Gasto dos capitalistas em máquinas e construção: cria deman"
+        },
+        {
+          "i": 3,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Déficit público G−T ?O Estado injeta renda líquida — sustenta vendas e marg"
+        },
+        {
+          "i": 4,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Exportações líquidas ?Demanda estrangeira líquida soma aos lucros doméstico"
+        },
+        {
+          "i": 5,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Consumo capitalista ?Iates, dividendos gastos, festas: também são receita d"
+        },
+        {
+          "i": 6,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Poupança dos trabalhadores ?Cada real não gasto pelos trabalhadores deixa d"
+        }
+      ]
+    },
+    {
+      "tab": "platform",
+      "fields": [
+        {
+          "i": 0,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Corridas por dia ?Salário por peça: cada corrida é uma 'peça'. Mais peças ="
+        },
+        {
+          "i": 1,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Valor médio da corrida ?A tarifa cai quando há muitos motoristas conectados"
+        },
+        {
+          "i": 2,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Comissão da plataforma ?Corte fixo sobre cada corrida: a plataforma não inv"
+        },
+        {
+          "i": 3,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Quilometragem diária ?Rodar para conseguir corrida também é tempo de trabal"
+        },
+        {
+          "i": 4,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Custo por km ?Gasolina, óleo, pneus, revisão: capital constante pago pelo t"
+        },
+        {
+          "i": 5,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Jornada conectado 10 h"
+        }
+      ]
+    },
+    {
+      "tab": "companies",
+      "fields": [
+        {
+          "i": 0,
+          "tag": "INPUT",
+          "type": "text",
+          "aria": null,
+          "placeholder": "Pesquisar empresa/país…",
+          "id": "",
+          "labels": [],
+          "parent": "Maiores do Mundo (191)Brasil (306)🕸 Teia Acionária (Big Three)Todos os set"
+        },
+        {
+          "i": 1,
+          "tag": "SELECT",
+          "type": "select-one",
+          "aria": "Filtrar por setor",
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Maiores do Mundo (191)Brasil (306)🕸 Teia Acionária (Big Three)Todos os set"
+        }
+      ]
+    },
+    {
+      "tab": "wealth",
+      "fields": [
+        {
+          "i": 0,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "seu chute: —revelar o real"
+        },
+        {
+          "i": 1,
+          "tag": "INPUT",
+          "type": "range",
+          "aria": "Ano da corrida dos bilionários",
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "2025"
+        }
+      ]
+    },
+    {
+      "tab": "sources",
+      "fields": [
+        {
+          "i": 0,
+          "tag": "INPUT",
+          "type": "text",
+          "aria": null,
+          "placeholder": "Buscar fonte, instituição, dataset ou módulo…",
+          "id": "",
+          "labels": [],
+          "parent": "Todas as categoriasMacroeconomiaMoeda e créditoRiqueza e concentraçãoTrabal"
+        },
+        {
+          "i": 1,
+          "tag": "SELECT",
+          "type": "select-one",
+          "aria": "Filtrar por categoria",
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Todas as categoriasMacroeconomiaMoeda e créditoRiqueza e concentraçãoTrabal"
+        },
+        {
+          "i": 2,
+          "tag": "SELECT",
+          "type": "select-one",
+          "aria": "Filtrar por tipo de fonte",
+          "placeholder": null,
+          "id": "",
+          "labels": [],
+          "parent": "Todas as categoriasMacroeconomiaMoeda e créditoRiqueza e concentraçãoTrabal"
+        },
+        {
+          "i": 3,
+          "tag": "INPUT",
+          "type": "checkbox",
+          "aria": null,
+          "placeholder": null,
+          "id": "",
+          "labels": [
+            "Somente com link"
+          ],
+          "parent": "Somente com link"
+        }
+      ]
+    },
+    {
+      "tab": "settings_theme",
+      "before": "dark",
+      "clicked": true,
+      "after": "light"
+    },
+    {
+      "tab": "sql_lab",
+      "labClick": true,
+      "lab": {
+        "visible": true,
+        "status": "ialista\tCommodities\t41.3\t11\nPeriferia Extrativa\tCentro Imperialista\tEnergia/Petróleo\t22.1\t8.4\nPeriferia Extrativa\tFábrica Asiática\tCommodities\t14.6\t6.8\nGolfo / Petrodólar\tCentro Imperialista\tEnergia/Petróleo\t18.9\t4.2\nSul Global / Brics\tFábrica Asiática\tEnergia/Petróleo\t18.2\t3.8\nSemiperiferia\tCentro Imperialista\tCommodities\t11.2\t3.5\nFábrica Asiática\tSul Global / Brics\tAlta Tecnologia\t16.5\t-4.2\nFábrica Asiática\tSul Global / Brics\tManufaturas\t42.1\t-8.5\nCentro Imperialista\tSul Global / Brics\tAlta Tecnologia\t24.3\t-9.8\nCentro Imperialista\tSul Global / Brics\tManufaturas\t34.2\t-11.4\nSul Global / Brics\tCentro Imperialista\tServiços Financeiros\t2.1\t-18.7\nSemiperiferia Tecnológica\tCentro Imperialista\tAlta Tecnologia\t147.1\t-21\nGolfo / Petrodólar\tCentro Imperialista\tServiços Financeiros\t45\t-35\nFábrica Asiática\tCentro Imperialista\tManufaturas\t812.4\t-69.8",
+        "error": false
+      }
+    },
+    {
+      "tab": "sql_query",
+      "sql": "SELECT COUNT(*) AS total FROM comex_fluxos",
+      "go": true,
+      "result": {
+        "rows": 1,
+        "text": "ida que o capital constante c cresce.\nACIONISTAS\nPropriedade Comum: Participação dos \"Big Three\"\nMede a soma das participações societárias de BlackRock, Vanguard e State Street em corporações estratégicas.\nDÍVIDA\nDependência do Dólar e Custo da Dívida Externa\nCruza a proporção da dívida pública denominada em dólar com o percentual do orçamento consumido por juros.\nSQL Query Console (Tabelas: comex_fluxos, penn_world_table, corporate_ownership, divida_soberana)\n1 linhas em 6.2ms\n🚀 SQL real no DuckDB Web Worker\n📥 Exportar CSV\n▶ Executar SQL\nResultados da Consulta\nMostrando 1 registros\ntotal\n18"
+      }
+    }
+  ],
+  "events": []
+}

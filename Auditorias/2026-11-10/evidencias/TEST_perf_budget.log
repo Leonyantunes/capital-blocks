@@ -1,0 +1,23 @@
+﻿COMMAND: npm run test:perf:budget
+EXIT: 
+0
+
+> capital-blocks@1.1.0 test:perf:budget
+> node scripts/performance-budget.mjs
+
+=== PERFORMANCE BUDGET ===
+inicial: 110.3 KiB / 128.0 KiB
+  index-DxYgP2tX.js: 66.1 KiB gzip
+  vendor-motion-BShL3vge.js: 30.2 KiB gzip
+  vendor-preload-BXl3LOEh.js: 0.6 KiB gzip
+  index-Bbwa5DPn.css: 13.3 KiB gzip
+maiores chunks lazy:
+  vendor-graph-BymTK8HM.js: 354.6 KiB gzip
+  vendor-deck-faAZIP97.js: 254.3 KiB gzip
+  duckdb-browser-mvp.worker-BEKIasyR.js: 189.3 KiB gzip
+  duckdb-browser-eh.worker-CwdVMcbT.js: 184.3 KiB gzip
+  vendor-three-DiUEOK-7.js: 139.6 KiB gzip
+  ConsequencesModule-dEM8xWp7.js: 83.5 KiB gzip
+  TourPanel-DvOK34s9.js: 70.2 KiB gzip
+  index-DxYgP2tX.js: 66.1 KiB gzip
+RESULTADO: dentro do or├ºamento

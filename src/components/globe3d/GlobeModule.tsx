@@ -230,7 +230,13 @@ export default function GlobeModule() {
   const copy = GLOBE_UI[lang]
 
   /* ── visual ── */
-  const [themeId, setThemeId] = useState(() => localStorage.getItem('globe3d-theme') || 'quantum')
+  const [themeId, setThemeId] = useState(() => {
+    try {
+      return localStorage.getItem('globe3d-theme') || 'quantum'
+    } catch {
+      return 'quantum'
+    }
+  })
   const [customHex, setCustomHex] = useState('#3b82f6')
   const [useCustom, setUseCustom] = useState(false)
   const theme = useMemo(
@@ -499,7 +505,11 @@ export default function GlobeModule() {
   const pickTheme = (id: string) => {
     setThemeId(id)
     setUseCustom(false)
-    localStorage.setItem('globe3d-theme', id)
+    try {
+      localStorage.setItem('globe3d-theme', id)
+    } catch {
+      // Storage quotas or disabled storage in privacy mode will not throw unhandled exceptions; preserve session state in memory
+    }
   }
 
   const fmt = (n: number, d = 0) =>
@@ -878,7 +888,20 @@ export default function GlobeModule() {
           </div>
           {bloom && (
             <Row label={copy.intensity}>
-              <input type="range" min={0} max={2} step={0.1} value={bloomIntensity} onChange={(e) => setBloomIntensity(parseFloat(e.target.value))} className="w-28" />
+              <input
+                type="range"
+                min={0}
+                max={2}
+                step={0.1}
+                value={bloomIntensity}
+                aria-label={`${copy.bloom} ${copy.intensity}`}
+                aria-valuenow={bloomIntensity}
+                aria-valuemin={0}
+                aria-valuemax={2}
+                aria-valuetext={bloomIntensity.toFixed(1)}
+                onChange={(e) => setBloomIntensity(parseFloat(e.target.value))}
+                className="w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{bloomIntensity.toFixed(1)}</span>
             </Row>
           )}
@@ -905,7 +928,20 @@ export default function GlobeModule() {
                 </span>
               </Row>
               <Row label={copy.intensity}>
-                <input type="range" min={0.2} max={2.5} step={0.05} value={atmoIntensity} onChange={(e) => setAtmoIntensity(parseFloat(e.target.value))} className="w-28" />
+                <input
+                  type="range"
+                  min={0.2}
+                  max={2.5}
+                  step={0.05}
+                  value={atmoIntensity}
+                  aria-label={`${copy.atmosphere} ${copy.intensity}`}
+                  aria-valuenow={atmoIntensity}
+                  aria-valuemin={0.2}
+                  aria-valuemax={2.5}
+                  aria-valuetext={atmoIntensity.toFixed(2)}
+                  onChange={(e) => setAtmoIntensity(parseFloat(e.target.value))}
+                  className="w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                />
                 <span className="w-7 font-mono text-[10px] text-zinc-300">{atmoIntensity.toFixed(2)}</span>
               </Row>
             </div>
@@ -918,15 +954,54 @@ export default function GlobeModule() {
               <Toggle on={autoRotate} onClick={() => setAutoRotate((s) => !s)} />
             </Row>
             <Row label={copy.rotationSpeed}>
-              <input type="range" min={0.1} max={3} step={0.1} value={rotateSpeed} onChange={(e) => setRotateSpeed(parseFloat(e.target.value))} className="w-28" />
+              <input
+                type="range"
+                min={0.1}
+                max={3}
+                step={0.1}
+                value={rotateSpeed}
+                aria-label={copy.rotationSpeed}
+                aria-valuenow={rotateSpeed}
+                aria-valuemin={0.1}
+                aria-valuemax={3}
+                aria-valuetext={`${rotateSpeed.toFixed(1)}×`}
+                onChange={(e) => setRotateSpeed(parseFloat(e.target.value))}
+                className="w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{rotateSpeed.toFixed(1)}×</span>
             </Row>
             <Row label={copy.flowSpeed}>
-              <input type="range" min={0.2} max={3} step={0.1} value={arcSpeed} onChange={(e) => setArcSpeed(parseFloat(e.target.value))} className="w-28" />
+              <input
+                type="range"
+                min={0.2}
+                max={3}
+                step={0.1}
+                value={arcSpeed}
+                aria-label={copy.flowSpeed}
+                aria-valuenow={arcSpeed}
+                aria-valuemin={0.2}
+                aria-valuemax={3}
+                aria-valuetext={`${arcSpeed.toFixed(1)}×`}
+                onChange={(e) => setArcSpeed(parseFloat(e.target.value))}
+                className="w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{arcSpeed.toFixed(1)}×</span>
             </Row>
             <Row label={copy.pointSize}>
-              <input type="range" min={0.006} max={0.022} step={0.001} value={dotSize} onChange={(e) => setDotSize(parseFloat(e.target.value))} className="w-28" />
+              <input
+                type="range"
+                min={0.006}
+                max={0.022}
+                step={0.001}
+                value={dotSize}
+                aria-label={copy.pointSize}
+                aria-valuenow={dotSize}
+                aria-valuemin={0.006}
+                aria-valuemax={0.022}
+                aria-valuetext={dotSize.toFixed(3)}
+                onChange={(e) => setDotSize(parseFloat(e.target.value))}
+                className="w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              />
               <span className="w-7 font-mono text-[10px] text-zinc-300">{dotSize.toFixed(3)}</span>
             </Row>
           </div>

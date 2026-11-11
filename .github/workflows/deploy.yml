@@ -59,6 +59,9 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
       - name: Orçamento de bytes e isolamento dos chunks pesados
         run: npm run test:perf:budget
+      - name: Smoke test automatizado no navegador headless (AUD-010)
+        run: node scripts/smoke.mjs
+        timeout-minutes: 5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

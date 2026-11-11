@@ -1,0 +1,28 @@
+﻿COMMAND: npm run test:tours EXIT: 0
+
+> capital-blocks@1.1.0 test:tours
+> node scripts/tour-audit.mjs
+
+=== 1. ESTRUTURA DOS TOURS ===
+  tours: 9 | paradas: 56
+  ok     9 tours com id ├║nico
+
+=== 2. CONTRATO DE PARADA ===
+  ok     tabuleiro: abertura/fechamento em vis├úo mundial (sem destaque, permitido)
+  ok     m-fim: abertura/fechamento em vis├úo mundial (sem destaque, permitido)
+  ok     todas as paradas respeitam o contrato
+
+=== 3. COBERTURA ===
+  ok     'principal' usa TOUR_STOPS inteiro (28 paradas cobertas)
+
+=== 4. SA├ìDA DOS TOURS ===
+  ok     9/9 tours com sa├¡da (5 literais + 4 via WAR_FINAL)
+  ok     finalLabel presente em todos (6 literais + 4 via WAR_FINAL)
+
+=== 5. ESTAT├ìSTICAS DAS PARADAS (didStats) ===
+  ok     115 estat├¡sticas verificadas
+
+=== 6. N├ÜMEROS NAS PARADAS ===
+  ok     115 estat├¡sticas com valor e r├│tulo conferidos
+
+=== RESULTADO: 0 erro(s), 0 aviso(s) ===

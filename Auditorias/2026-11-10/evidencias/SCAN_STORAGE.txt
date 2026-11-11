@@ -1,0 +1,25 @@
+﻿src\components\globe3d\GlobeModule.tsx:233: const [themeId, setThemeId] = useState(() => localStorage.getItem('globe3d-theme') || 'quantum')
+src\components\globe3d\GlobeModule.tsx:502: localStorage.setItem('globe3d-theme', id)
+src\components\SettingsModule.tsx:18: * e o botão ⚙ abre esta página. Tudo persiste no localStorage do usuário.
+src\components\SettingsModule.tsx:114: 'Centralização das preferências: nível de leitura, tema por tokens, idioma da interface, modo de referências e modo apresentação. Estado persistido (localStorage) com validação de rehydrate.',
+src\components\SettingsModule.tsx:115: 'Centralized preferences: reading level, token-based theme, interface language, references mode and presentation mode. State persists in localStorage with rehydrate validation.',
+src\components\SettingsModule.tsx:116: 'Preferencias centralizadas: nivel de lectura, tema por tokens, idioma de la interfaz, modo de referencias y modo presentación. El estado persiste en localStorage con validación de rehidratación.'),
+src\lib\marketApi\sync.ts:10: * • Desligada por padrão; settings persistidos em localStorage.
+src\lib\marketApi\sync.ts:26: const raw = localStorage.getItem(SETTINGS_KEY)
+src\lib\marketApi\sync.ts:41: localStorage.setItem(SETTINGS_KEY, JSON.stringify(s))
+src\lib\marketApi\sync.ts:49: const raw = localStorage.getItem(CACHE_KEY)
+src\lib\marketApi\sync.ts:61: localStorage.setItem(CACHE_KEY, JSON.stringify(res))
+src\store\useApp.ts:49: /** Sessão espacial sincronizada entre Mapa 2D e Globo 3D (não persiste no localStorage). */
+src\store\useApp.ts:247: storage: createJSONStorage(() => localStorage),
+src\test\store.test.ts:5: * localStorage. O localStorage é do usuário: pode estar corrompido, editado à
+src\test\store.test.ts:14: /* localStorage stub (o ambiente node não tem DOM) */
+src\test\store.test.ts:40: vi.stubGlobal('localStorage', new MemStorage())
+src\test\store.test.ts:62: const raw = localStorage.getItem(STORAGE_KEY)!
+src\test\store.test.ts:85: /* simula F5: módulo novo, mesmo localStorage */
+src\test\store.test.ts:97: describe('validação do rehydrate (localStorage corrompido)', () => {
+src\test\store.test.ts:99: localStorage.setItem(
+src\test\store.test.ts:112: localStorage.setItem(
+src\test\store.test.ts:124: localStorage.setItem(STORAGE_KEY, '{{{ nao é json')
+src\test\store.test.ts:132: localStorage.setItem(
+src\test\store.test.ts:143: localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { mode: 'avancado' }, version: 1 }))
+src\test\store.test.ts:152: localStorage.setItem(

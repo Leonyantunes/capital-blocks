@@ -16,6 +16,7 @@ import { useApp } from '../store/useApp'
 import { textoPorModo } from '../lib/simples'
 import type { ApiProvider } from '../lib/marketApi/types'
 import {
+  clearMarketCacheAndToken,
   loadCachedQuotes, loadSyncSettings, quotesToRecords, runSync, saveSyncSettings,
 } from '../lib/marketApi/sync'
 
@@ -71,7 +72,7 @@ interface BrRow extends RowBase {
  * a cotação fresca da API substitui o registro da base — e empresas que só
  * existem na API entram no fim da lista.
  */
-function mergeApiRecords(apiRecords: CompanyRecord[]): CompanyRecord[] {
+export function mergeApiRecords(apiRecords: CompanyRecord[]): CompanyRecord[] {
   if (!apiRecords.length) return COMPANIES_ALL
   const key = (r: CompanyRecord) => (r.ticker ?? r.nome).trim().toUpperCase()
   const apiByKey = new Map(apiRecords.map((r) => [key(r), r]))
@@ -125,9 +126,11 @@ function MarketSyncPanel({ records, onLoad }: {
   const [enabled, setEnabled] = useState(initial.enabled)
   const [provider, setProvider] = useState<ApiProvider>(initial.provider)
   const [token, setToken] = useState(initial.token)
+  const [sessionOnly, setSessionOnly] = useState(!!initial.sessionOnly)
   const [syncing, setSyncing] = useState(false)
   const [status, setStatus] = useState<TriText | null>(null)
   const [errors, setErrors] = useState<string[]>([])
+  const [feedback, setFeedback] = useState<string | null>(null)
 
   /* cache válido? hidrata sem chamadas */
   useEffect(() => {
@@ -143,10 +146,37 @@ function MarketSyncPanel({ records, onLoad }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const persist = (next: { enabled?: boolean; provider?: ApiProvider; token?: string }) => {
-    const s = { enabled, provider, token, ...next }
-    setEnabled(s.enabled); setProvider(s.provider); setToken(s.token)
+  const persist = (next: { enabled?: boolean; provider?: ApiProvider; token?: string; sessionOnly?: boolean }) => {
+    const s = {
+      enabled: next.enabled !== undefined ? next.enabled : enabled,
+      provider: next.provider !== undefined ? next.provider : provider,
+      token: next.token !== undefined ? next.token : token,
+      sessionOnly: next.sessionOnly !== undefined ? next.sessionOnly : sessionOnly,
+    }
+    setEnabled(s.enabled)
+    setProvider(s.provider)
+    setToken(s.token)
+    setSessionOnly(s.sessionOnly)
     saveSyncSettings(s)
+  }
+
+  const handleClear = () => {
+    clearMarketCacheAndToken()
+    setToken('')
+    setSessionOnly(false)
+    onLoad([])
+    const msg = pick(lang,
+      'Token e cache limpos com sucesso.',
+      'Token and cache cleared successfully.',
+      'Token y caché borrados con éxito.')
+    setFeedback(msg)
+    setStatus([
+      'Token e cache limpos com sucesso.',
+      'Token and cache cleared successfully.',
+      'Token y caché borrados con éxito.',
+    ])
+    setErrors([])
+    setTimeout(() => setFeedback(null), 4000)
   }
 
   const sync = async () => {
@@ -220,6 +250,9 @@ function MarketSyncPanel({ records, onLoad }: {
             <input
               type="password" value={token}
               onChange={(e) => persist({ token: e.target.value })}
+              aria-label={provider === 'brapi'
+                ? pick(lang, 'Token brapi.dev', 'brapi.dev token', 'Token brapi.dev')
+                : pick(lang, 'Chave Alpha Vantage', 'Alpha Vantage key', 'Clave Alpha Vantage')}
               placeholder={provider === 'brapi'
                 ? pick(lang,
                     'token brapi.dev (opcional na cota free)',
@@ -243,6 +276,38 @@ function MarketSyncPanel({ records, onLoad }: {
                 : pick(lang, 'Sincronizar agora', 'Sync now', 'Sincronizar ahora')}
             </button>
           </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <label className="flex cursor-pointer items-center gap-2 text-[11px] text-zinc-400 hover:text-zinc-300">
+              <input
+                type="checkbox"
+                checked={sessionOnly}
+                onChange={(e) => persist({ sessionOnly: e.target.checked })}
+                className="h-3.5 w-3.5 rounded border-zinc-700 bg-zinc-950 accent-emerald-500"
+              />
+              <span>
+                {pick(lang,
+                  'Usar apenas nesta sessão (não salvar no navegador)',
+                  'Session-only (do not save to localStorage)',
+                  'Usar solo en esta sesión (no guardar en el navegador)')}
+              </span>
+            </label>
+
+            <button
+              type="button"
+              onClick={handleClear}
+              aria-label={pick(lang, 'Limpar token e cache', 'Clear token and cache', 'Limpiar token y caché')}
+              className="rounded-lg border border-rose-900/50 bg-rose-950/30 px-2.5 py-1 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-900/40 hover:text-rose-200"
+            >
+              {pick(lang, 'Limpar token e cache', 'Clear token and cache', 'Limpiar token y caché')}
+            </button>
+          </div>
+
+          {feedback && (
+            <p className="font-mono text-[10px] text-emerald-400" role="status">
+              ✓ {feedback}
+            </p>
+          )}
 
           <p className="text-[10px] leading-relaxed text-zinc-500">
             {pick(lang,
@@ -776,11 +841,17 @@ export default function CompaniesModule() {
 
         {dataset !== 'teia' && (
           <>
-            <input value={query} onChange={(e) => setQuery(e.target.value)}
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label={dataset === 'global'
+                ? pick(lang, 'Pesquisar empresa ou país', 'Search company or country', 'Buscar empresa o país')
+                : pick(lang, 'Pesquisar empresa ou ticker', 'Search company or ticker', 'Buscar empresa o ticker')}
               placeholder={dataset === 'global'
                 ? pick(lang, 'Pesquisar empresa/país…', 'Search company/country…', 'Buscar empresa/país…')
                 : pick(lang, 'Pesquisar empresa/ticker…', 'Search company/ticker…', 'Buscar empresa/ticker…')}
-              className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60" />
+              className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60"
+            />
 
             <select value={sector} onChange={(e) => setSector(e.target.value)}
               aria-label={pick(lang, 'Filtrar por setor', 'Filter by sector', 'Filtrar por sector')}

@@ -1,0 +1,12 @@
+﻿COMMAND: npm run test:framing EXIT: 0
+
+> capital-blocks@1.1.0 test:framing
+> node scripts/framing-test.mjs
+
+blocos com anchor: 19
+fluxos testados: 52
+
+rotas cross-antimeridiano: 7
+ponto medio: 52/52 ok
+enquadramento: 52/52 ok
+GARANTIA: ponto medio 3D (sem bug de longitude) + rotas dentro do frustum.

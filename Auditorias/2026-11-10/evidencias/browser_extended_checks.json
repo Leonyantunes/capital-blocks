@@ -1,0 +1,228 @@
+{
+  "generated": "2026-11-11T00:02:57.556Z",
+  "results": [
+    {
+      "label": "sources_search",
+      "details": {
+        "original": "54 de 54",
+        "inp": {
+          "error": "Uncaught"
+        },
+        "after": {
+          "counter": "54 de 54",
+          "cards": 54,
+          "hasWorld": true
+        }
+      },
+      "events": []
+    },
+    {
+      "label": "companies_search",
+      "details": {
+        "input": {
+          "error": "Uncaught"
+        },
+        "content": {
+          "hasMicrosoft": true,
+          "rows": 40,
+          "heading": "Raio-X das Empresas: Exploração & Capital Fictício"
+        }
+      },
+      "events": []
+    },
+    {
+      "label": "map_gpu_switch",
+      "details": {
+        "initial": {
+          "canvas": 0,
+          "buttons": 1
+        },
+        "clicked": true,
+        "after": {
+          "canvas": 1,
+          "heading": "O tabuleiro do capitalismo global",
+          "error": false,
+          "webgl2": true
+        }
+      },
+      "events": []
+    },
+    {
+      "label": "map_tour_button",
+      "details": {
+        "before": {
+          "buttons": []
+        },
+        "clicked": false,
+        "after": {
+          "dialog": 0,
+          "body": "natomia do bloco →\nIRN\nÁSIA OCIDENTAL\nIrã\n\nBRICS+ · economia sob sanções totais: petróleo para a China via frota fantasma, redes estatais-paralelas.\n\n$0,40 tri\nPPP: $1,74 tri\nAnatomia do bloco →\nRUS\nEURÁSIA\nRússia\n\nCommodities/energia estatal, complexo de defesa, mineração.\n\n$2,66 tri\nPPP: $7,53 tri\nAnatomia do bloco →\nBRA\nAMÉRICA DO SUL\nBrasil\n\nAgrotech exportador, finanças concentradas, extração energética (Petrobras).\n\n$2,64 tri\nPPP: $5,23 tri\nAnatomia do bloco →\n\nProtótipo didático — fundamentado em O Capital (Marx, 1867) e no formato do Anuário ILAESE. Dados de PIB aproximados (FMI); decomposições por frações de capital, métricas empresariais e orçamentárias são estimativas pedagógicas.",
+          "mainButtons": 53
+        }
+      },
+      "events": []
+    },
+    {
+      "label": "mobile_menu",
+      "details": {
+        "before": {
+          "menuText": [
+            {
+              "t": "CAPITAL BLOCKSA",
+              "label": "Capital Blocks — Início"
+            },
+            {
+              "t": "01Mapa",
+              "label": null
+            },
+            {
+              "t": "02Circuito",
+              "label": null
+            },
+            {
+              "t": "03Guerra",
+              "label": null
+            },
+            {
+              "t": "04Dívida",
+              "label": null
+            },
+            {
+              "t": "05Raio-X",
+              "label": null
+            },
+            {
+              "t": "06Plataformas",
+              "label": null
+            },
+            {
+              "t": "07Riqueza",
+              "label": null
+            },
+            {
+              "t": "08Consequências",
+              "label": null
+            },
+            {
+              "t": "09Alternativas",
+              "label": null
+            },
+            {
+              "t": "10Fontes",
+              "label": null
+            },
+            {
+              "t": "Glossário",
+              "label": null
+            },
+            {
+              "t": "⚙",
+              "label": "Configurações"
+            },
+            {
+              "t": "Aa",
+              "label": null
+            },
+            {
+              "t": "Simples",
+              "label": null
+            },
+            {
+              "t": "Didático",
+              "label": null
+            },
+            {
+              "t": "Avançado",
+              "label": null
+            },
+            {
+              "t": "A-Z",
+              "label": "Abrir glossário"
+            },
+            {
+              "t": "⚙",
+              "label": "Configurações"
+            },
+            {
+              "t": "☰",
+              "label": "Abrir menu de módulos"
+            },
+            {
+              "t": "Didático · Ensi",
+              "label": null
+            },
+            {
+              "t": "Geral",
+              "label": null
+            },
+            {
+              "t": "Geografia",
+              "label": null
+            },
+            {
+              "t": "História",
+              "label": null
+            },
+            {
+              "t": "Economia",
+              "label": null
+            },
+            {
+              "t": "🍃 SVG",
+              "label": null
+            },
+            {
+              "t": "⚡ GPU Deck.gl",
+              "label": null
+            },
+            {
+              "t": "PIB Nominal",
+              "label": null
+            },
+            {
+              "t": "PPP",
+              "label": null
+            }
+          ],
+          "width": 375
+        },
+        "clicked": true,
+        "menu": {
+          "showDebt": true,
+          "menuDialog": 1,
+          "buttons": [
+            "04Dívida",
+            "04Dívida"
+          ]
+        },
+        "go": true,
+        "after": {
+          "header": "Morte e Ressurreição do Capital",
+          "body": "Pular para o conteúdo\nA-Z\n⚙\n☰\nMÓDULO 04 · MOEDA × DÍVIDA\nDIDÁTICO · ENSINO MÉDIO\nGERAL\nGEOGRAFIA\nHIS"
+        }
+      },
+      "events": []
+    },
+    {
+      "label": "sql_error_recovery",
+      "details": {
+        "click": true,
+        "s1": "SELECT FROM",
+        "clickBad": true,
+        "bad": {
+          "error": true,
+          "rows": 0
+        },
+        "s2": "SELECT COUNT(*) AS total FROM comex_fluxos",
+        "clickGood": true,
+        "good": {
+          "rows": 1,
+          "total": "18",
+          "error": false
+        }
+      },
+      "events": []
+    }
+  ],
+  "events": []
+}

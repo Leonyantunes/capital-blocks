@@ -16,8 +16,11 @@ export function FiscalLensToggle({ lens, setLens }: { lens: FiscalLens; setLens:
         {tr('Lente monetária — como explicar a dívida?', 'Monetary lens — how should debt be explained?', 'Lente monetaria — ¿cómo explicar la deuda?')}
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2">
-        <button onClick={() => setLens('ortodoxa')}
-          className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+        <button
+          type="button"
+          aria-pressed={lens === 'ortodoxa'}
+          onClick={() => setLens('ortodoxa')}
+          className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
             lens === 'ortodoxa' ? 'border-sky-400/70 bg-sky-400/10' : 'border-zinc-800 hover:border-zinc-600'
           }`}>
           <div className={`text-xs font-bold ${lens === 'ortodoxa' ? 'text-sky-300' : 'text-zinc-300'}`}>
@@ -27,8 +30,11 @@ export function FiscalLensToggle({ lens, setLens }: { lens: FiscalLens; setLens:
             {tr('“Estado-família”: austeridade e restrição orçamentária', '“State as household”: austerity and budget constraint', '“Estado como familia”: austeridad y restricción presupuestaria')}
           </div>
         </button>
-        <button onClick={() => setLens('mmt')}
-          className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+        <button
+          type="button"
+          aria-pressed={lens === 'mmt'}
+          onClick={() => setLens('mmt')}
+          className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
             lens === 'mmt' ? 'border-emerald-400/70 bg-emerald-400/10' : 'border-zinc-800 hover:border-zinc-600'
           }`}>
           <div className={`text-xs font-bold ${lens === 'mmt' ? 'text-emerald-300' : 'text-zinc-300'}`}>

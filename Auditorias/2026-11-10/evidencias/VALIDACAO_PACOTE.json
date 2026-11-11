@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-11-11T00:05:51.393Z",
+  "status": "PASS",
+  "files": [
+    {
+      "name": "00_LEIA_PRIMEIRO.md",
+      "bytes": 5487
+    },
+    {
+      "name": "01_RELATORIO_AUDITORIA.md",
+      "bytes": 17833
+    },
+    {
+      "name": "02_ACHADOS.json",
+      "bytes": 43199
+    },
+    {
+      "name": "03_PLANO_DE_EXECUCAO.md",
+      "bytes": 9261
+    },
+    {
+      "name": "04_TESTES_E_VALIDACOES.md",
+      "bytes": 10796
+    },
+    {
+      "name": "05_TAREFAS_HUMANAS.md",
+      "bytes": 7388
+    },
+    {
+      "name": "06_PROMPT_PARA_IA.md",
+      "bytes": 13549
+    },
+    {
+      "name": "PROGRESSO.md",
+      "bytes": 5971
+    }
+  ],
+  "counts": {
+    "total": 18,
+    "priorities": {
+      "P1": 2,
+      "P2": 10,
+      "P3": 6
+    },
+    "states": {
+      "confirmado": 16,
+      "não validado": 1,
+      "provável": 1
+    }
+  },
+  "sourceRoot": "C:\\Users\\leony\\Documents\\Default Project",
+  "errors": [],
+  "warnings": [],
+  "uiScreenshots": 9
+}

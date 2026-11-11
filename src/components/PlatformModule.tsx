@@ -17,14 +17,16 @@ interface Params {
 
 const DEFAULTS: Params = { corridas: 12, valorCorrida: 20, kmDia: 140, custoKm: 0.6, comissaoPct: 25, jornada: 10 }
 
-function Slider({ label, tip, value, min, max, step, unit, onChange, localeCode, accentClass = '' }: {
-  label: string; tip?: string; value: number; min: number; max: number; step: number; unit: string
+function Slider({ id, label, tip, value, min, max, step, unit, onChange, localeCode, accentClass = '' }: {
+  id?: string; label: string; tip?: string; value: number; min: number; max: number; step: number; unit: string
   onChange: (n: number) => void; localeCode: string; accentClass?: string
 }) {
+  const sliderId = id || `platform-slider-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+  const valueText = `${value.toLocaleString(localeCode)} ${unit}`
   return (
     <div>
       <div className="mb-1 flex items-baseline justify-between gap-2">
-        <label className="text-xs text-zinc-300">
+        <label htmlFor={sliderId} className="cursor-pointer text-xs text-zinc-300">
           {label}{' '}
           {tip && (
             <Tip text={tip}>
@@ -33,11 +35,24 @@ function Slider({ label, tip, value, min, max, step, unit, onChange, localeCode,
           )}
         </label>
         <span className="font-mono text-xs font-semibold text-zinc-200">
-          {value.toLocaleString(localeCode)} {unit}
+          {valueText}
         </span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))} className={accentClass} />
+      <input
+        id={sliderId}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuetext={valueText}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className={`w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-money/70 ${accentClass}`}
+      />
     </div>
   )
 }
@@ -96,17 +111,17 @@ export default function PlatformModule() {
         {/* Simulador */}
         <div className="flex flex-col gap-3.5 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">{tr('Simulador da corrida', 'Ride simulator', 'Simulador del viaje')}</h3>
-          <Slider label={tr('Corridas por dia', 'Rides per day', 'Viajes por día')} value={p.corridas} onChange={set('corridas')} min={4} max={24} step={1} unit={tr('/dia', '/day', '/día')} localeCode={loc}
+          <Slider id="platform-corridas" label={tr('Corridas por dia', 'Rides per day', 'Viajes por día')} value={p.corridas} onChange={set('corridas')} min={4} max={24} step={1} unit={tr('/dia', '/day', '/día')} localeCode={loc}
             tip={tr("Salário por peça: cada corrida é uma 'peça'. Mais peças = mais trabalho, sem hora extra.", "Piece wage: each ride is a 'piece'. More pieces = more work, without overtime pay.", "Salario por pieza: cada viaje es una 'pieza'. Más piezas = más trabajo, sin horas extra.")} />
-          <Slider label={tr('Valor médio da corrida', 'Average ride fare', 'Valor medio del viaje')} value={p.valorCorrida} onChange={set('valorCorrida')} min={10} max={35} step={1} unit="R$" localeCode={loc}
+          <Slider id="platform-valor-corrida" label={tr('Valor médio da corrida', 'Average ride fare', 'Valor medio del viaje')} value={p.valorCorrida} onChange={set('valorCorrida')} min={10} max={35} step={1} unit="R$" localeCode={loc}
             tip={tr('A tarifa cai quando há muitos motoristas conectados — o algoritmo administra o exército industrial de reserva em tempo real.', 'Fares fall when many drivers are online — the algorithm manages the reserve army of labor in real time.', 'La tarifa cae cuando hay muchos conductores conectados — el algoritmo administra el ejército industrial de reserva en tiempo real.')} />
-          <Slider label={tr('Comissão da plataforma', 'Platform commission', 'Comisión de la plataforma')} value={p.comissaoPct} onChange={set('comissaoPct')} min={15} max={40} step={1} unit="%" localeCode={loc}
+          <Slider id="platform-comissao" label={tr('Comissão da plataforma', 'Platform commission', 'Comisión de la plataforma')} value={p.comissaoPct} onChange={set('comissaoPct')} min={15} max={40} step={1} unit="%" localeCode={loc}
             tip={tr('Corte fixo sobre cada corrida: a plataforma não investe, não arrisca frota — e ainda escolhe o preço.', 'A fixed cut of every ride: the platform does not fund or risk the fleet — and it still sets the price.', 'Un recorte fijo de cada viaje: la plataforma no financia ni arriesga la flota — y aun así fija el precio.')} />
-          <Slider label={tr('Quilometragem diária', 'Daily mileage', 'Kilometraje diario')} value={p.kmDia} onChange={set('kmDia')} min={60} max={260} step={10} unit="km" localeCode={loc} accentClass="range-machine"
+          <Slider id="platform-km-dia" label={tr('Quilometragem diária', 'Daily mileage', 'Kilometraje diario')} value={p.kmDia} onChange={set('kmDia')} min={60} max={260} step={10} unit="km" localeCode={loc} accentClass="range-machine"
             tip={tr('Rodar para conseguir corrida também é tempo de trabalho não remunerado.', 'Driving while waiting for a ride is also unpaid working time.', 'Circular para conseguir un viaje también es tiempo de trabajo no remunerado.')} />
-          <Slider label={tr('Custo por km', 'Cost per km', 'Costo por km')} value={p.custoKm} onChange={set('custoKm')} min={0.3} max={1.2} step={0.05} unit="R$/km" localeCode={loc} accentClass="range-machine"
+          <Slider id="platform-custo-km" label={tr('Custo por km', 'Cost per km', 'Costo por km')} value={p.custoKm} onChange={set('custoKm')} min={0.3} max={1.2} step={0.05} unit="R$/km" localeCode={loc} accentClass="range-machine"
             tip={tr('Gasolina, óleo, pneus, revisão: capital constante pago pelo trabalhador.', 'Fuel, oil, tires and maintenance: constant capital paid by the worker.', 'Gasolina, aceite, neumáticos y mantenimiento: capital constante pagado por el trabajador.')} />
-          <Slider label={tr('Jornada conectado', 'Hours online', 'Horas conectado')} value={p.jornada} onChange={set('jornada')} min={8} max={14} step={1} unit="h" localeCode={loc} accentClass="range-labor" />
+          <Slider id="platform-jornada" label={tr('Jornada conectado', 'Hours online', 'Horas conectado')} value={p.jornada} onChange={set('jornada')} min={8} max={14} step={1} unit="h" localeCode={loc} accentClass="range-labor" />
         </div>
 
         {/* Resultados */}

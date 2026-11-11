@@ -258,14 +258,20 @@ export default function SourcesModule() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor="sources-search-input" className="sr-only">
+          {pick(lang, 'Buscar fonte, instituição, dataset ou módulo', 'Search source, institution, dataset or module', 'Buscar fuente, institución, dataset o módulo')}
+        </label>
         <input
+          id="sources-search-input"
+          type="search"
+          aria-label={pick(lang, 'Buscar fonte, instituição, dataset ou módulo', 'Search source, institution, dataset or module', 'Buscar fuente, institución, dataset o módulo')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={pick(lang,
             'Buscar fonte, instituição, dataset ou módulo…',
             'Search source, institution, dataset or module…',
             'Buscar fuente, institución, dataset o módulo…')}
-          className="w-64 max-w-full flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60"
+          className="w-64 max-w-full flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-money/60 focus-visible:ring-2 focus-visible:ring-money/70"
         />
         <select
           value={categoria}
@@ -289,12 +295,14 @@ export default function SourcesModule() {
             <option key={k.id} value={k.id}>{rotuloTipo(k.id)}</option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-300">
+        <label htmlFor="sources-only-links-checkbox" className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-300">
           <input
+            id="sources-only-links-checkbox"
             type="checkbox"
             checked={somenteLinks}
             onChange={(e) => setSomenteLinks(e.target.checked)}
-            className="h-3.5 w-3.5 accent-amber-400"
+            aria-label={pick(lang, 'Somente com link', 'Only with link', 'Solo con enlace')}
+            className="h-3.5 w-3.5 accent-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400"
           />
           {pick(lang, 'Somente com link', 'Only with link', 'Solo con enlace')}
         </label>

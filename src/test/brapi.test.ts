@@ -121,16 +121,26 @@ describe('BRAPI com token — universo completo e fatiado', () => {
     expect(errors.join(' ')).not.toMatch(/nenhuma cotação/i)
   })
 
-  it('respeita o teto de 20 tickers por requisição', async () => {
+  it('respeita rigorosamente o teto de 20 tickers por requisição, inclusive no 1º lote com USD-BRL (AUD-003)', async () => {
     mockApiReal()
     const { fetchBrapiQuotes, LOTE_COM_TOKEN } = await import('../lib/marketApi/brapi')
     const { B3_UNIVERSE } = await import('../lib/marketApi/universe')
 
     await fetchBrapiQuotes('token-de-teste')
+    expect(mockFetch.mock.calls.length).toBeGreaterThan(1)
+
+    // O 1º lote deve incluir USD-BRL e não exceder 20 símbolos
+    const [firstCall] = mockFetch.mock.calls
+    const firstPath = String(firstCall[0]).split('/quote/')[1].split('?')[0]
+    const firstSyms = firstPath.split(',').filter(Boolean)
+    expect(firstSyms).toContain('USD-BRL')
+    expect(firstSyms.length).toBeLessThanOrEqual(LOTE_COM_TOKEN)
+
+    // Todas as requisições devem respeitar <= 20 símbolos
     for (const [url] of mockFetch.mock.calls) {
       const path = String(url).split('/quote/')[1].split('?')[0]
-      /* +1 porque a 1ª leva o USD-BRL junto */
-      expect(path.split(',').filter(Boolean).length).toBeLessThanOrEqual(LOTE_COM_TOKEN + 1)
+      const syms = path.split(',').filter(Boolean)
+      expect(syms.length).toBeLessThanOrEqual(LOTE_COM_TOKEN)
     }
     /* universo maior que um lote → múltiplas requisições */
     expect(B3_UNIVERSE.length).toBeGreaterThan(LOTE_COM_TOKEN)

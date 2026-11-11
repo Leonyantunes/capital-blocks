@@ -31,4 +31,6 @@ export interface MarketSyncSettings {
   enabled: boolean
   provider: ApiProvider
   token: string
+  /** Quando true, o token NUNCA é persistido em localStorage (AUD-009) */
+  sessionOnly?: boolean
 }

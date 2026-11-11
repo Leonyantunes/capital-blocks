@@ -1,0 +1,3 @@
+﻿src\components\globe3d\Globe3DCanvas.tsx:446: loadingEl.innerHTML = `<span class="globe3d-spin"></span><span>${pick(lang, 'construindo matriz de pontos…', 'building point matrix…', 'construyendo matriz de puntos…')}</span>`
+src\components\globe3d\Globe3DCanvas.tsx:1437: labelsBox.innerHTML = ''
+src\components\network\CorporateNetworkGraph.tsx:188: .nodeVal((node: any) => node.val)

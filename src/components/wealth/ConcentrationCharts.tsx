@@ -145,15 +145,22 @@ function Segment({ b, field, total, lang }: { b: WealthBand; field: 'adultosPct'
   const pct = (b[field] / total) * 100
   const showLabel = pct >= 12
   const loc = locale(lang)
+  const accessibleText = `${bandLabel(lang, b)}: ${b[field].toLocaleString(loc)}%`
   return (
-    <div className="group/seg relative h-full" style={{ width: `${pct}%` }}>
+    <div
+      tabIndex={0}
+      role="graphics-symbol"
+      aria-label={accessibleText}
+      className="group/seg relative h-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white"
+      style={{ width: `${pct}%` }}
+    >
       <div className="h-full" style={{ background: b.color }} />
       {showLabel && (
         <span className="pointer-events-none absolute inset-0 flex items-start justify-center pt-1 font-mono text-[9.5px] font-bold text-onaccent">
           {b[field].toLocaleString(loc)}%
         </span>
       )}
-      <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-44 -translate-x-1/2 rounded-md border border-zinc-700 bg-zinc-900/95 p-1.5 text-center text-[10px] leading-snug text-zinc-200 shadow-xl group-hover/seg:block">
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-44 -translate-x-1/2 rounded-md border border-zinc-700 bg-zinc-900/95 p-1.5 text-center text-[10px] leading-snug text-zinc-200 shadow-xl group-hover/seg:block group-focus-visible/seg:block">
         {bandLabel(lang, b)}: {b.adultosPct.toLocaleString(loc)}% {pick(lang, 'das pessoas', 'of people', 'de las personas')} · {b.riquezaPct.toLocaleString(loc)}% {pick(lang, 'da riqueza', 'of wealth', 'de la riqueza')}
       </span>
     </div>
@@ -234,7 +241,10 @@ export function ConcentrationStats() {
         const copy = statCopy(lang, index, st)
         return (
         <Tip key={st.label} className="w-full" text={textoPorModo(mode, copy.tipDidatico, copy.tipAvancado, concentrationStatSimple(lang, copy))}>
-          <article className="h-full w-full cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-colors hover:border-zinc-600">
+          <article
+            tabIndex={0}
+            className="h-full w-full cursor-help rounded-xl border border-zinc-800 bg-zinc-900/60 p-3.5 transition-colors hover:border-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-money/70"
+          >
             <div className="font-mono text-2xl font-extrabold text-money">{copy.value}</div>
             <div className="mt-1 text-xs font-semibold leading-snug text-zinc-200">{copy.label}</div>
             <div className="mt-0.5 text-[10.5px] text-zinc-500">{copy.sub}</div>

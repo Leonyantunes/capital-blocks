@@ -1,0 +1,64 @@
+﻿COMMAND: npm run build
+EXIT: 
+0
+
+> capital-blocks@1.1.0 build
+> tsc -b && vite build
+
+[36mvite v7.3.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 2127 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                                    [39m[1m[2m     1.83 kB[22m[1m[22m[2m Ôöé gzip:     0.79 kB[22m
+[2mdist/[22m[32massets/landWorker-B84PDZeC.js                 [39m[1m[2m     7.32 kB[22m[1m[22m
+[2mdist/[22m[32massets/duckdb-browser-eh.worker-CwdVMcbT.js   [39m[1m[2m   773.22 kB[22m[1m[22m
+[2mdist/[22m[32massets/duckdb-browser-mvp.worker-BEKIasyR.js  [39m[1m[2m   839.64 kB[22m[1m[22m
+[2mdist/[22m[32massets/duckdb-eh-CfdE9-rk.wasm                [39m[1m[2m35,913.75 kB[22m[1m[22m[2m Ôöé gzip: 8,128.90 kB[22m
+[2mdist/[22m[32massets/duckdb-mvp-DQDXaYzB.wasm               [39m[1m[2m41,325.19 kB[22m[1m[22m[2m Ôöé gzip: 9,265.59 kB[22m
+[2mdist/[22m[35massets/MapWorld-CTZuBZOi.css                  [39m[1m[2m     3.04 kB[22m[1m[22m[2m Ôöé gzip:     0.97 kB[22m
+[2mdist/[22m[35massets/index-Bbwa5DPn.css                     [39m[1m[2m    82.18 kB[22m[1m[22m[2m Ôöé gzip:    13.84 kB[22m
+[2mdist/[22m[36massets/useFocusTrap-yLroafr8.js               [39m[1m[2m     0.73 kB[22m[1m[22m[2m Ôöé gzip:     0.43 kB[22m
+[2mdist/[22m[36massets/vendor-preload-BXl3LOEh.js             [39m[1m[2m     1.11 kB[22m[1m[22m[2m Ôöé gzip:     0.65 kB[22m
+[2mdist/[22m[36massets/Tip-aAdZsU1h.js                        [39m[1m[2m     1.16 kB[22m[1m[22m[2m Ôöé gzip:     0.68 kB[22m
+[2mdist/[22m[36massets/DonutChart-BCWHVmeF.js                 [39m[1m[2m     1.16 kB[22m[1m[22m[2m Ôöé gzip:     0.65 kB[22m
+[2mdist/[22m[36massets/ModeBadge-ButoIpsQ.js                  [39m[1m[2m     2.35 kB[22m[1m[22m[2m Ôöé gzip:     1.10 kB[22m
+[2mdist/[22m[36massets/Clocks-c0XyCn4n.js                     [39m[1m[2m     2.82 kB[22m[1m[22m[2m Ôöé gzip:     1.36 kB[22m
+[2mdist/[22m[36massets/FlowCard-fHYpxEuh.js                   [39m[1m[2m     4.19 kB[22m[1m[22m[2m Ôöé gzip:     1.71 kB[22m
+[2mdist/[22m[36massets/GpuFlowMap-0vuOOx4w.js                 [39m[1m[2m     4.28 kB[22m[1m[22m[2m Ôöé gzip:     2.04 kB[22m
+[2mdist/[22m[36massets/world-DCF5yWkA.js                      [39m[1m[2m     6.26 kB[22m[1m[22m[2m Ôöé gzip:     2.84 kB[22m
+[2mdist/[22m[36massets/SettingsModule-ABWeBdjB.js             [39m[1m[2m    11.75 kB[22m[1m[22m[2m Ôöé gzip:     4.11 kB[22m
+[2mdist/[22m[36massets/theory-5ZGAnZ5u.js                     [39m[1m[2m    14.07 kB[22m[1m[22m[2m Ôöé gzip:     6.15 kB[22m
+[2mdist/[22m[36massets/CountryDrawer-B8_gd2wg.js              [39m[1m[2m    16.60 kB[22m[1m[22m[2m Ôöé gzip:     6.00 kB[22m
+[2mdist/[22m[36massets/PlatformModule-DIH-Sjyg.js             [39m[1m[2m    16.87 kB[22m[1m[22m[2m Ôöé gzip:     6.26 kB[22m
+[2mdist/[22m[36massets/MethodologyNote-Sz7lByro.js            [39m[1m[2m    17.34 kB[22m[1m[22m[2m Ôöé gzip:     7.25 kB[22m
+[2mdist/[22m[36massets/index-CoOUv4wX.js                      [39m[1m[2m    19.01 kB[22m[1m[22m[2m Ôöé gzip:     6.66 kB[22m
+[2mdist/[22m[36massets/vendor-three-controls-BanS6vdo.js      [39m[1m[2m    19.73 kB[22m[1m[22m[2m Ôöé gzip:     4.46 kB[22m
+[2mdist/[22m[36massets/alternatives-Cureyi4G.js               [39m[1m[2m    21.91 kB[22m[1m[22m[2m Ôöé gzip:     8.62 kB[22m
+[2mdist/[22m[36massets/CorporateNetworkGraph-CvdFnoP6.js      [39m[1m[2m    23.19 kB[22m[1m[22m[2m Ôöé gzip:     8.18 kB[22m
+[2mdist/[22m[36massets/AlternativesModule-DpmcBNli.js         [39m[1m[2m    24.25 kB[22m[1m[22m[2m Ôöé gzip:     8.77 kB[22m
+[2mdist/[22m[36massets/GlossaryDrawer-BMn8rbgm.js             [39m[1m[2m    32.89 kB[22m[1m[22m[2m Ôöé gzip:    12.23 kB[22m
+[2mdist/[22m[36massets/SourcesModule-D2ljUmSO.js              [39m[1m[2m    41.92 kB[22m[1m[22m[2m Ôöé gzip:    13.07 kB[22m
+[2mdist/[22m[36massets/countries-Bf9ivxv4.js                  [39m[1m[2m    47.75 kB[22m[1m[22m[2m Ôöé gzip:    16.74 kB[22m
+[2mdist/[22m[36massets/MapModule-BcFRRTKp.js                  [39m[1m[2m    49.45 kB[22m[1m[22m[2m Ôöé gzip:    17.27 kB[22m
+[2mdist/[22m[36massets/CircuitModule-DED79WxB.js              [39m[1m[2m    52.73 kB[22m[1m[22m[2m Ôöé gzip:    15.42 kB[22m
+[2mdist/[22m[36massets/sources-cT29H1uA.js                    [39m[1m[2m    54.49 kB[22m[1m[22m[2m Ôöé gzip:    17.92 kB[22m
+[2mdist/[22m[36massets/CompaniesModule-W-LK1Cm0.js            [39m[1m[2m    55.34 kB[22m[1m[22m[2m Ôöé gzip:    16.62 kB[22m
+[2mdist/[22m[36massets/companies-BuwiMsnh.js                  [39m[1m[2m    70.77 kB[22m[1m[22m[2m Ôöé gzip:    21.87 kB[22m
+[2mdist/[22m[36massets/GlobeModule-T6NjqscD.js                [39m[1m[2m    73.75 kB[22m[1m[22m[2m Ôöé gzip:    24.69 kB[22m
+[2mdist/[22m[36massets/WealthModule-C_ktZ04z.js               [39m[1m[2m    83.44 kB[22m[1m[22m[2m Ôöé gzip:    28.08 kB[22m
+[2mdist/[22m[36massets/flows-CovM-b7U.js                      [39m[1m[2m    84.38 kB[22m[1m[22m[2m Ôöé gzip:    29.57 kB[22m
+[2mdist/[22m[36massets/vendor-motion-BShL3vge.js              [39m[1m[2m    87.48 kB[22m[1m[22m[2m Ôöé gzip:    30.93 kB[22m
+[2mdist/[22m[36massets/DebtModule-9UZVTVZa.js                 [39m[1m[2m    87.74 kB[22m[1m[22m[2m Ôöé gzip:    29.01 kB[22m
+[2mdist/[22m[36massets/MapWorld-DY6WZElT.js                   [39m[1m[2m   101.20 kB[22m[1m[22m[2m Ôöé gzip:    33.36 kB[22m
+[2mdist/[22m[36massets/WarModule-D6kSzhon.js                  [39m[1m[2m   106.56 kB[22m[1m[22m[2m Ôöé gzip:    36.55 kB[22m
+[2mdist/[22m[36massets/vendor-geo-B0KtpGmO.js                 [39m[1m[2m   135.93 kB[22m[1m[22m[2m Ôöé gzip:    49.25 kB[22m
+[2mdist/[22m[36massets/generatedTranslations-BSNHwm3I.js      [39m[1m[2m   146.37 kB[22m[1m[22m[2m Ôöé gzip:    51.27 kB[22m
+[2mdist/[22m[36massets/vendor-duckdb-Aa6nMrfI.js              [39m[1m[2m   198.03 kB[22m[1m[22m[2m Ôöé gzip:    46.14 kB[22m
+[2mdist/[22m[36massets/index-DxYgP2tX.js                      [39m[1m[2m   200.67 kB[22m[1m[22m[2m Ôöé gzip:    67.80 kB[22m
+[2mdist/[22m[36massets/TourPanel-DvOK34s9.js                  [39m[1m[2m   209.02 kB[22m[1m[22m[2m Ôöé gzip:    71.92 kB[22m
+[2mdist/[22m[36massets/ConsequencesModule-dEM8xWp7.js         [39m[1m[2m   226.47 kB[22m[1m[22m[2m Ôöé gzip:    85.57 kB[22m
+[2mdist/[22m[36massets/vendor-three-DiUEOK-7.js               [39m[1m[2m   573.03 kB[22m[1m[22m[2m Ôöé gzip:   143.52 kB[22m
+[2mdist/[22m[36massets/vendor-deck-faAZIP97.js                [39m[1m[2m   942.66 kB[22m[1m[22m[2m Ôöé gzip:   260.92 kB[22m
+[2mdist/[22m[36massets/vendor-graph-BymTK8HM.js               [39m[1m[2m 1,213.61 kB[22m[1m[22m[2m Ôöé gzip:   364.04 kB[22m
+[32mÔ£ô built in 39.61s[39m

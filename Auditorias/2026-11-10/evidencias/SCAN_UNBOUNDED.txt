@@ -1,0 +1,32 @@
+﻿src\components\globe3d\Globe3DCanvas.tsx:432: el.addEventListener('pointerdown', (e) => e.stopPropagation())
+src\components\globe3d\Globe3DCanvas.tsx:433: el.addEventListener('click', (e) => {
+src\components\globe3d\Globe3DCanvas.tsx:696: const buildTimer = window.setTimeout(build, 60)
+src\components\globe3d\Globe3DCanvas.tsx:1033: renderer.domElement.addEventListener('pointerdown', onDown)
+src\components\globe3d\Globe3DCanvas.tsx:1034: renderer.domElement.addEventListener('pointerup', onUp)
+src\components\globe3d\Globe3DCanvas.tsx:1035: renderer.domElement.addEventListener('pointercancel', onCancel)
+src\components\globe3d\Globe3DCanvas.tsx:1036: renderer.domElement.addEventListener('pointermove', onMove)
+src\components\globe3d\Globe3DCanvas.tsx:1045: renderer.domElement.addEventListener('pointerleave', onLeave)
+src\components\globe3d\Globe3DCanvas.tsx:1092: document.addEventListener('visibilitychange', onVis)
+src\components\globe3d\Globe3DCanvas.tsx:1100: raf = requestAnimationFrame(animate)
+src\components\globe3d\Globe3DCanvas.tsx:1395: const syncTimer = window.setInterval(() => {
+src\components\globe3d\GlobeModule.tsx:303: document.addEventListener('fullscreenchange', h)
+src\components\globe3d\landPoints.ts:133: window.setTimeout(chunk, 0)
+src\components\globe3d\landPoints.ts:138: window.setTimeout(chunk, 0)
+src\components\sources\SourcesModule.tsx:112: const timer = window.setTimeout(() => {
+src\components\wealth\BillionaireTimeline.tsx:38: const t = setInterval(() => setIdx((i) => (i + 1) % BILLIONAIRES.length), 1200)
+src\components\MapModule.tsx:41: const timer = window.setTimeout(() => setMapReady(true), 0)
+src\components\MapWorld.tsx:323: interactTimeoutRef.current = window.setTimeout(() => {
+src\components\MapWorld.tsx:365: viewRafRef.current = requestAnimationFrame(() => {
+src\components\MapWorld.tsx:412: const t = setTimeout(() => {
+src\components\MapWorld.tsx:525: rafRef.current = requestAnimationFrame(frame)
+src\components\MapWorld.tsx:527: rafRef.current = requestAnimationFrame(frame)
+src\components\MapWorld.tsx:540: document.addEventListener('fullscreenchange', h)
+src\components\MapWorld.tsx:560: window.addEventListener('keydown', onKey)
+src\components\MapWorld.tsx:597: const t = setTimeout(() => {
+src\components\MapWorld.tsx:720: el.addEventListener('wheel', onWheel, { passive: false })
+src\components\MapWorld.tsx:1253: document.addEventListener('visibilitychange', apply)
+src\components\Navbar.tsx:186: window.addEventListener('keydown', onKey)
+src\components\Navbar.tsx:195: const t = setTimeout(() => setShowName(false), 3500)
+src\hooks\useFocusTrap.ts:27: el.addEventListener('keydown', onKey)
+src\lib\marketApi\brapi.ts:36: const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
+src\main.tsx:28: window.addEventListener('load', () => {

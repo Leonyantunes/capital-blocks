@@ -1,0 +1,640 @@
+{
+  "schema_version": "1.0",
+  "projeto": "Capital Blocks",
+  "versao_codigo": "1.1.0",
+  "raiz": "C:\\Users\\leony\\Documents\\Default Project",
+  "data_local": "2026-11-10",
+  "git_head": "b72bd7de184e98514261d19fc6316c0d5392761e",
+  "criterio_estado": "Confirmado pode ser achado estático inequívoco, sem implicar reprodução dinâmica. Provável é inferência técnica. Não validado exige homologação.",
+  "resumo": {
+    "total": 18,
+    "por_prioridade": {
+      "P1": 2,
+      "P2": 10,
+      "P3": 6
+    },
+    "por_categoria": {
+      "Segurança e confiabilidade": 1,
+      "Cadeia de suprimentos": 1,
+      "Funcionalidade e integração": 1,
+      "Acessibilidade e UX": 1,
+      "Segurança e dados": 1,
+      "Desempenho e disponibilidade": 1,
+      "Confiabilidade funcional": 1,
+      "Confiabilidade de dados": 1,
+      "Privacidade e segurança": 1,
+      "Testes e produção": 1,
+      "Desempenho, compatibilidade e publicação": 1,
+      "Arquitetura e manutenção": 1,
+      "Resiliência": 1,
+      "Documentação e manutenção": 1,
+      "Produto e dados": 1,
+      "Qualidade editorial e rastreabilidade": 1,
+      "Entrega e produção": 1,
+      "Manutenibilidade": 1
+    },
+    "por_estado": {
+      "confirmado": 16,
+      "não validado": 1,
+      "provável": 1
+    }
+  },
+  "achados": [
+    {
+      "id": "AUD-001",
+      "titulo": "Service worker elimina caches de outros aplicativos da mesma origem",
+      "categoria": "Segurança e confiabilidade",
+      "componente": "PWA / service worker",
+      "prioridade": "P1",
+      "gravidade": "Alto",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "No evento activate, caches.keys() filtra somente k !== 'cb-v3'; isso remove inclusive nomes de cache de outros aplicativos no mesmo domínio. A leitura do código confirma a operação; não foi executada em uma origem compartilhada.",
+      "arquivos": [
+        "public/sw.js"
+      ],
+      "linhas": "public/sw.js:31-39",
+      "evidencias": [
+        "public/sw.js:31-39"
+      ],
+      "procedimento_reproducao": "Inspecionar activate em public/sw.js ou simular caches em origem descartável; NÃO executar em origem compartilhada de produção.",
+      "comportamento_atual": "No evento activate, caches.keys() filtra somente k !== 'cb-v3'; isso remove inclusive nomes de cache de outros aplicativos no mesmo domínio. A leitura do código confirma a operação; não foi executada em uma origem compartilhada.",
+      "comportamento_esperado": "Inserir dois caches falsos em ambiente isolado ('cb-v2' e 'outro-site-v1'), ativar nova versão e comprovar que apenas 'cb-v2' é removido; cache atual intacto.",
+      "impacto": "Outros aplicativos hospedados na mesma origem podem perder o cache/offline após ativação do Capital Blocks.",
+      "causa_provavel": "No evento activate, caches.keys() filtra somente k !== 'cb-v3'; isso remove inclusive nomes de cache de outros aplicativos no mesmo domínio. A leitura do código confirma a operação; não foi executada em uma origem compartilhada.",
+      "riscos": "Outros aplicativos hospedados na mesma origem podem perder o cache/offline após ativação do Capital Blocks.",
+      "solucao_recomendada": "Restringir exclusão a caches com prefixo exclusivo do projeto, removendo só versões anteriores desse namespace; testar preservação de caches alheios e upgrade.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Inserir dois caches falsos em ambiente isolado ('cb-v2' e 'outro-site-v1'), ativar nova versão e comprovar que apenas 'cb-v2' é removido; cache atual intacto."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-002",
+      "titulo": "Cinco alertas de segurança nas dependências de desenvolvimento e build",
+      "categoria": "Cadeia de suprimentos",
+      "componente": "Vite / Vitest e transitivas",
+      "prioridade": "P1",
+      "gravidade": "Alto",
+      "estado": "confirmado",
+      "tipo": "risco",
+      "descricao": "npm audit --json retornou 5 alertas (3 altos: vite, undici e source-map-js; 2 moderados: vitest e @vitest/mocker), enquanto npm audit --omit=dev retornou 0. Vulnerabilidades e versões em evidencias/dependency_audit_all_raw.json; sem exploração executada.",
+      "arquivos": [
+        "package-lock.json",
+        "package.json",
+        ".github/workflows/deploy.yml"
+      ],
+      "linhas": "package-lock.json; package.json; .github/workflows/deploy.yml",
+      "evidencias": [
+        "package-lock.json; package.json; .github/workflows/deploy.yml",
+        "evidencias/dependency_audit_all_raw.json",
+        "evidencias/dependency_audit_raw.json"
+      ],
+      "procedimento_reproducao": "Executar npm audit --json e npm audit --omit=dev --json em ambiente isolado, sem npm audit fix.",
+      "comportamento_atual": "npm audit --json retornou 5 alertas (3 altos: vite, undici e source-map-js; 2 moderados: vitest e @vitest/mocker), enquanto npm audit --omit=dev retornou 0. Vulnerabilidades e versões em evidencias/dependency_audit_all_raw.json; sem exploração executada.",
+      "comportamento_esperado": "npm audit --json sem avisos aplicáveis ou justificativa documentada para exceções; suite, build, budget e smoke permanecem aprovados.",
+      "impacto": "Risco em servidores locais de desenvolvimento, tooling e processamento de arquivos; não equivale a cinco vulnerabilidades comprovadas no site publicado.",
+      "causa_provavel": "npm audit --json retornou 5 alertas (3 altos: vite, undici e source-map-js; 2 moderados: vitest e @vitest/mocker), enquanto npm audit --omit=dev retornou 0. Vulnerabilidades e versões em evidencias/dependency_audit_all_raw.json; sem exploração executada.",
+      "riscos": "Risco em servidores locais de desenvolvimento, tooling e processamento de arquivos; não equivale a cinco vulnerabilidades comprovadas no site publicado.",
+      "solucao_recomendada": "Planejar atualização compatível dos pacotes afetados e lockfile em branch/cópia, reexecutar testes, build e npm audit; não atualizar às cegas nem introduzir breaking changes.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "npm audit --json sem avisos aplicáveis ou justificativa documentada para exceções; suite, build, budget e smoke permanecem aprovados."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-003",
+      "titulo": "Primeiro lote BRAPI autenticado excede limite de símbolos configurado",
+      "categoria": "Funcionalidade e integração",
+      "componente": "BRAPI",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "LOTE_COM_TOKEN=20; o primeiro lote acrescenta USD-BRL a um grupo já de 20 tickers, produzindo 21. Defeito de composição confirmado estaticamente; rejeição real por plano não testada.",
+      "arquivos": [
+        "src/lib/marketApi/brapi.ts"
+      ],
+      "linhas": "src/lib/marketApi/brapi.ts:36-37,135-149",
+      "evidencias": [
+        "src/lib/marketApi/brapi.ts:36-37,135-149"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "LOTE_COM_TOKEN=20; o primeiro lote acrescenta USD-BRL a um grupo já de 20 tickers, produzindo 21. Defeito de composição confirmado estaticamente; rejeição real por plano não testada.",
+      "comportamento_esperado": "Teste com fetch mockado afirma que nenhum request excede 20 tickers e verifica resposta parcial e falhas; teste real somente com aprovação e token privado.",
+      "impacto": "Integração opcional com token pode falhar por limite de plano e apresentar dados parciais.",
+      "causa_provavel": "LOTE_COM_TOKEN=20; o primeiro lote acrescenta USD-BRL a um grupo já de 20 tickers, produzindo 21. Defeito de composição confirmado estaticamente; rejeição real por plano não testada.",
+      "riscos": "Integração opcional com token pode falhar por limite de plano e apresentar dados parciais.",
+      "solucao_recomendada": "Reservar vaga para USD-BRL no primeiro lote, requisitar câmbio separadamente ou adotar estratégia orientada ao limite real do provedor.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Teste com fetch mockado afirma que nenhum request excede 20 tickers e verifica resposta parcial e falhas; teste real somente com aprovação e token privado."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-004",
+      "titulo": "Sliders e pesquisas sem nome acessível programaticamente associado",
+      "categoria": "Acessibilidade e UX",
+      "componente": "Dívida, Plataformas, Riqueza, Empresas, Fontes",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "CDP no Chrome detectou sete ranges sem label em debt, seis em platform, um em wealth, e inputs de pesquisa sem label em companies e sources; placeholders e texto de contêiner não constituem nome acessível confiável.",
+      "arquivos": [
+        "src/components/debt/KaleckiSimulator.tsx",
+        "src/components/debt/FiscalLensPanels.tsx",
+        "src/components/PlatformModule.tsx",
+        "src/components/wealth/ConcentrationCharts.tsx",
+        "src/components/CompaniesModule.tsx",
+        "src/components/sources/SourcesModule.tsx"
+      ],
+      "linhas": "src/components/debt/KaleckiSimulator.tsx; src/components/debt/FiscalLensPanels.tsx; src/components/PlatformModule.tsx; src/components/wealth/ConcentrationCharts.tsx; src/components/CompaniesModule.tsx; src/components/sources/SourcesModule.tsx",
+      "evidencias": [
+        "src/components/debt/KaleckiSimulator.tsx; src/components/debt/FiscalLensPanels.tsx; src/components/PlatformModule.tsx; src/components/wealth/ConcentrationCharts.tsx; src/components/CompaniesModule.tsx; src/components/sources/SourcesModule.tsx",
+        "evidencias/browser_interactions.json",
+        "evidencias/UI_mobile_companies.png"
+      ],
+      "procedimento_reproducao": "Rodar preview em cópia e inspecionar accessible name dos inputs em ?t=debt,platform,companies,wealth,sources via DevTools.",
+      "comportamento_atual": "CDP no Chrome detectou sete ranges sem label em debt, seis em platform, um em wealth, e inputs de pesquisa sem label em companies e sources; placeholders e texto de contêiner não constituem nome acessível confiável.",
+      "comportamento_esperado": "Todos os inputs e ranges possuem accessible name correto em PT/EN/ES; teste automatizado axe + leitura e navegação com teclado aprovados.",
+      "impacto": "Usuários de leitores de tela podem não identificar finalidade dos controles; meta WCAG AA não homologada.",
+      "causa_provavel": "CDP no Chrome detectou sete ranges sem label em debt, seis em platform, um em wealth, e inputs de pesquisa sem label em companies e sources; placeholders e texto de contêiner não constituem nome acessível confiável.",
+      "riscos": "Usuários de leitores de tela podem não identificar finalidade dos controles; meta WCAG AA não homologada.",
+      "solucao_recomendada": "Associar labels nativos por htmlFor/id ou aria-label/aria-labelledby localizado, expor valor atualizado, testar teclado e leitores de tela.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Todos os inputs e ranges possuem accessible name correto em PT/EN/ES; teste automatizado axe + leitura e navegação com teclado aprovados."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-005",
+      "titulo": "Exportador CSV não trata aspas, quebras de linha e fórmulas",
+      "categoria": "Segurança e dados",
+      "componente": "Laboratório SQL / exportação",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "Cabeçalho usa join(','); células só ganham aspas quando contêm vírgula, sem dobrar aspas internas, tratamento de CR/LF ou fórmula para planilhas; leitura direta do código.",
+      "arquivos": [
+        "src/components/sources/AnalyticsLab.tsx"
+      ],
+      "linhas": "src/components/sources/AnalyticsLab.tsx:73-94",
+      "evidencias": [
+        "src/components/sources/AnalyticsLab.tsx:73-94"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "Cabeçalho usa join(','); células só ganham aspas quando contêm vírgula, sem dobrar aspas internas, tratamento de CR/LF ou fórmula para planilhas; leitura direta do código.",
+      "comportamento_esperado": "Testes cobrindo vírgulas, aspas, CR/LF, Unicode, fórmulas, valores null e coluna numérica; exportação é reimportável sem perda ou execução involuntária.",
+      "impacto": "CSV malformado com dados legítimos e possível interpretação de fórmulas perigosas por Excel/LibreOffice.",
+      "causa_provavel": "Cabeçalho usa join(','); células só ganham aspas quando contêm vírgula, sem dobrar aspas internas, tratamento de CR/LF ou fórmula para planilhas; leitura direta do código.",
+      "riscos": "CSV malformado com dados legítimos e possível interpretação de fórmulas perigosas por Excel/LibreOffice.",
+      "solucao_recomendada": "Aplicar serializador de CSV corretamente escapado, proteger células de conteúdo não confiável iniciado por = + - @ (segundo contrato de importação), e indicar convenção/UTF-8.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Testes cobrindo vírgulas, aspas, CR/LF, Unicode, fórmulas, valores null e coluna numérica; exportação é reimportável sem perda ou execução involuntária."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-006",
+      "titulo": "SQL livre materializa resultados sem limite de linhas ou controle de duração",
+      "categoria": "Desempenho e disponibilidade",
+      "componente": "DuckDB-Wasm / AnalyticsLab",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "risco",
+      "descricao": "runSqlQuery(sql) executa consulta arbitrária e percorre arrowTable.numRows integralmente, preenchendo objetos JS sem limitador de linhas/timeout/abort; risco de uso excessivo local, sem carga destrutiva testada.",
+      "arquivos": [
+        "src/lib/duckdb/duckdbClient.ts",
+        "src/components/sources/AnalyticsLab.tsx"
+      ],
+      "linhas": "src/lib/duckdb/duckdbClient.ts:114-138; src/components/sources/AnalyticsLab.tsx:15-70",
+      "evidencias": [
+        "src/lib/duckdb/duckdbClient.ts:114-138; src/components/sources/AnalyticsLab.tsx:15-70"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "runSqlQuery(sql) executa consulta arbitrária e percorre arrowTable.numRows integralmente, preenchendo objetos JS sem limitador de linhas/timeout/abort; risco de uso excessivo local, sem carga destrutiva testada.",
+      "comportamento_esperado": "Consulta de agregação continua correta; consultas potencialmente massivas têm limite/cancelamento e não bloqueiam aba por período indefinido em testes controlados.",
+      "impacto": "Consulta volumosa ou acidental pode travar aba, consumir memória e prejudicar dispositivos móveis.",
+      "causa_provavel": "runSqlQuery(sql) executa consulta arbitrária e percorre arrowTable.numRows integralmente, preenchendo objetos JS sem limitador de linhas/timeout/abort; risco de uso excessivo local, sem carga destrutiva testada.",
+      "riscos": "Consulta volumosa ou acidental pode travar aba, consumir memória e prejudicar dispositivos móveis.",
+      "solucao_recomendada": "Definir limite de visualização e tamanho de resultados, políticas de cancelamento/consulta em andamento, proteção contra concorrência e mensagens claras sem impedir SQL didático válido.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Consulta de agregação continua correta; consultas potencialmente massivas têm limite/cancelamento e não bloqueiam aba por período indefinido em testes controlados."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-007",
+      "titulo": "Falha na inicialização do DuckDB mantém promessa rejeitada e impede nova tentativa",
+      "categoria": "Confiabilidade funcional",
+      "componente": "DuckDB-Wasm inicialização",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "initPromise fica atribuída ao async initializer; no catch, o erro é relançado sem limpar initPromise. A UI marca engineStatus='unavailable' e desabilita Executar; falha transitória só é recuperável pelo reload. Verificado estaticamente, não foi simulada falha transitória no browser.",
+      "arquivos": [
+        "src/lib/duckdb/duckdbClient.ts",
+        "src/components/sources/AnalyticsLab.tsx"
+      ],
+      "linhas": "src/lib/duckdb/duckdbClient.ts:37-111; src/components/sources/AnalyticsLab.tsx:24-55",
+      "evidencias": [
+        "src/lib/duckdb/duckdbClient.ts:37-111; src/components/sources/AnalyticsLab.tsx:24-55"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "initPromise fica atribuída ao async initializer; no catch, o erro é relançado sem limpar initPromise. A UI marca engineStatus='unavailable' e desabilita Executar; falha transitória só é recuperável pelo reload. Verificado estaticamente, não foi simulada falha transitória no browser.",
+      "comportamento_esperado": "Teste injeta uma falha inicial seguida de sucesso sem reload; botão Tentar novamente funciona e instância anterior não fica vazando.",
+      "impacto": "Falha temporária de Worker/WASM torna laboratório inoperante até recarregar página.",
+      "causa_provavel": "initPromise fica atribuída ao async initializer; no catch, o erro é relançado sem limpar initPromise. A UI marca engineStatus='unavailable' e desabilita Executar; falha transitória só é recuperável pelo reload. Verificado estaticamente, não foi simulada falha transitória no browser.",
+      "riscos": "Falha temporária de Worker/WASM torna laboratório inoperante até recarregar página.",
+      "solucao_recomendada": "Permitir reset e retry explícitos após indisponibilidade, limpar referências parcialmente inicializadas e encerrar Worker/DB de modo seguro.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Teste injeta uma falha inicial seguida de sucesso sem reload; botão Tentar novamente funciona e instância anterior não fica vazando."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-008",
+      "titulo": "Cache de cotações não valida esquema, provedor nem timestamp antes da hidratação",
+      "categoria": "Confiabilidade de dados",
+      "componente": "MarketSync / localStorage",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "loadCachedQuotes exige apenas parsed?.quotes e prazo, não garante Array, provider válido, timestamp finito ou cotações tipadas; quotesToRecords invoca .map. Um payload local corrompido pode quebrar a hidratação.",
+      "arquivos": [
+        "src/lib/marketApi/sync.ts",
+        "src/components/CompaniesModule.tsx"
+      ],
+      "linhas": "src/lib/marketApi/sync.ts:45-64,83-89; src/components/CompaniesModule.tsx:128-145",
+      "evidencias": [
+        "src/lib/marketApi/sync.ts:45-64,83-89; src/components/CompaniesModule.tsx:128-145"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "loadCachedQuotes exige apenas parsed?.quotes e prazo, não garante Array, provider válido, timestamp finito ou cotações tipadas; quotesToRecords invoca .map. Um payload local corrompido pode quebrar a hidratação.",
+      "comportamento_esperado": "Testes com JSON inválido, quotes objeto, arrays malformados, timestamp futuro/NaN e mudança de provedor preservam aplicativo e evitam dados cruzados.",
+      "impacto": "Storage antigo/corrompido pode gerar exceção ou dados incoerentes, prejudicando o Raio-X.",
+      "causa_provavel": "loadCachedQuotes exige apenas parsed?.quotes e prazo, não garante Array, provider válido, timestamp finito ou cotações tipadas; quotesToRecords invoca .map. Um payload local corrompido pode quebrar a hidratação.",
+      "riscos": "Storage antigo/corrompido pode gerar exceção ou dados incoerentes, prejudicando o Raio-X.",
+      "solucao_recomendada": "Validar schema, provedor, valores finitos, timestamp e recusar cache inválido com fallback à base estática; considerar versionamento do cache.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Testes com JSON inválido, quotes objeto, arrays malformados, timestamp futuro/NaN e mudança de provedor preservam aplicativo e evitam dados cruzados."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-009",
+      "titulo": "Token pessoal da API permanece em localStorage mesmo após desativação da sincronização",
+      "categoria": "Privacidade e segurança",
+      "componente": "Raio-X / fontes dinâmicas",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "risco",
+      "descricao": "Token é serializado em cb.marketSync.v1 via localStorage e a opção de desativar não o apaga. Armazenamento é intencional/documentado, mas legível por qualquer script da origem; não foi encontrada chave de maintainer exposta.",
+      "arquivos": [
+        "src/lib/marketApi/sync.ts",
+        "src/components/CompaniesModule.tsx"
+      ],
+      "linhas": "src/lib/marketApi/sync.ts:25-43; src/components/CompaniesModule.tsx:129-149,183-238",
+      "evidencias": [
+        "src/lib/marketApi/sync.ts:25-43; src/components/CompaniesModule.tsx:129-149,183-238"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "Token é serializado em cb.marketSync.v1 via localStorage e a opção de desativar não o apaga. Armazenamento é intencional/documentado, mas legível por qualquer script da origem; não foi encontrada chave de maintainer exposta.",
+      "comportamento_esperado": "Usuário consegue limpar token sem acessar DevTools; desligamento/limpeza documentados; testes garantem não persistência após exclusão explícita.",
+      "impacto": "Persistência de credencial pessoal em dispositivo compartilhado e exposição em eventual comprometimento da origem.",
+      "causa_provavel": "Token é serializado em cb.marketSync.v1 via localStorage e a opção de desativar não o apaga. Armazenamento é intencional/documentado, mas legível por qualquer script da origem; não foi encontrada chave de maintainer exposta.",
+      "riscos": "Persistência de credencial pessoal em dispositivo compartilhado e exposição em eventual comprometimento da origem.",
+      "solucao_recomendada": "Explicitar claramente a persistência, adicionar ação de apagar token/cache e opção não persistente, avaliar trade-offs sem inventar backend; jamais logar chaves.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Usuário consegue limpar token sem acessar DevTools; desligamento/limpeza documentados; testes garantem não persistência após exclusão explícita."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-010",
+      "titulo": "Pipeline não executa smoke de navegação em navegador nem gate automatizado de acessibilidade",
+      "categoria": "Testes e produção",
+      "componente": "CI / workflow GitHub Pages",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "pendencia",
+      "descricao": "CI roda Vitest, scripts de tours, build e performance-budget, mas não há etapa de browser E2E nem axe/teclado; o relatório é de lacuna de cobertura, não de falha em workflow.",
+      "arquivos": [
+        ".github/workflows/deploy.yml",
+        "package.json"
+      ],
+      "linhas": " .github/workflows/deploy.yml:16-73; package.json:6-17",
+      "evidencias": [
+        " .github/workflows/deploy.yml:16-73; package.json:6-17"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "CI roda Vitest, scripts de tours, build e performance-budget, mas não há etapa de browser E2E nem axe/teclado; o relatório é de lacuna de cobertura, não de falha em workflow.",
+      "comportamento_esperado": "CI valida um roteiro mínimo reproduzível com capturas em falhas, sem depender de APIs externas; build e orçamento continuam intactos.",
+      "impacto": "Erros de renderização, navegação e acessibilidade podem passar despercebidos após mudanças.",
+      "causa_provavel": "CI roda Vitest, scripts de tours, build e performance-budget, mas não há etapa de browser E2E nem axe/teclado; o relatório é de lacuna de cobertura, não de falha em workflow.",
+      "riscos": "Erros de renderização, navegação e acessibilidade podem passar despercebidos após mudanças.",
+      "solucao_recomendada": "Adicionar pequena suíte de smoke de browser controlado (abas, temas, navegação, configuração, mapa fallback, DuckDB) e checks a11y em rotas principais sem tornar CI excessivamente lenta.",
+      "dependencias": [
+        "AUD-004",
+        "AUD-005",
+        "AUD-007"
+      ],
+      "criterios_aceitacao": [
+        "CI valida um roteiro mínimo reproduzível com capturas em falhas, sem depender de APIs externas; build e orçamento continuam intactos."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-011",
+      "titulo": "Globo 3D ainda não homologado em dispositivos físicos alvo",
+      "categoria": "Desempenho, compatibilidade e publicação",
+      "componente": "Globo 3D/WebGL / Safari, Android",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "não validado",
+      "tipo": "pendencia",
+      "descricao": "PERFORMANCE-GATE.md declara explicitamente selo BETA até validação em Android mid-range e iPhone/Safari real (FPS, zoom, órbita, tours, temperatura). Chrome headless desta auditoria renderizou a tela mas não substitui dispositivos.",
+      "arquivos": [
+        "PERFORMANCE-GATE.md",
+        "TODO.md",
+        "src/components/globe3d/GlobeModule.tsx"
+      ],
+      "linhas": "PERFORMANCE-GATE.md:94-118; TODO.md:23-41; src/components/globe3d/GlobeModule.tsx:507-513",
+      "evidencias": [
+        "PERFORMANCE-GATE.md:94-118; TODO.md:23-41; src/components/globe3d/GlobeModule.tsx:507-513",
+        "evidencias/UI_globe3d.png",
+        "PERFORMANCE-GATE.md"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "PERFORMANCE-GATE.md declara explicitamente selo BETA até validação em Android mid-range e iPhone/Safari real (FPS, zoom, órbita, tours, temperatura). Chrome headless desta auditoria renderizou a tela mas não substitui dispositivos.",
+      "comportamento_esperado": "Android mid-range e iPhone/Safari: tours/órbita/zoom/retorno sem perda, ≥45 FPS durante interação conforme gate do projeto; dados do teste anexados.",
+      "impacto": "Não é possível afirmar performance/estabilidade mobile de WebGL/WebGPU em hardware real.",
+      "causa_provavel": "PERFORMANCE-GATE.md declara explicitamente selo BETA até validação em Android mid-range e iPhone/Safari real (FPS, zoom, órbita, tours, temperatura). Chrome headless desta auditoria renderizou a tela mas não substitui dispositivos.",
+      "riscos": "Não é possível afirmar performance/estabilidade mobile de WebGL/WebGPU em hardware real.",
+      "solucao_recomendada": "Homologar cenários com aparelhos físicos, coletar métricas comparáveis, deixar fallback SVG e badge BETA até aprovação.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Android mid-range e iPhone/Safari: tours/órbita/zoom/retorno sem perda, ≥45 FPS durante interação conforme gate do projeto; dados do teste anexados."
+      ],
+      "esforco": "grande",
+      "responsavel": "humano"
+    },
+    {
+      "id": "AUD-012",
+      "titulo": "Grafo 3D usa API de destruição privada de biblioteca e tipagem ampla",
+      "categoria": "Arquitetura e manutenção",
+      "componente": "CorporateNetworkGraph",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "provável",
+      "tipo": "melhoria opcional",
+      "descricao": "Instância de force-graph é obtida por (ForceGraph3D as any)() e encerrada por _destructor?.() no cleanup; underscore indica interface interna sujeita a mudanças. Não foi reproduzido vazamento concreto.",
+      "arquivos": [
+        "src/components/network/CorporateNetworkGraph.tsx"
+      ],
+      "linhas": "src/components/network/CorporateNetworkGraph.tsx:178-216",
+      "evidencias": [
+        "src/components/network/CorporateNetworkGraph.tsx:178-216"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "Instância de force-graph é obtida por (ForceGraph3D as any)() e encerrada por _destructor?.() no cleanup; underscore indica interface interna sujeita a mudanças. Não foi reproduzido vazamento concreto.",
+      "comportamento_esperado": "Alternância 2D/3D repetida sem instâncias órfãs ou warnings; redução de any onde viável sem alterar layout.",
+      "impacto": "Fragilidade em upgrades e possível cleanup incompleto no troca-troca de modos.",
+      "causa_provavel": "Instância de force-graph é obtida por (ForceGraph3D as any)() e encerrada por _destructor?.() no cleanup; underscore indica interface interna sujeita a mudanças. Não foi reproduzido vazamento concreto.",
+      "riscos": "Fragilidade em upgrades e possível cleanup incompleto no troca-troca de modos.",
+      "solucao_recomendada": "Confirmar API pública e contrato do pacote instalado, encapsular encerramento tipado, testar montagens/desmontagens repetidas e listeners.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Alternância 2D/3D repetida sem instâncias órfãs ou warnings; redução de any onde viável sem alterar layout."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-013",
+      "titulo": "Persistência do tema do globo pode lançar exceção quando storage está indisponível",
+      "categoria": "Resiliência",
+      "componente": "Globo 3D / preferências",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "pickTheme chama localStorage.setItem sem try/catch, diferentemente de outros trechos do projeto. Falha em storage bloqueado/quota pode propagar à interação; cenário não reproduzido no navegador.",
+      "arquivos": [
+        "src/components/globe3d/GlobeModule.tsx"
+      ],
+      "linhas": "src/components/globe3d/GlobeModule.tsx:498-503",
+      "evidencias": [
+        "src/components/globe3d/GlobeModule.tsx:498-503"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "pickTheme chama localStorage.setItem sem try/catch, diferentemente de outros trechos do projeto. Falha em storage bloqueado/quota pode propagar à interação; cenário não reproduzido no navegador.",
+      "comportamento_esperado": "Mock de setItem que lança exceção não derruba UI; tema continua alterável durante sessão.",
+      "impacto": "Escolha de tema falha em ambientes de armazenamento restrito.",
+      "causa_provavel": "pickTheme chama localStorage.setItem sem try/catch, diferentemente de outros trechos do projeto. Falha em storage bloqueado/quota pode propagar à interação; cenário não reproduzido no navegador.",
+      "riscos": "Escolha de tema falha em ambientes de armazenamento restrito.",
+      "solucao_recomendada": "Encapsular gravação de maneira segura, mantendo escolha na sessão mesmo sem persistência.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Mock de setItem que lança exceção não derruba UI; tema continua alterável durante sessão."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-014",
+      "titulo": "README informa versão pública diferente do pacote",
+      "categoria": "Documentação e manutenção",
+      "componente": "README e release",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "confirmado",
+      "tipo": "defeito",
+      "descricao": "README anuncia Versão 1.0.0, mas package.json declara 1.1.0 e Git possui apenas tag v1.0.0 na conferência de 2026-11-10.",
+      "arquivos": [
+        "README.md",
+        "package.json"
+      ],
+      "linhas": "README.md:1-4; package.json:2-5",
+      "evidencias": [
+        "README.md:1-4; package.json:2-5"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "README anuncia Versão 1.0.0, mas package.json declara 1.1.0 e Git possui apenas tag v1.0.0 na conferência de 2026-11-10.",
+      "comportamento_esperado": "README distingue versão do código, tag e site efetivamente publicado, sem informação contraditória.",
+      "impacto": "Informação ambígua sobre versão atual e release publicada.",
+      "causa_provavel": "README anuncia Versão 1.0.0, mas package.json declara 1.1.0 e Git possui apenas tag v1.0.0 na conferência de 2026-11-10.",
+      "riscos": "Informação ambígua sobre versão atual e release publicada.",
+      "solucao_recomendada": "Alinhar README, release notes e estado efetivamente publicado; não presumir que versão de pacote equivale a release.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "README distingue versão do código, tag e site efetivamente publicado, sem informação contraditória."
+      ],
+      "esforco": "pequeno",
+      "responsavel": "IA"
+    },
+    {
+      "id": "AUD-015",
+      "titulo": "Importação de dados analíticos externos/Parquet permanece planejada",
+      "categoria": "Produto e dados",
+      "componente": "Laboratório SQL / datasets",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "confirmado",
+      "tipo": "melhoria opcional",
+      "descricao": "O roadmap marca 5.2 não concluído; não foram localizados arquivos .parquet em public, e o laboratório atual usa quatro datasets TS embutidos. SQL real já funciona.",
+      "arquivos": [
+        "ROADMAP_ARQUITETURA_E_FINALIZACAO.md",
+        "src/data/analyticsDatasets.ts"
+      ],
+      "linhas": "ROADMAP_ARQUITETURA_E_FINALIZACAO.md:244-265; src/data/analyticsDatasets.ts",
+      "evidencias": [
+        "ROADMAP_ARQUITETURA_E_FINALIZACAO.md:244-265; src/data/analyticsDatasets.ts",
+        "evidencias/browser_interactions.json"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "O roadmap marca 5.2 não concluído; não foram localizados arquivos .parquet em public, e o laboratório atual usa quatro datasets TS embutidos. SQL real já funciona.",
+      "comportamento_esperado": "Novo dataset proveniente, versionado e auditável, consulta DuckDB validada e sem regressão de bundle; tarefa explicitamente opcional.",
+      "impacto": "Limitação de escala/atualização dos dados, sem impedir uso atual básico.",
+      "causa_provavel": "O roadmap marca 5.2 não concluído; não foram localizados arquivos .parquet em public, e o laboratório atual usa quatro datasets TS embutidos. SQL real já funciona.",
+      "riscos": "Limitação de escala/atualização dos dados, sem impedir uso atual básico.",
+      "solucao_recomendada": "Somente após aprovação editorial, escolher dataset/formatos Parquet com fonte, licença, safra e integridade, além de carregamento lazy e proteção de recursos.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Novo dataset proveniente, versionado e auditável, consulta DuckDB validada e sem regressão de bundle; tarefa explicitamente opcional."
+      ],
+      "esforco": "grande",
+      "responsavel": "humano"
+    },
+    {
+      "id": "AUD-016",
+      "titulo": "Parte da base documental está apenas declarada, sem link individual confirmado",
+      "categoria": "Qualidade editorial e rastreabilidade",
+      "componente": "54 registros de fontes",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "confirmado",
+      "tipo": "melhoria opcional",
+      "descricao": "Contagem de fonte: 54 registros, 34 com verificacao='url-incluida', 20='fonte-declarada', 0='revisao-pendente'; UI mostra 47 com URL. O status 'fonte-declarada' é honesto, não é erro em si; links não foram reabertos individualmente.",
+      "arquivos": [
+        "src/data/sources.ts",
+        "src/components/sources/SourcesModule.tsx"
+      ],
+      "linhas": "src/data/sources.ts:106-1355; src/components/sources/SourcesModule.tsx:100-165",
+      "evidencias": [
+        "src/data/sources.ts:106-1355; src/components/sources/SourcesModule.tsx:100-165"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "Contagem de fonte: 54 registros, 34 com verificacao='url-incluida', 20='fonte-declarada', 0='revisao-pendente'; UI mostra 47 com URL. O status 'fonte-declarada' é honesto, não é erro em si; links não foram reabertos individualmente.",
+      "comportamento_esperado": "Priorizar números centrais, checar fontes primárias e licença, atualizar sourceIds se necessário; manter rótulos corretos.",
+      "impacto": "Para uso escolar/citações rigorosas, algumas fontes precisam de checagem de tabela/safra/URL exata.",
+      "causa_provavel": "Contagem de fonte: 54 registros, 34 com verificacao='url-incluida', 20='fonte-declarada', 0='revisao-pendente'; UI mostra 47 com URL. O status 'fonte-declarada' é honesto, não é erro em si; links não foram reabertos individualmente.",
+      "riscos": "Para uso escolar/citações rigorosas, algumas fontes precisam de checagem de tabela/safra/URL exata.",
+      "solucao_recomendada": "Auditoria editorial amostral por impacto e atualização de safras, sem promover estado a 'verificado' sem evidência; registrar data de acesso.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Priorizar números centrais, checar fontes primárias e licença, atualizar sourceIds se necessário; manter rótulos corretos."
+      ],
+      "esforco": "médio",
+      "responsavel": "humano"
+    },
+    {
+      "id": "AUD-017",
+      "titulo": "Publicação 1.1.0 não concluída nem homologada como release",
+      "categoria": "Entrega e produção",
+      "componente": "GitHub Pages / tags",
+      "prioridade": "P2",
+      "gravidade": "Médio",
+      "estado": "confirmado",
+      "tipo": "pendencia",
+      "descricao": "Git main está dois commits à frente de origin/main; git tag --list mostrou apenas v1.0.0 em 2026-11-10; workflow publica no push main, mas nenhuma publicação foi executada na auditoria.",
+      "arquivos": [
+        ".github/workflows/deploy.yml",
+        "ROADMAP_ARQUITETURA_E_FINALIZACAO.md"
+      ],
+      "linhas": ".github/workflows/deploy.yml:1-74; ROADMAP_ARQUITETURA_E_FINALIZACAO.md:280-300",
+      "evidencias": [
+        ".github/workflows/deploy.yml:1-74; ROADMAP_ARQUITETURA_E_FINALIZACAO.md:280-300"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "Git main está dois commits à frente de origin/main; git tag --list mostrou apenas v1.0.0 em 2026-11-10; workflow publica no push main, mas nenhuma publicação foi executada na auditoria.",
+      "comportamento_esperado": "Pipeline verde, tag/release e URL pública aprovadas por responsável, smoke pós-publicação e plano de reversão documentado.",
+      "impacto": "Código local 1.1.0 não equivale a site público validado; lançamento não deve ser presumido.",
+      "causa_provavel": "Git main está dois commits à frente de origin/main; git tag --list mostrou apenas v1.0.0 em 2026-11-10; workflow publica no push main, mas nenhuma publicação foi executada na auditoria.",
+      "riscos": "Código local 1.1.0 não equivale a site público validado; lançamento não deve ser presumido.",
+      "solucao_recomendada": "Após corrigir bloqueadores e homologar, obter autorização humana para push/tag/deploy, conferir Pages e estratégia de rollback.",
+      "dependencias": [
+        "AUD-001",
+        "AUD-002",
+        "AUD-004",
+        "AUD-010",
+        "AUD-011"
+      ],
+      "criterios_aceitacao": [
+        "Pipeline verde, tag/release e URL pública aprovadas por responsável, smoke pós-publicação e plano de reversão documentado."
+      ],
+      "esforco": "médio",
+      "responsavel": "humano"
+    },
+    {
+      "id": "AUD-018",
+      "titulo": "Não há lint configurado e partes críticas suprimem verificações estáticas",
+      "categoria": "Manutenibilidade",
+      "componente": "TypeScript / hooks / visualizadores",
+      "prioridade": "P3",
+      "gravidade": "Baixo",
+      "estado": "confirmado",
+      "tipo": "melhoria opcional",
+      "descricao": "package.json não oferece script lint; noUnusedLocals/noUnusedParameters=false; existem vários eslint-disable react-hooks/exhaustive-deps, @ts-ignore e any em integrações. O build TypeScript passa; não foi demonstrado erro direto.",
+      "arquivos": [
+        "package.json",
+        "tsconfig.app.json",
+        "src/components/MapWorld.tsx",
+        "src/components/globe3d/Globe3DCanvas.tsx"
+      ],
+      "linhas": "package.json:6-17; tsconfig.app.json:15-19; src/components/MapWorld.tsx; src/components/globe3d/Globe3DCanvas.tsx",
+      "evidencias": [
+        "package.json:6-17; tsconfig.app.json:15-19; src/components/MapWorld.tsx; src/components/globe3d/Globe3DCanvas.tsx"
+      ],
+      "procedimento_reproducao": null,
+      "comportamento_atual": "package.json não oferece script lint; noUnusedLocals/noUnusedParameters=false; existem vários eslint-disable react-hooks/exhaustive-deps, @ts-ignore e any em integrações. O build TypeScript passa; não foi demonstrado erro direto.",
+      "comportamento_esperado": "Comando lint reproduzível no CI ou fluxo de desenvolvimento, exceções justificadas e sem false positives massivos.",
+      "impacto": "Dificulta prevenir regressões de dependências de hooks/limpeza de código em futuras alterações.",
+      "causa_provavel": "package.json não oferece script lint; noUnusedLocals/noUnusedParameters=false; existem vários eslint-disable react-hooks/exhaustive-deps, @ts-ignore e any em integrações. O build TypeScript passa; não foi demonstrado erro direto.",
+      "riscos": "Dificulta prevenir regressões de dependências de hooks/limpeza de código em futuras alterações.",
+      "solucao_recomendada": "Introduzir lint/eslint verificações selecionadas com baseline e revisar exceções em áreas de maior risco; evitar grande reescrita cosmética.",
+      "dependencias": [],
+      "criterios_aceitacao": [
+        "Comando lint reproduzível no CI ou fluxo de desenvolvimento, exceções justificadas e sem false positives massivos."
+      ],
+      "esforco": "médio",
+      "responsavel": "IA"
+    }
+  ]
+}

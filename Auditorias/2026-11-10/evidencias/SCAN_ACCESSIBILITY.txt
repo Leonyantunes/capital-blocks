@@ -1,0 +1,128 @@
+﻿src\components\alternatives\AlternativesModule.tsx:119: <input type="range" min={5} max={30} step={1} value={participantes}
+src\components\alternatives\AlternativesModule.tsx:120: aria-label={tx('Pessoas no programa de garantia de emprego, em milhões', 'People in the job guarantee program, in millions', 'Personas en el programa de garantía de empleo, en millones')}
+src\components\alternatives\AlternativesModule.tsx:128: <input type="range" min={1518} max={3000} step={50} value={salario}
+src\components\alternatives\AlternativesModule.tsx:129: aria-label={tx('Salário mensal do programa em reais', 'Program monthly wage in Brazilian reais', 'Salario mensual del programa en reales brasileños')}
+src\components\consequences\AffectedMap.tsx:100: <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="h-auto w-full select-none" role="img"
+src\components\consequences\AffectedMap.tsx:101: aria-label={tx('Mapa dos países afetados pelo imperialismo', 'Map of countries affected by imperialism', 'Mapa de países afectados por el imperialismo')}>
+src\components\consequences\VideoEmbed.tsx:35: aria-label={`${tx('Reproduzir vídeo', 'Play video', 'Reproducir video')}: ${titulo}`}
+src\components\consequences\VideoEmbed.tsx:37: <img
+src\components\consequences\VideoEmbed.tsx:47: <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff" aria-hidden>
+src\components\debt\KaleckiSimulator.tsx:99: <input type="range" min={k === 'nx' ? -4 : 0}
+src\components\globe3d\Globe3DCanvas.tsx:1048: renderer.domElement.setAttribute('aria-label', 'Globo 3D interativo com fluxos de capital')
+src\components\globe3d\GlobeModule.tsx:132: role="switch"
+src\components\globe3d\GlobeModule.tsx:133: aria-checked={on}
+src\components\globe3d\GlobeModule.tsx:172: role="dialog"
+src\components\globe3d\GlobeModule.tsx:173: aria-label={copy.details}
+src\components\globe3d\GlobeModule.tsx:191: aria-label={copy.closeDetails}
+src\components\globe3d\GlobeModule.tsx:715: aria-hidden={!panelOpen}
+src\components\globe3d\GlobeModule.tsx:734: <button onClick={() => setPanelOpen(false)} aria-label={copy.closePanel} className="ml-auto rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-100">✕</button>
+src\components\globe3d\GlobeModule.tsx:839: <input
+src\components\globe3d\GlobeModule.tsx:844: aria-label={copy.customColorAria}
+src\components\globe3d\GlobeModule.tsx:869: <input type="color" value={highlightFill} onChange={(e) => setHighlightFill(e.target.value)} className="h-6 w-8 cursor-pointer rounded border border-zinc-700 bg-transparent" aria-label={copy.innerPointColor} />
+src\components\globe3d\GlobeModule.tsx:881: <input type="range" min={0} max={2} step={0.1} value={bloomIntensity} onChange={(e) => setBloomIntensity(parseFloat(e.target.value))} className="w-28" />
+src\components\globe3d\GlobeModule.tsx:899: aria-label={`${copy.glowAria} ${c}`}
+src\components\globe3d\GlobeModule.tsx:908: <input type="range" min={0.2} max={2.5} step={0.05} value={atmoIntensity} onChange={(e) => setAtmoIntensity(parseFloat(e.target.value))} className="w-28" />
+src\components\globe3d\GlobeModule.tsx:921: <input type="range" min={0.1} max={3} step={0.1} value={rotateSpeed} onChange={(e) => setRotateSpeed(parseFloat(e.target.value))} className="w-28" />
+src\components\globe3d\GlobeModule.tsx:925: <input type="range" min={0.2} max={3} step={0.1} value={arcSpeed} onChange={(e) => setArcSpeed(parseFloat(e.target.value))} className="w-28" />
+src\components\globe3d\GlobeModule.tsx:929: <input type="range" min={0.006} max={0.022} step={0.001} value={dotSize} onChange={(e) => setDotSize(parseFloat(e.target.value))} className="w-28" />
+src\components\globe3d\GlobeModule.tsx:1042: <section aria-label={copy.warsAria}>
+src\components\sources\AnalyticsLab.tsx:172: <textarea
+src\components\sources\SourcesModule.tsx:261: <input
+src\components\sources\SourcesModule.tsx:273: aria-label={pick(lang, 'Filtrar por categoria', 'Filter by category', 'Filtrar por categoría')}
+src\components\sources\SourcesModule.tsx:284: aria-label={pick(lang, 'Filtrar por tipo de fonte', 'Filter by source type', 'Filtrar por tipo de fuente')}
+src\components\sources\SourcesModule.tsx:293: <input
+src\components\ui\DataQuiz.tsx:118: <input type="range" min={q.min} max={q.max} step={q.step} value={guess ?? q.min}
+src\components\ui\LessonGuideBar.tsx:32: aria-label={pick(lang, 'Guia de aula e metodologia', 'Lesson and methodology guide', 'Guía de clase y metodología')}
+src\components\ui\MethodologyNote.tsx:246: aria-expanded={open}
+src\components\ui\Tip.tsx:10: *  teclado (o gatilho é focável e referencia o tooltip via aria-describedby). */
+src\components\ui\Tip.tsx:40: tabIndex={0}
+src\components\ui\Tip.tsx:41: aria-describedby={id}
+src\components\ui\Tip.tsx:48: role="tooltip"
+src\components\ui\TourPanel.tsx:97: role="dialog"
+src\components\ui\TourPanel.tsx:98: aria-label={stop.titulo}
+src\components\ui\TourPanel.tsx:128: aria-label={copy.chooseTour}
+src\components\ui\TourPanel.tsx:154: aria-label={copy.previousStep}
+src\components\ui\TourPanel.tsx:162: aria-label={copy.endTour}
+src\components\ui\TourPanel.tsx:205: aria-label={`${copy.goStep} ${i + 1}`}
+src\components\ui\TourPanel.tsx:206: aria-current={i === stepIndex ? 'step' : undefined}
+src\components\war\ConflictDrawer.tsx:93: role="dialog" aria-modal="true" aria-label={pick(lang, 'Quem lucra com esta guerra', 'Who profits from this war', 'Quién gana con esta guerra')} ref={trapRef}
+src\components\war\ConflictDrawer.tsx:103: <button onClick={onClose} aria-label={pick(lang, 'Fechar', 'Close', 'Cerrar')}
+src\components\war\WarMap.tsx:94: role="img" aria-label={`${pick(lang, 'Mapa de conflitos — época', 'Conflict map — era', 'Mapa de conflictos — época')} ${epoch.faixa}`}>
+src\components\war\WarModule.tsx:106: <input
+src\components\war\WarModule.tsx:110: aria-label={pick(lang, 'Viajar no tempo das guerras', 'Travel through the history of wars', 'Viajar por la historia de las guerras')}
+src\components\wealth\BillionaireTimeline.tsx:91: <input
+src\components\wealth\BillionaireTimeline.tsx:95: aria-label={tx('Ano da corrida dos bilionários', 'Year in the billionaire race', 'Año en la carrera de los multimillonarios')}
+src\components\wealth\BillionaireTimeline.tsx:149: <svg viewBox={`0 0 ${SW} ${SH}`} className="h-auto w-full" role="img" aria-label={tx('Evolução do número de bilionários', 'Change in the number of billionaires', 'Evolución del número de multimillonarios')}>
+src\components\wealth\ConcentrationCharts.tsx:84: <svg viewBox={`0 0 ${CW} ${CH}`} className="mt-2 h-auto w-full" role="img" aria-label={tx('Série histórica da concentração da riqueza no Top 1%', 'Historical series of wealth concentration in the Top 1%', 'Serie histórica de concentración de riqueza en el 1% más rico')}>
+src\components\wealth\FollowSalary.tsx:109: <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 h-auto w-full" role="img" aria-label={tx('Fluxo do salário do trabalhador para as frações de capital', 'Flow of workers’ wages toward different capital-income destinations', 'Flujo del salario del trabajador hacia distintos destinos de renta del capital')}>
+src\components\CircuitDiagram.tsx:52: <svg viewBox="0 0 1000 330" className="h-auto w-full" role="img" aria-label={pick(lang, 'Diagrama do circuito do capital', 'Capital circuit diagram', 'Diagrama del circuito del capital')}>
+src\components\Clocks.tsx:32: <svg viewBox="0 0 160 160" style={{ width: size, height: size }} role="img" aria-label={pick(lang, `Relógio da jornada: ${fmtHours(minutesUnpaid / 60)} não pagos`, `Workday clock: ${fmtHours(minutesUnpaid / 60)} unpaid`, `Reloj de la jornada: ${fmtHours(minutesUnpaid / 60)} no pagadas`)}>
+src\components\Clocks.tsx:59: <svg viewBox="0 0 36 36" className="h-7 w-7 shrink-0" role="img" aria-label={fmtHours(minutesUnpaid / 60)}>
+src\components\CompaniesModule.tsx:188: role="switch" aria-checked={enabled}
+src\components\CompaniesModule.tsx:220: <input
+src\components\CompaniesModule.tsx:779: <input value={query} onChange={(e) => setQuery(e.target.value)}
+src\components\CompaniesModule.tsx:786: aria-label={pick(lang, 'Filtrar por setor', 'Filter by sector', 'Filtrar por sector')}
+src\components\ControlsPanel.tsx:43: <input id="slider-k" type="range" min={0.5} max={14} step={0.1}
+src\components\ControlsPanel.tsx:75: <input id="slider-e" type="range" min={0.5} max={5} step={0.05}
+src\components\CountryDrawer.tsx:52: <svg viewBox="0 0 320 84" className="mt-2 h-auto w-full" role="img" aria-label={copy.aria}>
+src\components\CountryDrawer.tsx:181: role="dialog" aria-modal="true" aria-label={copy.aria} ref={trapRef}
+src\components\CountryDrawer.tsx:190: <button onClick={closeCountry} aria-label={copy.close}
+src\components\DebtModule.tsx:92: <span aria-hidden className="absolute bottom-2 left-[9px] top-2 w-px overflow-hidden bg-zinc-800">
+src\components\FlowCard.tsx:38: role="dialog"
+src\components\FlowCard.tsx:39: aria-modal="false"
+src\components\FlowCard.tsx:40: aria-label={copy.aria}
+src\components\FlowCard.tsx:57: <button onClick={onClose} aria-label={copy.close}
+src\components\GlossaryDrawer.tsx:53: role="dialog" aria-modal="true" aria-label={copy.aria} ref={trapRef}
+src\components\GlossaryDrawer.tsx:64: <button onClick={() => setGlossaryOpen(false)} aria-label={copy.close}
+src\components\GlossaryDrawer.tsx:67: <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={copy.search}
+src\components\IndicatorsStrip.tsx:17: <section aria-label={copy.aria}>
+src\components\MapModule.tsx:104: <div className="inline-flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5" role="group" aria-label="Motor do mapa">
+src\components\MapModule.tsx:146: aria-hidden="true"
+src\components\MapModule.tsx:164: aria-hidden="true"
+src\components\MapModule.tsx:190: <section aria-label={copy.warsAria}>
+src\components\MapWorld.tsx:254: <button aria-label={copy.zoomIn} onClick={() => onZoom(1.5)}
+src\components\MapWorld.tsx:256: <button aria-label={copy.zoomOut} onClick={() => onZoom(1 / 1.5)}
+src\components\MapWorld.tsx:258: <button aria-label={copy.reset} onClick={onReset}
+src\components\MapWorld.tsx:260: <button aria-label={copy.brazil} onClick={onBrazil} title={copy.brazilTitle}
+src\components\MapWorld.tsx:262: <button aria-label={isFs ? copy.exitFullscreen : copy.fullscreen} onClick={onFullscreen} title={isFs ? copy.exitFullscreen : copy.fullscreen}
+src\components\MapWorld.tsx:1273: role="img"
+src\components\MapWorld.tsx:1274: aria-label={copy.mapAria}
+src\components\MapWorld.tsx:1320: <button onClick={() => setSheetOpen((s) => !s)} aria-expanded={sheetOpen}
+src\components\MapWorld.tsx:1326: <button onClick={() => zoomAroundCenter(1.5)} aria-label={copy.zoomIn}
+src\components\MapWorld.tsx:1328: <button onClick={() => zoomAroundCenter(1 / 1.5)} aria-label={copy.zoomOut}
+src\components\MapWorld.tsx:1330: <button onClick={() => setView({ k: 1, x: 0, y: 0 })} aria-label={copy.reset}
+src\components\MapWorld.tsx:1332: <button onClick={goBrazil} aria-label={copy.brazil}
+src\components\MapWorld.tsx:1335: aria-label={copy.startTour}
+src\components\MapWorld.tsx:1339: <button onClick={toggleFullscreen} aria-label={isFs ? copy.exitFullscreen : copy.fullscreen}
+src\components\MapWorld.tsx:1349: <button onClick={() => setSheetOpen(false)} aria-label={copy.closeLayers}
+src\components\MmtPanel.tsx:44: <input type="range" min={0} max={14} step={0.5} value={gt} onChange={(e) => setGt(parseFloat(e.target.value))} />
+src\components\MmtPanel.tsx:51: <input type="range" min={-5} max={8} step={0.5} value={xm} onChange={(e) => setXm(parseFloat(e.target.value))} />
+src\components\Navbar.tsx:64: <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+src\components\Navbar.tsx:125: aria-label={pick(lang, 'Idioma da interface', 'Interface language', 'Idioma de la interfaz')}
+src\components\Navbar.tsx:146: <select value={lang} onChange={(e) => setLang(e.target.value as 'pt' | 'en' | 'es')} aria-label="Idioma da interface"
+src\components\Navbar.tsx:221: aria-label={pick(lang, 'Capital Blocks — Início', 'Capital Blocks — Home', 'Capital Blocks — Inicio')}>
+src\components\Navbar.tsx:243: aria-pressed={isMap ? is3D : undefined}
+src\components\Navbar.tsx:277: aria-label={t(lang, 'configuracoes')}
+src\components\Navbar.tsx:293: aria-label={pick(lang, 'Abrir glossário', 'Open glossary', 'Abrir glosario')}
+src\components\Navbar.tsx:300: aria-label={t(lang, 'configuracoes')}
+src\components\Navbar.tsx:311: aria-label={pick(lang, 'Abrir menu de módulos', 'Open modules menu', 'Abrir menú de módulos')}
+src\components\Navbar.tsx:312: aria-expanded={menuOpen}
+src\components\Navbar.tsx:323: <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true"
+src\components\Navbar.tsx:324: aria-label={pick(lang, 'Menu de módulos', 'Modules menu', 'Menú de módulos')}>
+src\components\Navbar.tsx:334: aria-label={pick(lang, 'Fechar menu', 'Close menu', 'Cerrar menú')}
+src\components\PlatformModule.tsx:39: <input type="range" min={min} max={max} step={step} value={value}
+src\components\PlatformModule.tsx:173: <svg viewBox="0 0 120 120" className="hidden w-20 sm:block" aria-hidden>
+src\components\ProfitCurve.tsx:65: <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={tr('Curva de tendência da taxa de lucro', 'Profit-rate tendency curve', 'Curva de tendencia de la tasa de ganancia')}>
+src\components\SettingsModule.tsx:35: /** Switch acessível (role="switch") com rótulo, descrição e estado anunciado. */
+src\components\SettingsModule.tsx:42: role="switch"
+src\components\SettingsModule.tsx:43: aria-checked={on}
+src\components\SettingsModule.tsx:133: aria-pressed={mode === n.id}
+src\components\SettingsModule.tsx:163: aria-pressed={theme === th}
+src\components\SettingsModule.tsx:176: <span className="mt-2 flex gap-1" aria-hidden="true">
+src\components\SettingsModule.tsx:216: aria-pressed={mapRenderer === m.id}
+src\components\SettingsModule.tsx:244: aria-pressed={lang === l.id}
+src\components\SettingsModule.tsx:306: <span className="shrink-0 text-lg text-money" aria-hidden="true">→</span>
+src\components\WorldWealthPanel.tsx:75: <section aria-label={tx('Riqueza mundial', 'World wealth', 'Riqueza mundial')} className="flex flex-col gap-3">
+src\data\sources.ts:823: url: 'https://www.gov.br/planejamento/pt-br/assuntos/orcamento/orcamentos-anuais/2025/loa/lei-orcamentaria-anual-loa-2025',
+src\hooks\useFocusTrap.ts:10: const sel = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'
+src\App.tsx:80: tabIndex={-1}

@@ -88,17 +88,35 @@ export default function KaleckiSimulator() {
             consumoCap: tr('Consumo capitalista', 'Capitalist consumption', 'Consumo capitalista'),
             poupancaTrab: tr('Poupança dos trabalhadores', 'Workers’ saving', 'Ahorro de los trabajadores'),
           }
+          const minVal = k === 'nx' ? -4 : 0
+          const maxVal = k === 'investimento' ? 30 : k === 'consumoCap' ? 25 : k === 'deficit' ? 14 : k === 'nx' ? 8 : 10
+          const sliderId = `kalecki-slider-${k}`
+          const valueText = `${p[k].toLocaleString(loc)}%`
           return (
             <div key={k}>
               <div className="mb-0.5 flex justify-between text-[11px]">
                 <Tip text={rowTips[k]}>
-                  <span className="cursor-help text-zinc-300">{labels[k]} <span className="rounded border border-zinc-700 px-1 font-mono text-[8.5px] text-zinc-500">?</span></span>
+                  <label htmlFor={sliderId} className="cursor-help cursor-pointer text-zinc-300">
+                    {labels[k]} <span className="rounded border border-zinc-700 px-1 font-mono text-[8.5px] text-zinc-500">?</span>
+                  </label>
                 </Tip>
-                <span className="font-mono font-bold text-zinc-200">{p[k].toLocaleString(loc)}%</span>
+                <span className="font-mono font-bold text-zinc-200">{valueText}</span>
               </div>
-              <input type="range" min={k === 'nx' ? -4 : 0}
-                max={k === 'investimento' ? 30 : k === 'consumoCap' ? 25 : k === 'deficit' ? 14 : k === 'nx' ? 8 : 10}
-                step={1} value={p[k]} onChange={(e) => set(k)(parseFloat(e.target.value))} />
+              <input
+                id={sliderId}
+                type="range"
+                min={minVal}
+                max={maxVal}
+                step={1}
+                value={p[k]}
+                aria-label={labels[k]}
+                aria-valuenow={p[k]}
+                aria-valuemin={minVal}
+                aria-valuemax={maxVal}
+                aria-valuetext={valueText}
+                onChange={(e) => set(k)(parseFloat(e.target.value))}
+                className="w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-money/70"
+              />
             </div>
           )
         })}
